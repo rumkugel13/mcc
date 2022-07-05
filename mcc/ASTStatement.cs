@@ -82,6 +82,11 @@ namespace mcc
             else if (isReturn)
             {
                 Expression.GenerateX86(stringBuilder);
+
+                // func epilogue
+                stringBuilder.AppendLine("movq %rbp, %rsp");
+                stringBuilder.AppendLine("pop %rbp");
+
                 stringBuilder.AppendLine("ret");
             }
             else

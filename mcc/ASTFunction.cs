@@ -55,6 +55,10 @@ namespace mcc
             stringBuilder.AppendLine(".globl " + Identifier.Value);
             stringBuilder.AppendLine("" + Identifier.Value + ":");
 
+            // func prologue
+            stringBuilder.AppendLine("push %rbp");
+            stringBuilder.AppendLine("movq %rsp, %rbp");
+
             foreach (var statement in StatementList)
                 statement.GenerateX86(stringBuilder);
         }
