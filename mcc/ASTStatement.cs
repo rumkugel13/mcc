@@ -56,7 +56,10 @@ namespace mcc
                 Identifier.Print(indent + 3);
 
                 if (Expression != null)
-                    Expression.Print(indent + 3);
+                {
+                    Console.WriteLine(new string(' ', indent + 3) + "ASSIGN");
+                    Expression.Print(indent + 6);
+                }
             }
             else if (isReturn)
             {

@@ -22,7 +22,7 @@ namespace mcc
 
         public override void Print(int indent)
         {
-
+            Console.WriteLine(new String(' ', indent) + "ID<" + Value + ">");
         }
 
         public override void GenerateX86(StringBuilder stringBuilder)

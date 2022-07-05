@@ -25,7 +25,7 @@ namespace mcc
 
         public override void Print(int indent)
         {
-            Console.WriteLine(new String(' ', indent) + "Unary<" + Value + ">");
+            Console.WriteLine(new String(' ', indent) + "UnOP<" + Value + ">");
             Factor.Print(indent + 3);
         }
 

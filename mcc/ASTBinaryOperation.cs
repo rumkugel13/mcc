@@ -48,7 +48,7 @@ namespace mcc
 
         public override void Print(int indent)
         {
-            Console.WriteLine(new String(' ', indent) + "Binary'" + Value + "'");
+            Console.WriteLine(new String(' ', indent) + "BinOP'" + Value + "'");
             Expression.Print(indent - 3);
         }
 
