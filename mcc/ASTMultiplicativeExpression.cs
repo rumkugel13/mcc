@@ -13,7 +13,7 @@ namespace mcc
             Factor.Parse(parser);
 
             Token peek = parser.Peek();
-            while ((peek is Symbol && (peek as Symbol).Value == '*') || (peek is Symbol && (peek as Symbol).Value == '/'))
+            while ((peek is Symbol && (peek as Symbol).Value == '*') || (peek is Symbol && (peek as Symbol).Value == '/') || (peek is Symbol && (peek as Symbol).Value == '%'))
             {
                 ASTBinaryOperation binaryOperation = new ASTBinaryOperation(new ASTFactor());
                 binaryOperation.Parse(parser);

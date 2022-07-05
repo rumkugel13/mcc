@@ -134,6 +134,8 @@
             '=',
             '<',
             '>',
+            '%',
+            '^',
         };
 
         public static HashSet<char> Unary = new HashSet<char>
@@ -151,6 +153,10 @@
             '-',
             '<',
             '>',
+            '%',
+            '&',
+            '|',
+            '^',
         };
 
         public override string ToString()

@@ -102,6 +102,11 @@ namespace mcc
                     stringBuilder.AppendLine("cdq");
                     stringBuilder.AppendLine("idivl %ecx");
                     break;
+                case "%":
+                    stringBuilder.AppendLine("cdq");
+                    stringBuilder.AppendLine("idivl %ecx");
+                    stringBuilder.AppendLine("movq %rdx, %rax");
+                    break;
                 case "==": stringBuilder.AppendLine("sete %al"); break;
                 case "!=": stringBuilder.AppendLine("setne %al"); break;
                 case ">=": stringBuilder.AppendLine("setge %al"); break;
