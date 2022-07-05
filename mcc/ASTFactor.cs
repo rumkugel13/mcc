@@ -85,7 +85,13 @@ namespace mcc
             }
             else if (Identifier != null)
             {
-                Identifier.GenerateX86(stringBuilder);
+                // reference variable
+                if (VariableMap.TryGetValue(Identifier.Value, out int offset))
+                {
+                    stringBuilder.AppendLine("movq " + offset + "(%rbp), %rax");
+                }
+                else
+                    throw new InvalidOperationException("Trying to reference a non existing Variable: " + Identifier.Value);
             }
         }
     }

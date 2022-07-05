@@ -77,12 +77,25 @@ namespace mcc
         {
             if (Identifier != null)
             {
+                // declare variable
+                if (AST.VariableMap.ContainsKey(Identifier.Value))
+                    throw new InvalidOperationException("Trying to declare existing Variable: " + Identifier.Value);
 
+                if (Expression != null)
+                {
+                    Expression.GenerateX86(stringBuilder);
+                }
+                else
+                {
+                    stringBuilder.AppendLine("movq $0, %rax"); // no value given, assign 0
+                }
+                stringBuilder.AppendLine("pushq %rax"); // push current value of variable to stack
+                VariableMap.Add(Identifier.Value, StackIndex);
+                StackIndex -= WordSize;
             }
             else if (isReturn)
             {
                 Expression.GenerateX86(stringBuilder);
-
                 // func epilogue
                 stringBuilder.AppendLine("movq %rbp, %rsp");
                 stringBuilder.AppendLine("pop %rbp");

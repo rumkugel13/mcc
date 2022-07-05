@@ -6,7 +6,7 @@
     },
     "single": {
       "commandName": "Project",
-      "commandLineArgs": "stage_5\\invalid\\var_declared_late.c",
+      "commandLineArgs": "stage_5/valid/multiple_vars.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {

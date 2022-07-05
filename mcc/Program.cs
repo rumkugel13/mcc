@@ -6,11 +6,11 @@ namespace mcc
 {
     internal class Program
     {
-        static bool silent = false;
+        static bool silent = true;
 
         static void Main(string[] args)
         {
-            if (!silent) Console.WriteLine("mcc v0.4.3");
+            if (!silent) Console.WriteLine("mcc v0.5");
 
             switch (args.Length)
             {
@@ -53,6 +53,8 @@ namespace mcc
                         {
                             if (Compile(validFile))
                                 validCount++;
+                            AST.VariableMap.Clear();
+                            AST.StackIndex = -AST.WordSize;
                         }
 
                         int invalidCount = 0;
@@ -60,6 +62,8 @@ namespace mcc
                         {
                             if (!Compile(invalidFile))
                                 invalidCount++;
+                            AST.VariableMap.Clear();
+                            AST.StackIndex = -AST.WordSize;
                         }
 
                         Console.WriteLine($"Valid: {validCount}/{validFiles.Count()}, Invalid: {invalidCount}/{invalidFiles.Count()}");
@@ -82,13 +86,13 @@ namespace mcc
                 if (!silent) Console.Write("Running Lexer ... ");
                 var tokens = Lex(filePath);
                 if (!silent) Console.WriteLine("OK");
-                if (!silent) PrintTokenList(tokens);
+                //if (!silent) PrintTokenList(tokens);
 
                 //parser
                 if (!silent) Console.Write("Parsing Tokens ... ");
                 AST ast = Parse(tokens);
                 if (!silent) Console.WriteLine("OK");
-                if (!silent) PrintAST(ast);
+                //if (!silent) PrintAST(ast);
 
                 //generator
                 if (!silent) Console.Write("Generating Assembly ... ");

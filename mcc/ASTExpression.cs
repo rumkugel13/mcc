@@ -46,9 +46,15 @@ namespace mcc
         {
             if (Identifier != null)
             {
-                //Console.WriteLine(new string(' ', indent) + "ASSIGN");
-                //Identifier.Print(indent + 3);
-                //Expression.Print(indent + 3);
+                // assign variable
+                Expression.GenerateX86(stringBuilder);
+
+                if (VariableMap.TryGetValue(Identifier.Value, out int offset))
+                {
+                    stringBuilder.AppendLine("movq %rax, " + offset + "(%rbp)");
+                }
+                else
+                    throw new InvalidOperationException("Trying to assign to non existing Variable: " + Identifier.Value);
             }
             else
             {
