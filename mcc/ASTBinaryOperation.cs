@@ -5,10 +5,10 @@ namespace mcc
     class ASTBinaryOperation : AST
     {
         public static int LabelCounter = 0;
-        public ASTExpression Expression;
+        public ASTAbstractExpression Expression;
         public string Value;
 
-        public ASTBinaryOperation(ASTExpression expression)
+        public ASTBinaryOperation(ASTAbstractExpression expression)
         {
             Expression = expression;
         }

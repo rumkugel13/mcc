@@ -2,7 +2,7 @@
 
 namespace mcc
 {
-    class ASTBitwiseXorExpression : ASTExpression
+    class ASTBitwiseXorExpression : ASTAbstractExpression
     {
         public override void Parse(Parser parser)
         {

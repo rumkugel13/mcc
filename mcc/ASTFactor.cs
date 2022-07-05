@@ -2,11 +2,12 @@
 
 namespace mcc
 {
-    class ASTFactor : ASTExpression
+    class ASTFactor : ASTAbstractExpression
     {
-        ASTLogicalOrExpression Expression;
+        ASTExpression Expression;
         ASTUnaryOperation UnaryOperation;
         ASTInteger Integer;
+        ASTIdentifier Identifier;
 
         public override void Parse(Parser parser)
         {
@@ -18,7 +19,7 @@ namespace mcc
                 if (next is not Symbol || (next as Symbol).Value != '(')
                     parser.Fail(Token.TokenType.SYMBOL, "(");
 
-                Expression = new ASTLogicalOrExpression();
+                Expression = new ASTExpression();
                 Expression.Parse(parser);
 
                 next = parser.Next();
@@ -34,6 +35,11 @@ namespace mcc
             {
                 Integer = new ASTInteger();
                 Integer.Parse(parser);
+            }
+            else if (peek is Identifier)
+            {
+                Identifier = new ASTIdentifier();
+                Identifier.Parse(parser);
             }
             else
             {
@@ -57,6 +63,10 @@ namespace mcc
             {
                 Integer.Print(indent);
             }
+            else if (Identifier != null)
+            {
+                Identifier.Print(indent);
+            }
         }
 
         public override void GenerateX86(StringBuilder stringBuilder)
@@ -72,6 +82,10 @@ namespace mcc
             else if (Integer != null)
             {
                 Integer.GenerateX86(stringBuilder);
+            }
+            else if (Identifier != null)
+            {
+                Identifier.GenerateX86(stringBuilder);
             }
         }
     }

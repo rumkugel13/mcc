@@ -2,7 +2,7 @@
 
 namespace mcc
 {
-    class ASTLogicalAndExpression : ASTExpression
+    class ASTLogicalAndExpression : ASTAbstractExpression
     {
         public override void Parse(Parser parser)
         {

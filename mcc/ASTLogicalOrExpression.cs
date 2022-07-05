@@ -2,7 +2,7 @@
 
 namespace mcc
 {
-    class ASTLogicalOrExpression : ASTExpression    // = exp on website
+    class ASTLogicalOrExpression : ASTAbstractExpression
     {
         public override void Parse(Parser parser)
         {

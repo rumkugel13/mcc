@@ -2,7 +2,7 @@
 
 namespace mcc
 {
-    class ASTMultiplicativeExpression : ASTExpression   // = term on website
+    class ASTMultiplicativeExpression : ASTAbstractExpression   // = term on website
     {
         public override void Parse(Parser parser)
         {

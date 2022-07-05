@@ -4,6 +4,11 @@
       "commandName": "Project",
       "commandLineArgs": "return_2.c"
     },
+    "single": {
+      "commandName": "Project",
+      "commandLineArgs": "stage_4\\valid\\precedence_shift.c",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
     "stage1": {
       "commandName": "Project",
       "commandLineArgs": "-t stage_1",
@@ -19,14 +24,14 @@
       "commandLineArgs": "-t stage_3",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
-    "single": {
-      "commandName": "Project",
-      "commandLineArgs": "stage_4\\valid\\precedence_shift.c",
-      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
-    },
     "stage4": {
       "commandName": "Project",
       "commandLineArgs": "-t stage_4",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
+    "stage5": {
+      "commandName": "Project",
+      "commandLineArgs": "-t stage_5",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     }
   }

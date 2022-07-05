@@ -2,28 +2,57 @@
 
 namespace mcc
 {
-    abstract class ASTExpression : AST
+    class ASTExpression : ASTAbstractExpression
     {
-        public ASTExpression Expression;
-        public List<ASTBinaryOperation> BinaryOperations = new List<ASTBinaryOperation>();
+        ASTAbstractExpression Expression;
+        ASTIdentifier Identifier;
+
+        public override void Parse(Parser parser)
+        {
+            if (parser.Peek().Type == Token.TokenType.IDENTIFIER && parser.PeekNext() is Symbol symbol && symbol.Value == '=')
+            {
+                // assignment
+                Identifier = new ASTIdentifier();
+                Identifier.Parse(parser);
+
+                parser.ExpectSymbol('=');
+
+                Expression = new ASTExpression();
+                Expression.Parse(parser);
+
+            }
+            else
+            {
+                Expression = new ASTLogicalOrExpression();
+                Expression.Parse(parser);
+            }
+        }
 
         public override void Print(int indent)
         {
-            Expression.Print(indent);
-
-            for (int i = 0; i < BinaryOperations.Count; i++)
+            if (Identifier != null)
             {
-                BinaryOperations[i].Print(indent + 3);
+                Console.WriteLine(new string(' ', indent) + "ASSIGN");
+                Identifier.Print(indent + 3);
+                Expression.Print(indent + 3);
+            }
+            else
+            {
+                Expression.Print(indent);
             }
         }
 
         public override void GenerateX86(StringBuilder stringBuilder)
         {
-            Expression.GenerateX86(stringBuilder);
-
-            for (int i = 0; i < BinaryOperations.Count; i++)
+            if (Identifier != null)
             {
-                BinaryOperations[i].GenerateX86(stringBuilder);
+                //Console.WriteLine(new string(' ', indent) + "ASSIGN");
+                //Identifier.Print(indent + 3);
+                //Expression.Print(indent + 3);
+            }
+            else
+            {
+                Expression.GenerateX86(stringBuilder);
             }
         }
     }

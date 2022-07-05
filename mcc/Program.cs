@@ -82,13 +82,13 @@ namespace mcc
                 if (!silent) Console.Write("Running Lexer ... ");
                 var tokens = Lex(filePath);
                 if (!silent) Console.WriteLine("OK");
-                //if (!silent) PrintTokenList(tokens);
+                if (!silent) PrintTokenList(tokens);
 
                 //parser
                 if (!silent) Console.Write("Parsing Tokens ... ");
                 AST ast = Parse(tokens);
                 if (!silent) Console.WriteLine("OK");
-                //if (!silent) PrintAST(ast);
+                if (!silent) PrintAST(ast);
 
                 //generator
                 if (!silent) Console.Write("Generating Assembly ... ");
