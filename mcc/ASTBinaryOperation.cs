@@ -115,6 +115,9 @@ namespace mcc
                 case "<": stringBuilder.AppendLine("setl %al"); break;
                 case "<<": stringBuilder.AppendLine("sal %rcx, %rax"); break;
                 case ">>": stringBuilder.AppendLine("sar %rcx, %rax"); break;
+                case "&": stringBuilder.AppendLine("and %rcx, %rax"); break;
+                case "|": stringBuilder.AppendLine("or %rcx, %rax"); break;
+                case "^": stringBuilder.AppendLine("xor %rcx, %rax"); break;
                 default:
                     break;
             }

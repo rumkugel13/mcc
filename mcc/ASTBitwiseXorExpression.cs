@@ -2,17 +2,17 @@
 
 namespace mcc
 {
-    class ASTLogicalAndExpression : ASTExpression
+    class ASTBitwiseXorExpression : ASTExpression
     {
         public override void Parse(Parser parser)
         {
-            Expression = new ASTBitwiseOrExpression();
+            Expression = new ASTBitwiseAndExpression();
             Expression.Parse(parser);
 
             Token peek = parser.Peek();
-            while ((peek is Symbol2 && (peek as Symbol2).Value == "&&"))
+            while ((peek is Symbol && (peek as Symbol).Value == '^'))
             {
-                ASTBinaryOperation binaryOperation = new ASTBinaryOperation(new ASTBitwiseOrExpression());
+                ASTBinaryOperation binaryOperation = new ASTBinaryOperation(new ASTBitwiseAndExpression());
                 binaryOperation.Parse(parser);
                 BinaryOperations.Add(binaryOperation);
 
