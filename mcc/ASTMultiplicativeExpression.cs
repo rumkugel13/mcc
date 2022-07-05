@@ -4,13 +4,13 @@ namespace mcc
 {
     class ASTMultiplicativeExpression : ASTExpression   // = term on website
     {
-        ASTFactor Factor;
-        List<ASTBinaryOperation> BinaryOperations = new List<ASTBinaryOperation>();
+        //ASTFactor Factor;
+        //List<ASTBinaryOperation> BinaryOperations = new List<ASTBinaryOperation>();
 
         public override void Parse(Parser parser)
         {
-            Factor = new ASTFactor();
-            Factor.Parse(parser);
+            Expression = new ASTFactor();
+            Expression.Parse(parser);
 
             Token peek = parser.Peek();
             while ((peek is Symbol && (peek as Symbol).Value == '*') || (peek is Symbol && (peek as Symbol).Value == '/') || (peek is Symbol && (peek as Symbol).Value == '%'))
@@ -23,24 +23,24 @@ namespace mcc
             }
         }
 
-        public override void Print(int indent)
-        {
-            Factor.Print(indent);
+        //public override void Print(int indent)
+        //{
+        //    Factor.Print(indent);
 
-            for (int i = 0; i < BinaryOperations.Count; i++)
-            {
-                BinaryOperations[i].Print(indent + 3);
-            }
-        }
+        //    for (int i = 0; i < BinaryOperations.Count; i++)
+        //    {
+        //        BinaryOperations[i].Print(indent + 3);
+        //    }
+        //}
 
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-            Factor.GenerateX86(stringBuilder);
+        //public override void GenerateX86(StringBuilder stringBuilder)
+        //{
+        //    Factor.GenerateX86(stringBuilder);
 
-            for (int i = 0; i < BinaryOperations.Count; i++)
-            {
-                BinaryOperations[i].GenerateX86(stringBuilder);
-            }
-        }
+        //    for (int i = 0; i < BinaryOperations.Count; i++)
+        //    {
+        //        BinaryOperations[i].GenerateX86(stringBuilder);
+        //    }
+        //}
     }
 }

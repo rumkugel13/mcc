@@ -2,20 +2,20 @@
 
 namespace mcc
 {
-    class ASTLogicalAndExpression : ASTExpression
+    class ASTShiftExpression : ASTExpression
     {
-        //ASTEqualityExpression Expression;
+        //ASTMultiplicativeExpression Expression;
         //List<ASTBinaryOperation> BinaryOperations = new List<ASTBinaryOperation>();
 
         public override void Parse(Parser parser)
         {
-            Expression = new ASTEqualityExpression();
+            Expression = new ASTAdditiveExpression();
             Expression.Parse(parser);
 
             Token peek = parser.Peek();
-            while ((peek is Symbol2 && (peek as Symbol2).Value == "&&"))
+            while ((peek is Symbol2 && (peek as Symbol2).Value == "<<") || (peek is Symbol2 && (peek as Symbol2).Value == ">>"))
             {
-                ASTBinaryOperation binaryOperation = new ASTBinaryOperation(new ASTEqualityExpression());
+                ASTBinaryOperation binaryOperation = new ASTBinaryOperation(new ASTAdditiveExpression());
                 binaryOperation.Parse(parser);
                 BinaryOperations.Add(binaryOperation);
 

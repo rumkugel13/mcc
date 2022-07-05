@@ -20,7 +20,7 @@ namespace mcc
             {
                 if (!Symbol.Binary.Contains(symbol.Value))
                 {
-                    parser.Fail(Token.TokenType.SYMBOL);
+                    parser.Fail(Token.TokenType.SYMBOL, symbol.Value.ToString());
                 }
                 else
                 {
@@ -31,7 +31,7 @@ namespace mcc
             {
                 if (!Symbol2.Dual.Contains(symbol2.Value))
                 {
-                    parser.Fail(Token.TokenType.SYMBOL2);
+                    parser.Fail(Token.TokenType.SYMBOL2, symbol2.Value);
                 }
                 else
                 {
@@ -113,6 +113,8 @@ namespace mcc
                 case ">": stringBuilder.AppendLine("setg %al"); break;
                 case "<=": stringBuilder.AppendLine("setle %al"); break;
                 case "<": stringBuilder.AppendLine("setl %al"); break;
+                case "<<": stringBuilder.AppendLine("sal %rcx, %rax"); break;
+                case ">>": stringBuilder.AppendLine("sar %rcx, %rax"); break;
                 default:
                     break;
             }

@@ -82,6 +82,8 @@
             "!=",
             "<=",
             ">=",
+            "<<",
+            ">>",
         };
 
         public static HashSet<string> Comparison = new HashSet<string>

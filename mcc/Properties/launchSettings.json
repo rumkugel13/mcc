@@ -21,7 +21,7 @@
     },
     "single": {
       "commandName": "Project",
-      "commandLineArgs": "stage_4\\valid\\precedence.c",
+      "commandLineArgs": "stage_4\\valid\\precedence_shift.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage4": {
