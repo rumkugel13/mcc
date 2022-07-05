@@ -10,7 +10,7 @@ namespace mcc
 
         static void Main(string[] args)
         {
-            if (!silent) Console.WriteLine("mcc v0.3");
+            if (!silent) Console.WriteLine("mcc v0.4");
 
             switch (args.Length)
             {
@@ -82,19 +82,19 @@ namespace mcc
                 if (!silent) Console.Write("Running Lexer ... ");
                 var tokens = Lex(filePath);
                 if (!silent) Console.WriteLine("OK");
-                //PrintTokenList(tokens);
+                //if (!silent) PrintTokenList(tokens);
 
                 //parser
                 if (!silent) Console.Write("Parsing Tokens ... ");
                 AST ast = Parse(tokens);
                 if (!silent) Console.WriteLine("OK");
-                //PrintAST(ast);
+                //if (!silent) PrintAST(ast);
 
                 //generator
                 if (!silent) Console.Write("Generating Assembly ... ");
                 string assembly = Generate(ast);
                 if (!silent) Console.WriteLine("OK");
-                //PrintAssembly(assembly);
+                //if (!silent) PrintAssembly(assembly);
 
                 //writer
                 if (!silent) Console.Write("Writing Assembly File ... ");
@@ -193,14 +193,7 @@ namespace mcc
         {
             foreach (Token token in tokens)
             {
-                switch (token)
-                {
-                    case Symbol symbol: Console.WriteLine(token.Type + " " + symbol.Value); break;
-                    case Integer integer: Console.WriteLine(token.Type + " " + integer.Value); break;
-                    case Identifier identifier: Console.WriteLine(token.Type + " " + identifier.Value); break;
-                    case Keyword keyword: Console.WriteLine(token.Type + " " + keyword.Value); break;
-                    default: Console.WriteLine(token.Type); break;
-                }              
+                Console.WriteLine(token.ToString());      
             }
         }
 
@@ -222,26 +215,7 @@ namespace mcc
             while (tokenizer.HasMoreTokens())
             {
                 tokenizer.Advance();
-
-                string currentToken = tokenizer.CurrentToken();
-                if (string.IsNullOrEmpty(currentToken))
-                    break;
-
-                switch (tokenizer.CurrentType())
-                {
-                    case Token.TokenType.KEYWORD:
-                        tokens.Add(new Keyword(currentToken));
-                        break;
-                    case Token.TokenType.SYMBOL:
-                        tokens.Add(new Symbol(currentToken[0]));
-                        break;
-                    case Token.TokenType.IDENTIFIER:
-                        tokens.Add(new Identifier(currentToken));
-                        break;
-                    case Token.TokenType.INTEGER:
-                        tokens.Add(new Integer(int.Parse(currentToken)));
-                        break;
-                }
+                tokens.Add(tokenizer.GetCurrentToken());
             }
 
             return tokens;

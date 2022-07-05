@@ -4,11 +4,11 @@ namespace mcc
 {
     class ASTStatement : AST
     {
-        public ASTExpression Expression;
+        public ASTLogicalOrExpression Expression;
 
         public ASTStatement()
         {
-            Expression = new ASTExpression();
+            Expression = new ASTLogicalOrExpression();
         }
 
         public override void Parse(Parser parser)

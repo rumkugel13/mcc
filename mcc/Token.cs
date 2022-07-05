@@ -2,6 +2,9 @@
 {
     class Keyword : Token
     {
+        public string Value = "";
+        public KeywordTypes KeywordType;
+
         public Keyword(string keyword)
         {
             Type = TokenType.KEYWORD;
@@ -20,32 +23,87 @@
             INT,
             RETURN,
         }
-        public string Value = "";
-        public KeywordTypes KeywordType;
+
+        public override string ToString()
+        {
+            return base.ToString() + " " + Value;
+        }
     }
 
     class Identifier : Token
     {
+        public static string IdentifierRegEx = @"[a-zA-Z]\w*$";
+        public string Value = "";
+
         public Identifier(string name)
         {
             Type = TokenType.IDENTIFIER;
             Value = name;
         }
 
-        public static string IdentifierRegEx = @"[a-zA-Z]\w*$";
-        public string Value = "";
+        public override string ToString()
+        {
+            return base.ToString() + " " + Value;
+        }
     }
 
     class Integer : Token
     {
+        public static string IntegerRegEx = "[0-9]+";
+        public int Value;
+
         public Integer(int number)
         {
             Type = TokenType.INTEGER;
             Value = number;
         }
 
-        public static string IntegerRegEx = "[0-9]+";
-        public int Value;
+        public override string ToString()
+        {
+            return base.ToString() + " " + Value;
+        }
+    }
+
+    class Symbol2 : Token
+    {
+        public string Value;
+
+        public Symbol2(string symbol)
+        {
+            Type = TokenType.SYMBOL2;
+            Value = symbol;
+        }
+
+        public static HashSet<string> Dual = new HashSet<string>
+        {
+            "&&",
+            "||",
+            "==",
+            "!=",
+            "<=",
+            ">=",
+        };
+
+        public static HashSet<string> Comparison = new HashSet<string>
+        {
+            "==",
+            "!=",
+            "<=",
+            ">=",
+            "<",
+            ">",
+        };
+
+        public static HashSet<string> ShortCircuit = new HashSet<string>
+        {
+            "&&",
+            "||",
+        };
+
+        public override string ToString()
+        {
+            return base.ToString() + " " + Value;
+        }
     }
 
     class Symbol : Token
@@ -91,7 +149,14 @@
             '/',
             '+',
             '-',
+            '<',
+            '>',
         };
+
+        public override string ToString()
+        {
+            return base.ToString() + " " + Value;
+        }
     }
 
     abstract class Token
@@ -105,6 +170,11 @@
             SYMBOL2,
             IDENTIFIER,
             INTEGER,
+        }
+
+        public override string ToString()
+        {
+            return Type.ToString();
         }
     }
 }

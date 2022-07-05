@@ -38,7 +38,26 @@ namespace mcc
             {
                 // symbol
                 streamIndex++;
-                current = currentChar.ToString();
+
+                if (streamIndex < stream.Length && Symbol.Symbols.Contains(stream[streamIndex]))
+                {
+                    // dual symbol
+                    string temp = stream.Substring(streamIndex - 1, 2);
+
+                    if (Symbol2.Dual.Contains(temp))
+                    {
+                        streamIndex++;
+                        current = temp;
+                    }
+                    else
+                    {
+                        current = currentChar.ToString();
+                    }
+                }
+                else
+                {
+                    current = currentChar.ToString();
+                }
             }
             else if (char.IsDigit(currentChar))
             {
@@ -78,14 +97,27 @@ namespace mcc
             return streamIndex < stream.Length;
         }
 
-        public string CurrentToken()
+        public Token GetCurrentToken()
         {
-            return current;
+            if (string.IsNullOrEmpty(current))
+                throw new InvalidDataException("Fail: Unkown Token");
+
+            switch (CurrentType())
+            {
+                case Token.TokenType.KEYWORD: return new Keyword(current);
+                case Token.TokenType.SYMBOL: return new Symbol(current[0]);
+                case Token.TokenType.SYMBOL2: return new Symbol2(current);
+                case Token.TokenType.IDENTIFIER: return new Identifier(current);
+                case Token.TokenType.INTEGER: return new Integer(int.Parse(current));
+                default: throw new InvalidDataException("Fail: Unkown Error");
+            }
         }
 
         public Token.TokenType CurrentType()
         {
-            if (Symbol.Symbols.Contains(current[0]))
+            if (Symbol2.Dual.Contains(current))
+                return Token.TokenType.SYMBOL2;
+            else if (Symbol.Symbols.Contains(current[0]))
                 return Token.TokenType.SYMBOL;
             else if (Keyword.Keywords.ContainsKey(current))
                 return Token.TokenType.KEYWORD;

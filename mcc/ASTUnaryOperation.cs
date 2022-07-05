@@ -31,23 +31,16 @@ namespace mcc
 
         public override void GenerateX86(StringBuilder stringBuilder)
         {
+            Factor.GenerateX86(stringBuilder);
+
             switch (Value)
             {
-                case '-':
-                    Factor.GenerateX86(stringBuilder);
-                    stringBuilder.AppendLine("negq %rax");
-                    break;
-                case '~':
-                    Factor.GenerateX86(stringBuilder);
-                    stringBuilder.AppendLine("notq %rax");
-                    break;
+                case '-': stringBuilder.AppendLine("negq %rax"); break;
+                case '~': stringBuilder.AppendLine("notq %rax"); break;
                 case '!':
-                    Factor.GenerateX86(stringBuilder);
                     stringBuilder.AppendLine("cmpq $0, %rax");
                     stringBuilder.AppendLine("movq $0, %rax");
                     stringBuilder.AppendLine("sete %al");
-                    break;
-                default:
                     break;
             }
         }

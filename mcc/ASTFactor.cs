@@ -2,9 +2,9 @@
 
 namespace mcc
 {
-    class ASTFactor : AST
+    class ASTFactor : ASTExpression
     {
-        ASTExpression Expression;
+        ASTLogicalOrExpression Expression;
         ASTUnaryOperation UnaryOperation;
         ASTInteger Integer;
 
@@ -18,7 +18,7 @@ namespace mcc
                 if (next is not Symbol || (next as Symbol).Value != '(')
                     parser.Fail(Token.TokenType.SYMBOL, "(");
 
-                Expression = new ASTExpression();
+                Expression = new ASTLogicalOrExpression();
                 Expression.Parse(parser);
 
                 next = parser.Next();
