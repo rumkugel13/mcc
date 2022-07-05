@@ -10,7 +10,7 @@ namespace mcc
 
         static void Main(string[] args)
         {
-            if (!silent) Console.WriteLine("mcc v0.4.2");
+            if (!silent) Console.WriteLine("mcc v0.4.3");
 
             switch (args.Length)
             {
