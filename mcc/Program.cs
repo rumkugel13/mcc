@@ -7,15 +7,14 @@ namespace mcc
     internal class Program
     {
         static bool silent = true;
+        static string VersionString = "mcc v0.5";
 
         static void Main(string[] args)
         {
-            if (!silent) Console.WriteLine("mcc v0.5");
-
             switch (args.Length)
             {
                 case 0:
-                    Console.WriteLine("Missing parameter.");
+                    PrintUsage();
                     return;
                 case 1:
                     if (!args[0].StartsWith('-'))
@@ -29,6 +28,10 @@ namespace mcc
                         }
 
                         Compile(filePath);
+                    }
+                    else if (args[0].Equals("-v"))
+                    {
+                        Console.WriteLine(VersionString);
                     }
                     break;
                 case 2:
@@ -71,6 +74,20 @@ namespace mcc
 
                     break;
             }
+        }
+
+        static void PrintUsage()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("Usage:");
+            builder.AppendLine("   mcc <c_file>");
+            builder.AppendLine("   mcc -v");
+            builder.AppendLine("   mcc -t <stage_folder>");
+            builder.AppendLine("Options:");
+            builder.AppendLine("   <c_file>             Compile c-file");
+            builder.AppendLine("   -v                   Print Version");
+            builder.AppendLine("   -t <stage_folder>    Test c-files in stage folder");
+            Console.Write(builder.ToString());
         }
 
         static bool Compile(string filePath)
