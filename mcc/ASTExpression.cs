@@ -23,7 +23,7 @@ namespace mcc
             }
             else
             {
-                Expression = new ASTLogicalOrExpression();
+                Expression = new ASTConditionalExpression();
                 Expression.Parse(parser);
             }
         }
