@@ -130,7 +130,7 @@ namespace mcc
             if (Value == "||")
             {
                 generator.Instruction("je _label" + labelCounter);
-                generator.Instruction("movq $1, %rax");
+                generator.IntegerConstant(1);
             }
             else if (Value == "&&")
             {
@@ -141,7 +141,7 @@ namespace mcc
             generator.Instruction("_label" + labelCounter + ":");
             Expression.GenerateX86(generator);
             generator.Instruction("cmpq $0, %rax");
-            generator.Instruction("movq $0, %rax");
+            generator.IntegerConstant(0);
             generator.Instruction("setne %al");
             generator.Instruction("_end" + labelCounter + ":");
         }
@@ -161,37 +161,11 @@ namespace mcc
 
             if (Symbol2.Comparison.Contains(Value))
             {
-                generator.Instruction("cmpq %rcx, %rax");
-                generator.Instruction("movq $0, %rax");
+                generator.ComparisonOperation(Value);
             }
-
-            switch (Value)
+            else
             {
-                case "+": generator.Instruction("addq %rcx, %rax"); break;
-                case "*": generator.Instruction("imulq %rcx, %rax"); break;
-                case "-": generator.Instruction("subq %rcx, %rax"); break;
-                case "/":
-                    generator.Instruction("cdq");
-                    generator.Instruction("idivq %rcx");
-                    break;
-                case "%":
-                    generator.Instruction("cdq");
-                    generator.Instruction("idivq %rcx");
-                    generator.Instruction("movq %rdx, %rax");
-                    break;
-                case "==": generator.Instruction("sete %al"); break;
-                case "!=": generator.Instruction("setne %al"); break;
-                case ">=": generator.Instruction("setge %al"); break;
-                case ">": generator.Instruction("setg %al"); break;
-                case "<=": generator.Instruction("setle %al"); break;
-                case "<": generator.Instruction("setl %al"); break;
-                case "<<": generator.Instruction("sal %rcx, %rax"); break;
-                case ">>": generator.Instruction("sar %rcx, %rax"); break;
-                case "&": generator.Instruction("and %rcx, %rax"); break;
-                case "|": generator.Instruction("or %rcx, %rax"); break;
-                case "^": generator.Instruction("xor %rcx, %rax"); break;
-                default:
-                    break;
+                generator.BinaryOperation(Value);
             }
         }
     }

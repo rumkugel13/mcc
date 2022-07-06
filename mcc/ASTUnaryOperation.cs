@@ -49,16 +49,7 @@ namespace mcc
         {
             Factor.GenerateX86(generator);
 
-            switch (Value)
-            {
-                case '-': generator.Instruction("negq %rax"); break;
-                case '~': generator.Instruction("notq %rax"); break;
-                case '!':
-                    generator.Instruction("cmpq $0, %rax");
-                    generator.Instruction("movq $0, %rax");
-                    generator.Instruction("sete %al");
-                    break;
-            }
+            generator.UnaryOperation(Value);
         }
     }
 }
