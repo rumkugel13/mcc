@@ -61,8 +61,12 @@ namespace mcc
             generator.Instruction(".globl " + Identifier.Value);
             generator.FunctionPrologue(Identifier.Value);
 
+            generator.StartBlock();
+
             foreach (var statement in BlockItemList)
                 statement.GenerateX86(generator);
+
+            generator.EndBlock();
 
             if (!hasReturn)
             {

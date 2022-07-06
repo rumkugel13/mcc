@@ -133,8 +133,12 @@ namespace mcc
             }
             else if (BlockItemList.Count > 0)
             {
+                generator.StartBlock();
+
                 foreach (var statement in BlockItemList)
                     statement.GenerateX86(generator);
+
+                generator.EndBlock();
             }
             else
             {

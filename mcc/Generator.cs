@@ -5,10 +5,14 @@ namespace mcc
     class Generator
     {
         StringBuilder sb = new StringBuilder();
-        Dictionary<string, int> varMap = new Dictionary<string, int>();
+
         const int varSize = 8; // 32bit = 4, 64bit = 8
         int varOffset = -varSize;
         int labelCounter = 0;
+
+        int currentScope = -1;
+        List<Dictionary<string, int>> varMapList = new List<Dictionary<string, int>>();
+        List<HashSet<string>> varScopeList = new List<HashSet<string>>();
 
         public void Label(string label)
         {
@@ -106,9 +110,32 @@ namespace mcc
             }
         }
 
+        public void StartBlock()
+        {
+            currentScope++;
+            Dictionary<string, int> varMap;
+            HashSet<string> varScope = new HashSet<string>();
+
+            varMap = currentScope > 0 ? new Dictionary<string, int>(varMapList[currentScope - 1]) : new Dictionary<string, int>();
+
+            varMapList.Add(varMap);
+            varScopeList.Add(varScope);
+        }
+
+        public void EndBlock()
+        {
+            int newVarCount = varScopeList[currentScope].Count;
+            varMapList.RemoveAt(currentScope);
+            varScopeList.RemoveAt(currentScope);
+
+            varOffset += newVarCount * varSize;
+            Instruction($"addq ${newVarCount * varSize}, %rsp"); // pop off variables from current scope
+            currentScope--;
+        }
+
         public void ReferenceVariable(string variable)
         {
-            if (varMap.TryGetValue(variable, out int offset))
+            if (varMapList[currentScope].TryGetValue(variable, out int offset))
             {
                 Instruction("movq " + offset + "(%rbp), %rax");
             }
@@ -118,7 +145,7 @@ namespace mcc
 
         public void AssignVariable(string variable)
         {
-            if (varMap.TryGetValue(variable, out int offset))
+            if (varMapList[currentScope].TryGetValue(variable, out int offset))
             {
                 Instruction("movq %rax, " + offset + "(%rbp)");
             }
@@ -128,11 +155,12 @@ namespace mcc
 
         public void DeclareVariable(string variable)
         {
-            if (varMap.ContainsKey(variable))
+            if (varScopeList[currentScope].Contains(variable))
                 throw new ASTVariableException("Trying to declare existing Variable: " + variable);
 
             Instruction("pushq %rax"); // push current value of variable to stack
-            varMap.Add(variable, varOffset);
+            varMapList[currentScope][variable] = varOffset; // add or update variable offset
+            varScopeList[currentScope].Add(variable);
             varOffset -= varSize;
         }
 
