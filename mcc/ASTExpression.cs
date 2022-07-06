@@ -54,7 +54,7 @@ namespace mcc
                     stringBuilder.AppendLine("movq %rax, " + offset + "(%rbp)");
                 }
                 else
-                    throw new InvalidOperationException("Trying to assign to non existing Variable: " + Identifier.Value);
+                    throw new ASTVariableException("Trying to assign to non existing Variable: " + Identifier.Value);
             }
             else
             {

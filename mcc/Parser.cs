@@ -87,7 +87,7 @@
         public void Fail(string message)
         {
             failed = true;
-            throw new InvalidDataException(message + " at " + index);
+            throw new UnexpectedValueException(message + " at " + index);
         }
 
         public void Fail(Token.TokenType expected)

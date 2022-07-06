@@ -79,7 +79,7 @@ namespace mcc
             {
                 // declare variable
                 if (AST.VariableMap.ContainsKey(Identifier.Value))
-                    throw new InvalidOperationException("Trying to declare existing Variable: " + Identifier.Value);
+                    throw new ASTVariableException("Trying to declare existing Variable: " + Identifier.Value);
 
                 if (Expression != null)
                 {

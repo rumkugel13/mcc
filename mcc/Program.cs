@@ -178,12 +178,17 @@ namespace mcc
                     if (!silent) Console.WriteLine(process.ExitCode == 0 ? "OK" : "FAIL");
                 };
             }
-            catch (InvalidDataException exception)
+            catch (UnknownTokenException exception)
             {
                 Console.WriteLine(exception.Message);
                 finished = false;
             }
-            catch (InvalidOperationException exception)
+            catch (UnexpectedValueException exception)
+            {
+                Console.WriteLine(exception.Message);
+                finished = false;
+            }
+            catch (ASTVariableException exception)
             {
                 Console.WriteLine(exception.Message);
                 finished = false;

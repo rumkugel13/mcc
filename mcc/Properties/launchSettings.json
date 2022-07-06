@@ -2,11 +2,11 @@
   "profiles": {
     "mcc": {
       "commandName": "Project",
-      "commandLineArgs": "return_2.c"
+      "commandLineArgs": "-d return_2.c"
     },
     "single": {
       "commandName": "Project",
-      "commandLineArgs": "stage_5/valid/multiple_vars.c",
+      "commandLineArgs": "-d stage_5/valid/multiple_vars.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {

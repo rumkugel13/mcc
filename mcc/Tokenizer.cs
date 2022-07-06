@@ -88,7 +88,7 @@ namespace mcc
             }
             else
             {
-                throw new InvalidDataException("Fail: Unkown Character or Symbol: " + currentChar);
+                throw new UnknownTokenException("Fail: Unkown Character or Symbol: " + currentChar);
             }
         }
 
@@ -100,7 +100,7 @@ namespace mcc
         public Token GetCurrentToken()
         {
             if (string.IsNullOrEmpty(current))
-                throw new InvalidDataException("Fail: Unkown Token");
+                throw new UnknownTokenException("Fail: Unkown Token");
 
             switch (CurrentType())
             {
@@ -109,7 +109,7 @@ namespace mcc
                 case Token.TokenType.SYMBOL2: return new Symbol2(current);
                 case Token.TokenType.IDENTIFIER: return new Identifier(current);
                 case Token.TokenType.INTEGER: return new Integer(int.Parse(current));
-                default: throw new InvalidDataException("Fail: Unkown Error");
+                default: throw new UnknownTokenException("Fail: Unkown Error");
             }
         }
 

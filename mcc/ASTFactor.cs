@@ -91,7 +91,7 @@ namespace mcc
                     stringBuilder.AppendLine("movq " + offset + "(%rbp), %rax");
                 }
                 else
-                    throw new InvalidOperationException("Trying to reference a non existing Variable: " + Identifier.Value);
+                    throw new ASTVariableException("Trying to reference a non existing Variable: " + Identifier.Value);
             }
         }
     }
