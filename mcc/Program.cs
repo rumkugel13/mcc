@@ -102,8 +102,8 @@ namespace mcc
             string validPath = Path.Combine(stage, "valid");
             string invalidPath = Path.Combine(stage, "invalid");
 
-            string[] validFiles = Directory.GetFiles(validPath).Where((a) => a.EndsWith(".c")).ToArray();
-            string[] invalidFiles = Directory.GetFiles(invalidPath).Where((a) => a.EndsWith(".c")).ToArray();
+            string[] validFiles = Directory.GetFiles(validPath, "*.c", SearchOption.AllDirectories);
+            string[] invalidFiles = Directory.GetFiles(invalidPath, "*.c", SearchOption.AllDirectories);
 
             int validCount = 0;
             foreach (string validFile in validFiles)

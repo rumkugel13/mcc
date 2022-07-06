@@ -16,12 +16,16 @@
         {
             {"int", KeywordTypes.INT },
             {"return", KeywordTypes.RETURN },
+            {"if", KeywordTypes.IF },
+            {"else", KeywordTypes.ELSE },
         };
 
         public enum KeywordTypes
         {
             INT,
             RETURN,
+            IF,
+            ELSE
         }
 
         public override string ToString()
@@ -138,6 +142,8 @@
             '>',
             '%',
             '^',
+            '?',
+            ':',
         };
 
         public static HashSet<char> Unary = new HashSet<char>
