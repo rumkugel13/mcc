@@ -61,5 +61,19 @@ namespace mcc
                 Expression.GenerateX86(stringBuilder);
             }
         }
+
+        public override void GenerateX86(Generator generator)
+        {
+            if (Identifier != null)
+            {
+                Expression.GenerateX86(generator);
+
+                generator.AssignVariable(Identifier.Value);
+            }
+            else
+            {
+                Expression.GenerateX86(generator);
+            }
+        }
     }
 }

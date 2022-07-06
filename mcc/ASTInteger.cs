@@ -29,5 +29,10 @@ namespace mcc
         {
             stringBuilder.AppendLine("movq $" + Value + ", %rax");
         }
+
+        public override void GenerateX86(Generator generator)
+        {
+            generator.IntegerConstant(Value);
+        }
     }
 }

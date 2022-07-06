@@ -6,6 +6,7 @@ namespace mcc
     {
         public ASTIdentifier Identifier;
         public List<ASTStatement> StatementList = new List<ASTStatement>();
+        bool hasReturn;
 
         public override void Parse(Parser parser)
         {
@@ -32,7 +33,7 @@ namespace mcc
             {
                 if (parser.PeekKeyword(Keyword.KeywordTypes.RETURN))
                 {
-                    FunctionReturn.Add(Identifier.Value);
+                    hasReturn = true;
                 }
 
                 ASTStatement statement = new ASTStatement();
@@ -67,7 +68,7 @@ namespace mcc
             foreach (var statement in StatementList)
                 statement.GenerateX86(stringBuilder);
 
-            if (!FunctionReturn.Contains(Identifier.Value))
+            if (!hasReturn)
             {  
                 // return 0 if no return statement found
                 stringBuilder.AppendLine("movq $0, %rax");
@@ -76,6 +77,22 @@ namespace mcc
                 stringBuilder.AppendLine("pop %rbp");
 
                 stringBuilder.AppendLine("ret");
+            }
+        }
+
+        public override void GenerateX86(Generator generator)
+        {
+            generator.Instruction(".globl " + Identifier.Value);
+            generator.FunctionPrologue(Identifier.Value);
+
+            foreach (var statement in StatementList)
+                statement.GenerateX86(generator);
+
+            if (!hasReturn)
+            {
+                // return 0 if no return statement found
+                generator.IntegerConstant(0);
+                generator.FunctionEpilogue();
             }
         }
     }

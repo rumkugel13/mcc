@@ -25,5 +25,10 @@ namespace mcc
         {
             Function.GenerateX86(stringBuilder);
         }
+
+        public override void GenerateX86(Generator generator)
+        {
+            Function.GenerateX86(generator);
+        }
     }
 }

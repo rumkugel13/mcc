@@ -107,5 +107,31 @@ namespace mcc
                 Expression.GenerateX86(stringBuilder);
             }
         }
+
+        public override void GenerateX86(Generator generator)
+        {
+            if (Identifier != null)
+            {
+                if (Expression != null)
+                {
+                    Expression.GenerateX86(generator);
+                }
+                else
+                {
+                    generator.IntegerConstant(0); // no value given, assign 0
+                }
+
+                generator.DeclareVariable(Identifier.Value);
+            }
+            else if (isReturn)
+            {
+                Expression.GenerateX86(generator);
+                generator.FunctionEpilogue();
+            }
+            else
+            {
+                Expression.GenerateX86(generator);
+            }
+        }
     }
 }

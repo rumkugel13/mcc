@@ -122,5 +122,77 @@ namespace mcc
                     break;
             }
         }
+
+        private void GenerateX86ShortCircuit(Generator generator)
+        {
+            int labelCounter = LabelCounter++;
+            generator.Instruction("cmpq $0, %rax");
+            if (Value == "||")
+            {
+                generator.Instruction("je _label" + labelCounter);
+                generator.Instruction("movq $1, %rax");
+            }
+            else if (Value == "&&")
+            {
+                generator.Instruction("jne _label" + labelCounter);
+            }
+
+            generator.Instruction("jmp _end" + labelCounter);
+            generator.Instruction("_label" + labelCounter + ":");
+            Expression.GenerateX86(generator);
+            generator.Instruction("cmpq $0, %rax");
+            generator.Instruction("movq $0, %rax");
+            generator.Instruction("setne %al");
+            generator.Instruction("_end" + labelCounter + ":");
+        }
+
+        public override void GenerateX86(Generator generator)
+        {
+            if (Symbol2.ShortCircuit.Contains(Value))
+            {
+                GenerateX86ShortCircuit(generator);
+                return;
+            }
+
+            generator.Instruction("pushq %rax");
+            Expression.GenerateX86(generator);
+            generator.Instruction("movq %rax, %rcx");    // need to switch src and dest for - and /
+            generator.Instruction("popq %rax");
+
+            if (Symbol2.Comparison.Contains(Value))
+            {
+                generator.Instruction("cmpq %rcx, %rax");
+                generator.Instruction("movq $0, %rax");
+            }
+
+            switch (Value)
+            {
+                case "+": generator.Instruction("addq %rcx, %rax"); break;
+                case "*": generator.Instruction("imulq %rcx, %rax"); break;
+                case "-": generator.Instruction("subq %rcx, %rax"); break;
+                case "/":
+                    generator.Instruction("cdq");
+                    generator.Instruction("idivq %rcx");
+                    break;
+                case "%":
+                    generator.Instruction("cdq");
+                    generator.Instruction("idivq %rcx");
+                    generator.Instruction("movq %rdx, %rax");
+                    break;
+                case "==": generator.Instruction("sete %al"); break;
+                case "!=": generator.Instruction("setne %al"); break;
+                case ">=": generator.Instruction("setge %al"); break;
+                case ">": generator.Instruction("setg %al"); break;
+                case "<=": generator.Instruction("setle %al"); break;
+                case "<": generator.Instruction("setl %al"); break;
+                case "<<": generator.Instruction("sal %rcx, %rax"); break;
+                case ">>": generator.Instruction("sar %rcx, %rax"); break;
+                case "&": generator.Instruction("and %rcx, %rax"); break;
+                case "|": generator.Instruction("or %rcx, %rax"); break;
+                case "^": generator.Instruction("xor %rcx, %rax"); break;
+                default:
+                    break;
+            }
+        }
     }
 }

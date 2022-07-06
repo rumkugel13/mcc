@@ -6,7 +6,7 @@
     },
     "single": {
       "commandName": "Project",
-      "commandLineArgs": "-d stage_5/valid/missing_return.c",
+      "commandLineArgs": "-d stage_5/valid/multiple_vars.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {

@@ -24,10 +24,5 @@ namespace mcc
         {
             Console.WriteLine(new String(' ', indent) + "ID<" + Value + ">");
         }
-
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-
-        }
     }
 }
