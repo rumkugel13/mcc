@@ -38,6 +38,7 @@ namespace mcc
                 case 2:
                     if (args[0].Equals("-t"))
                     {
+                        silent = false;
                         string stage = args[1];
                         if (!Directory.Exists(stage))
                         {
@@ -111,6 +112,7 @@ namespace mcc
                     validCount++;
                 AST.VariableMap.Clear();
                 AST.StackIndex = -AST.WordSize;
+                File.Delete(validFile.Replace(".c", ".exe"));
             }
 
             int invalidCount = 0;
@@ -120,6 +122,7 @@ namespace mcc
                     invalidCount++;
                 AST.VariableMap.Clear();
                 AST.StackIndex = -AST.WordSize;
+                File.Delete(invalidFile.Replace(".c", ".exe"));
             }
 
             Console.WriteLine($"Valid: {validCount}/{validFiles.Count()}, Invalid: {invalidCount}/{invalidFiles.Count()}");
