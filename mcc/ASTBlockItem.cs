@@ -33,18 +33,6 @@ namespace mcc
             }
         }
 
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-            if (Declaration != null)
-            {
-                Declaration.GenerateX86(stringBuilder);
-            }
-            else
-            {
-                Statement.GenerateX86(stringBuilder);
-            }
-        }
-
         public override void GenerateX86(Generator generator)
         {
             if (Declaration != null)

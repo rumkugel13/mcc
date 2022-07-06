@@ -29,22 +29,6 @@ namespace mcc
             Factor.Print(indent + 3);
         }
 
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-            Factor.GenerateX86(stringBuilder);
-
-            switch (Value)
-            {
-                case '-': stringBuilder.AppendLine("negq %rax"); break;
-                case '~': stringBuilder.AppendLine("notq %rax"); break;
-                case '!':
-                    stringBuilder.AppendLine("cmpq $0, %rax");
-                    stringBuilder.AppendLine("movq $0, %rax");
-                    stringBuilder.AppendLine("sete %al");
-                    break;
-            }
-        }
-
         public override void GenerateX86(Generator generator)
         {
             Factor.GenerateX86(generator);

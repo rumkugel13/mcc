@@ -21,11 +21,6 @@ namespace mcc
             Function.Print(0);
         }
 
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-            Function.GenerateX86(stringBuilder);
-        }
-
         public override void GenerateX86(Generator generator)
         {
             Function.GenerateX86(generator);

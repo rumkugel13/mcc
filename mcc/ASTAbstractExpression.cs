@@ -17,16 +17,6 @@ namespace mcc
             }
         }
 
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-            Expression.GenerateX86(stringBuilder);
-
-            for (int i = 0; i < BinaryOperations.Count; i++)
-            {
-                BinaryOperations[i].GenerateX86(stringBuilder);
-            }
-        }
-
         public override void GenerateX86(Generator generator)
         {
             Expression.GenerateX86(generator);

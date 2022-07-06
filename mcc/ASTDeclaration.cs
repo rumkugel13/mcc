@@ -39,25 +39,6 @@ namespace mcc
             }
         }
 
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-            // declare variable
-            if (AST.VariableMap.ContainsKey(Identifier.Value))
-                throw new ASTVariableException("Trying to declare existing Variable: " + Identifier.Value);
-
-            if (Expression != null)
-            {
-                Expression.GenerateX86(stringBuilder);
-            }
-            else
-            {
-                stringBuilder.AppendLine("movq $0, %rax"); // no value given, assign 0
-            }
-            stringBuilder.AppendLine("pushq %rax"); // push current value of variable to stack
-            VariableMap.Add(Identifier.Value, StackIndex);
-            StackIndex -= WordSize;
-        }
-
         public override void GenerateX86(Generator generator)
         {
             if (Expression != null)

@@ -52,98 +52,27 @@ namespace mcc
             Expression.Print(indent - 3);
         }
 
-        private void GenerateX86ShortCircuit(StringBuilder stringBuilder)
-        {
-            int labelCounter = LabelCounter++;
-            stringBuilder.AppendLine("cmpq $0, %rax");
-            if (Value == "||")
-            {
-                stringBuilder.AppendLine("je _label" + labelCounter);
-                stringBuilder.AppendLine("movq $1, %rax");
-            }
-            else if (Value == "&&")
-            {
-                stringBuilder.AppendLine("jne _label" + labelCounter);
-            }
-            stringBuilder.AppendLine("jmp _end" + labelCounter);
-            stringBuilder.AppendLine("_label" + labelCounter + ":");
-            Expression.GenerateX86(stringBuilder);
-            stringBuilder.AppendLine("cmpq $0, %rax");
-            stringBuilder.AppendLine("movq $0, %rax");
-            stringBuilder.AppendLine("setne %al");
-            stringBuilder.AppendLine("_end" + labelCounter + ":");
-        }
-
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-            if (Symbol2.ShortCircuit.Contains(Value))
-            {
-                GenerateX86ShortCircuit(stringBuilder);
-                return;
-            }
-
-            stringBuilder.AppendLine("pushq %rax");
-            Expression.GenerateX86(stringBuilder);
-            stringBuilder.AppendLine("movq %rax, %rcx");    // need to switch src and dest for - and /
-            stringBuilder.AppendLine("popq %rax");
-
-            if (Symbol2.Comparison.Contains(Value))
-            {
-                stringBuilder.AppendLine("cmpq %rcx, %rax");
-                stringBuilder.AppendLine("movq $0, %rax");
-            }
-
-            switch (Value)
-            {
-                case "+": stringBuilder.AppendLine("addq %rcx, %rax"); break;
-                case "*": stringBuilder.AppendLine("imulq %rcx, %rax"); break;
-                case "-": stringBuilder.AppendLine("subq %rcx, %rax"); break;
-                case "/":
-                    stringBuilder.AppendLine("cdq");
-                    stringBuilder.AppendLine("idivl %ecx");
-                    break;
-                case "%":
-                    stringBuilder.AppendLine("cdq");
-                    stringBuilder.AppendLine("idivl %ecx");
-                    stringBuilder.AppendLine("movq %rdx, %rax");
-                    break;
-                case "==": stringBuilder.AppendLine("sete %al"); break;
-                case "!=": stringBuilder.AppendLine("setne %al"); break;
-                case ">=": stringBuilder.AppendLine("setge %al"); break;
-                case ">": stringBuilder.AppendLine("setg %al"); break;
-                case "<=": stringBuilder.AppendLine("setle %al"); break;
-                case "<": stringBuilder.AppendLine("setl %al"); break;
-                case "<<": stringBuilder.AppendLine("sal %rcx, %rax"); break;
-                case ">>": stringBuilder.AppendLine("sar %rcx, %rax"); break;
-                case "&": stringBuilder.AppendLine("and %rcx, %rax"); break;
-                case "|": stringBuilder.AppendLine("or %rcx, %rax"); break;
-                case "^": stringBuilder.AppendLine("xor %rcx, %rax"); break;
-                default:
-                    break;
-            }
-        }
-
         private void GenerateX86ShortCircuit(Generator generator)
         {
-            int labelCounter = LabelCounter++;
-            generator.Instruction("cmpq $0, %rax");
+            generator.CompareZero();
+            string jumpEqualOrNotLabel = "";
             if (Value == "||")
             {
-                generator.Instruction("je _label" + labelCounter);
+                jumpEqualOrNotLabel = generator.JumpEqual();
                 generator.IntegerConstant(1);
             }
             else if (Value == "&&")
             {
-                generator.Instruction("jne _label" + labelCounter);
+                jumpEqualOrNotLabel = generator.JumpNotEqual();
             }
 
-            generator.Instruction("jmp _end" + labelCounter);
-            generator.Instruction("_label" + labelCounter + ":");
+            string endLabel = generator.Jump();
+            generator.Label(jumpEqualOrNotLabel);
             Expression.GenerateX86(generator);
-            generator.Instruction("cmpq $0, %rax");
+            generator.CompareZero();
             generator.IntegerConstant(0);
             generator.Instruction("setne %al");
-            generator.Instruction("_end" + labelCounter + ":");
+            generator.Label(endLabel);
         }
 
         public override void GenerateX86(Generator generator)

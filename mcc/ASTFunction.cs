@@ -56,30 +56,6 @@ namespace mcc
                 statement.Print(6);
         }
 
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-            stringBuilder.AppendLine(".globl " + Identifier.Value);
-            stringBuilder.AppendLine("" + Identifier.Value + ":");
-
-            // func prologue
-            stringBuilder.AppendLine("push %rbp");
-            stringBuilder.AppendLine("movq %rsp, %rbp");
-
-            foreach (var statement in BlockItemList)
-                statement.GenerateX86(stringBuilder);
-
-            if (!hasReturn)
-            {  
-                // return 0 if no return statement found
-                stringBuilder.AppendLine("movq $0, %rax");
-                // func epilogue
-                stringBuilder.AppendLine("movq %rbp, %rsp");
-                stringBuilder.AppendLine("pop %rbp");
-
-                stringBuilder.AppendLine("ret");
-            }
-        }
-
         public override void GenerateX86(Generator generator)
         {
             generator.Instruction(".globl " + Identifier.Value);

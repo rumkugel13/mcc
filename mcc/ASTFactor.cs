@@ -69,32 +69,6 @@ namespace mcc
             }
         }
 
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-            if (Expression != null)
-            {
-                Expression.GenerateX86(stringBuilder);
-            }
-            else if (UnaryOperation != null)
-            {
-                UnaryOperation.GenerateX86(stringBuilder);
-            }
-            else if (Integer != null)
-            {
-                Integer.GenerateX86(stringBuilder);
-            }
-            else if (Identifier != null)
-            {
-                // reference variable
-                if (VariableMap.TryGetValue(Identifier.Value, out int offset))
-                {
-                    stringBuilder.AppendLine("movq " + offset + "(%rbp), %rax");
-                }
-                else
-                    throw new ASTVariableException("Trying to reference a non existing Variable: " + Identifier.Value);
-            }
-        }
-
         public override void GenerateX86(Generator generator)
         {
             if (Expression != null)

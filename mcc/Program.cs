@@ -110,8 +110,6 @@ namespace mcc
             {
                 if (Compile(validFile))
                     validCount++;
-                AST.VariableMap.Clear();
-                AST.StackIndex = -AST.WordSize;
                 File.Delete(validFile.Replace(".c", ".exe"));
             }
 
@@ -120,8 +118,6 @@ namespace mcc
             {
                 if (!Compile(invalidFile))
                     invalidCount++;
-                AST.VariableMap.Clear();
-                AST.StackIndex = -AST.WordSize;
                 File.Delete(invalidFile.Replace(".c", ".exe"));
             }
 
@@ -222,10 +218,6 @@ namespace mcc
 
         static string Generate(AST ast)
         {
-            //StringBuilder sb = new StringBuilder();
-            //ast.GenerateX86(sb);
-            //return sb.ToString();
-
             Generator generator = new Generator();
             ast.GenerateX86(generator);
             return generator.CreateOutput();

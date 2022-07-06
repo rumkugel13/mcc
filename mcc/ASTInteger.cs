@@ -25,11 +25,6 @@ namespace mcc
             Console.WriteLine(new String(' ', indent) + "INT<" + Value + ">");
         }
 
-        public override void GenerateX86(StringBuilder stringBuilder)
-        {
-            stringBuilder.AppendLine("movq $" + Value + ", %rax");
-        }
-
         public override void GenerateX86(Generator generator)
         {
             generator.IntegerConstant(Value);

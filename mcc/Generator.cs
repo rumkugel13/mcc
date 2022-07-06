@@ -25,6 +25,11 @@ namespace mcc
             Instruction("movq $" + value + ", %rax");
         }
 
+        public void CompareZero()
+        {
+            Instruction("cmpq $0, %rax");
+        }
+
         public string Jump()
         {
             string jmpLabel = "_jmp" + labelCounter++;
@@ -88,7 +93,7 @@ namespace mcc
         public void ComparisonOperation(string op)
         {
             Instruction("cmpq %rcx, %rax");
-            Instruction("movq $0, %rax");
+            IntegerConstant(0);
 
             switch (op)
             {
