@@ -6,6 +6,7 @@ namespace mcc
     {
         ASTExpression Expression;
         ASTStatement Statement, OptionalStatement;
+        List<ASTBlockItem> BlockItemList = new List<ASTBlockItem>();
         bool isReturn = false;
 
         public override void Parse(Parser parser)
@@ -41,6 +42,19 @@ namespace mcc
                     OptionalStatement.Parse(parser);
                 }
             }
+            else if (parser.PeekSymbol('{'))
+            {
+                parser.ExpectSymbol('{');
+
+                while (!parser.PeekSymbol('}'))
+                {
+                    ASTBlockItem blockItem = new ASTBlockItem();
+                    blockItem.Parse(parser);
+                    BlockItemList.Add(blockItem);
+                }
+
+                parser.ExpectSymbol('}');
+            }
             else
             {
                 Expression = new ASTExpression();
@@ -73,6 +87,13 @@ namespace mcc
             {
                 Console.WriteLine(new string(' ', indent) + "RETURN");
                 Expression.Print(indent + 3);
+            }
+            else if (BlockItemList.Count > 0)
+            {
+                Console.WriteLine(new string(' ', indent) + "BLK_START");
+                foreach (var statement in BlockItemList)
+                    statement.Print(indent + 3);
+                Console.WriteLine(new string(' ', indent) + "BLK_END");
             }
             else
             {
@@ -109,6 +130,11 @@ namespace mcc
             {
                 Expression.GenerateX86(generator);
                 generator.FunctionEpilogue();
+            }
+            else if (BlockItemList.Count > 0)
+            {
+                foreach (var statement in BlockItemList)
+                    statement.GenerateX86(generator);
             }
             else
             {

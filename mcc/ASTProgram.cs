@@ -14,6 +14,11 @@ namespace mcc
         public override void Parse(Parser parser)
         {
             Function.Parse(parser);
+
+            if (parser.HasMoreTokens())
+            {
+                parser.Fail("Fail: Too many Tokens");
+            }
         }
 
         public override void Print(int indent)
