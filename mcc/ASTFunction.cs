@@ -5,7 +5,7 @@ namespace mcc
     class ASTFunction : AST
     {
         public ASTIdentifier Identifier;
-        public List<ASTStatement> StatementList = new List<ASTStatement>();
+        public List<ASTBlockItem> BlockItemList = new List<ASTBlockItem>();
         bool hasReturn;
 
         public override void Parse(Parser parser)
@@ -36,9 +36,9 @@ namespace mcc
                     hasReturn = true;
                 }
 
-                ASTStatement statement = new ASTStatement();
-                statement.Parse(parser);
-                StatementList.Add(statement);
+                ASTBlockItem blockItem = new ASTBlockItem();
+                blockItem.Parse(parser);
+                BlockItemList.Add(blockItem);
             }
 
             token = parser.Next();
@@ -52,7 +52,7 @@ namespace mcc
             Console.WriteLine("   params: ()");
             Console.WriteLine("   body:");
 
-            foreach (var statement in StatementList)
+            foreach (var statement in BlockItemList)
                 statement.Print(6);
         }
 
@@ -65,7 +65,7 @@ namespace mcc
             stringBuilder.AppendLine("push %rbp");
             stringBuilder.AppendLine("movq %rsp, %rbp");
 
-            foreach (var statement in StatementList)
+            foreach (var statement in BlockItemList)
                 statement.GenerateX86(stringBuilder);
 
             if (!hasReturn)
@@ -85,7 +85,7 @@ namespace mcc
             generator.Instruction(".globl " + Identifier.Value);
             generator.FunctionPrologue(Identifier.Value);
 
-            foreach (var statement in StatementList)
+            foreach (var statement in BlockItemList)
                 statement.GenerateX86(generator);
 
             if (!hasReturn)

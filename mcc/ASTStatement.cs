@@ -4,8 +4,8 @@ namespace mcc
 {
     class ASTStatement : AST
     {
-        public ASTExpression Expression;
-        ASTIdentifier Identifier;
+        ASTExpression Expression;
+        ASTStatement Statement, OptionalStatement;
         bool isReturn = false;
 
         public override void Parse(Parser parser)
@@ -20,24 +20,26 @@ namespace mcc
 
                 parser.ExpectSymbol(';');
             }
-            else if (parser.PeekKeyword(Keyword.KeywordTypes.INT))
+            else if (parser.PeekKeyword(Keyword.KeywordTypes.IF))
             {
-                // declaration
-                parser.ExpectKeyword(Keyword.KeywordTypes.INT);
+                parser.ExpectKeyword(Keyword.KeywordTypes.IF);
+                parser.ExpectSymbol('(');
 
-                Identifier = new ASTIdentifier();
-                Identifier.Parse(parser);
+                Expression = new ASTExpression();
+                Expression.Parse(parser);
 
-                if (parser.PeekSymbol('='))
+                parser.ExpectSymbol(')');
+
+                Statement = new ASTStatement();
+                Statement.Parse(parser);
+
+                if (parser.PeekKeyword(Keyword.KeywordTypes.ELSE))
                 {
-                    // assignment
-                    parser.ExpectSymbol('=');
+                    parser.ExpectKeyword(Keyword.KeywordTypes.ELSE);
 
-                    Expression = new ASTExpression();
-                    Expression.Parse(parser);
+                    OptionalStatement = new ASTStatement();
+                    OptionalStatement.Parse(parser);
                 }
-
-                parser.ExpectSymbol(';');
             }
             else
             {
@@ -50,15 +52,21 @@ namespace mcc
 
         public override void Print(int indent)
         {
-            if (Identifier != null)
+            if (Statement != null)
             {
-                Console.WriteLine(new string(' ', indent) + "DECLARE");
-                Identifier.Print(indent + 3);
+                Console.WriteLine(new string(' ', indent) + "IF");
 
-                if (Expression != null)
+                Expression.Print(indent + 3);
+
+                Console.WriteLine(new string(' ', indent) + "THEN");
+
+                Statement.Print(indent + 3);
+
+                if (OptionalStatement != null)
                 {
-                    Console.WriteLine(new string(' ', indent + 3) + "ASSIGN");
-                    Expression.Print(indent + 6);
+                    Console.WriteLine(new string(' ', indent) + "ELSE");
+
+                    OptionalStatement.Print(indent + 3);
                 }
             }
             else if (isReturn)
@@ -75,23 +83,23 @@ namespace mcc
 
         public override void GenerateX86(StringBuilder stringBuilder)
         {
-            if (Identifier != null)
+            if (Statement != null)
             {
-                // declare variable
-                if (AST.VariableMap.ContainsKey(Identifier.Value))
-                    throw new ASTVariableException("Trying to declare existing Variable: " + Identifier.Value);
+                //// declare variable
+                //if (AST.VariableMap.ContainsKey(Identifier.Value))
+                //    throw new ASTVariableException("Trying to declare existing Variable: " + Identifier.Value);
 
-                if (Expression != null)
-                {
-                    Expression.GenerateX86(stringBuilder);
-                }
-                else
-                {
-                    stringBuilder.AppendLine("movq $0, %rax"); // no value given, assign 0
-                }
-                stringBuilder.AppendLine("pushq %rax"); // push current value of variable to stack
-                VariableMap.Add(Identifier.Value, StackIndex);
-                StackIndex -= WordSize;
+                //if (Expression != null)
+                //{
+                //    Expression.GenerateX86(stringBuilder);
+                //}
+                //else
+                //{
+                //    stringBuilder.AppendLine("movq $0, %rax"); // no value given, assign 0
+                //}
+                //stringBuilder.AppendLine("pushq %rax"); // push current value of variable to stack
+                //VariableMap.Add(Identifier.Value, StackIndex);
+                //StackIndex -= WordSize;
             }
             else if (isReturn)
             {
@@ -110,18 +118,18 @@ namespace mcc
 
         public override void GenerateX86(Generator generator)
         {
-            if (Identifier != null)
+            if (Statement != null)
             {
-                if (Expression != null)
-                {
-                    Expression.GenerateX86(generator);
-                }
-                else
-                {
-                    generator.IntegerConstant(0); // no value given, assign 0
-                }
+                //if (Expression != null)
+                //{
+                //    Expression.GenerateX86(generator);
+                //}
+                //else
+                //{
+                //    generator.IntegerConstant(0); // no value given, assign 0
+                //}
 
-                generator.DeclareVariable(Identifier.Value);
+                //generator.DeclareVariable(Identifier.Value);
             }
             else if (isReturn)
             {
