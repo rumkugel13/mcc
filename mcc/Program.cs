@@ -7,6 +7,7 @@ namespace mcc
     internal class Program
     {
         static bool silent = true;
+        static bool debug = false;
         static string VersionString = "mcc v0.5";
 
         static void Main(string[] args)
@@ -44,32 +45,34 @@ namespace mcc
                             return;
                         }
 
-                        Console.WriteLine("Testing all in " + stage);
-                        string validPath = Path.Combine(stage, "valid");
-                        string invalidPath = Path.Combine(stage, "invalid");
+                        TestAll(stage);
+                    }
+                    else if (args[0].Equals("-p"))
+                    {
+                        silent = false;
+                        string filePath = args[1];
 
-                        string[] validFiles = Directory.GetFiles(validPath).Where((a) => a.EndsWith(".c")).ToArray();
-                        string[] invalidFiles = Directory.GetFiles(invalidPath).Where((a) => a.EndsWith(".c")).ToArray();
-
-                        int validCount = 0;
-                        foreach (string validFile in validFiles)
+                        if (!File.Exists(filePath))
                         {
-                            if (Compile(validFile))
-                                validCount++;
-                            AST.VariableMap.Clear();
-                            AST.StackIndex = -AST.WordSize;
+                            Console.WriteLine("Unknown file.");
+                            return;
                         }
 
-                        int invalidCount = 0;
-                        foreach (string invalidFile in invalidFiles)
+                        Compile(filePath);
+                    }
+                    else if (args[0].Equals("-d"))
+                    {
+                        silent = false;
+                        debug = true;
+                        string filePath = args[1];
+
+                        if (!File.Exists(filePath))
                         {
-                            if (!Compile(invalidFile))
-                                invalidCount++;
-                            AST.VariableMap.Clear();
-                            AST.StackIndex = -AST.WordSize;
+                            Console.WriteLine("Unknown file.");
+                            return;
                         }
 
-                        Console.WriteLine($"Valid: {validCount}/{validFiles.Count()}, Invalid: {invalidCount}/{invalidFiles.Count()}");
+                        Compile(filePath);
                     }
 
                     break;
@@ -80,14 +83,46 @@ namespace mcc
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("Usage:");
-            builder.AppendLine("   mcc <c_file>");
+            builder.AppendLine("   mcc [-p | -d] <c_file>");
             builder.AppendLine("   mcc -v");
             builder.AppendLine("   mcc -t <stage_folder>");
             builder.AppendLine("Options:");
-            builder.AppendLine("   <c_file>             Compile c-file");
+            builder.AppendLine("   <c_file>             Compile c-file silently");
+            builder.AppendLine("   -p <c_file>          Compile c-file with Verbose output");
+            builder.AppendLine("   -d <c_file>          Compile c-file with Debug output");
             builder.AppendLine("   -v                   Print Version");
             builder.AppendLine("   -t <stage_folder>    Test c-files in stage folder");
             Console.Write(builder.ToString());
+        }
+
+        static void TestAll(string stage)
+        {
+            Console.WriteLine("Testing all in " + stage);
+            string validPath = Path.Combine(stage, "valid");
+            string invalidPath = Path.Combine(stage, "invalid");
+
+            string[] validFiles = Directory.GetFiles(validPath).Where((a) => a.EndsWith(".c")).ToArray();
+            string[] invalidFiles = Directory.GetFiles(invalidPath).Where((a) => a.EndsWith(".c")).ToArray();
+
+            int validCount = 0;
+            foreach (string validFile in validFiles)
+            {
+                if (Compile(validFile))
+                    validCount++;
+                AST.VariableMap.Clear();
+                AST.StackIndex = -AST.WordSize;
+            }
+
+            int invalidCount = 0;
+            foreach (string invalidFile in invalidFiles)
+            {
+                if (!Compile(invalidFile))
+                    invalidCount++;
+                AST.VariableMap.Clear();
+                AST.StackIndex = -AST.WordSize;
+            }
+
+            Console.WriteLine($"Valid: {validCount}/{validFiles.Count()}, Invalid: {invalidCount}/{invalidFiles.Count()}");
         }
 
         static bool Compile(string filePath)
@@ -103,19 +138,19 @@ namespace mcc
                 if (!silent) Console.Write("Running Lexer ... ");
                 var tokens = Lex(filePath);
                 if (!silent) Console.WriteLine("OK");
-                //if (!silent) PrintTokenList(tokens);
+                if (!silent && debug) PrintTokenList(tokens);
 
                 //parser
                 if (!silent) Console.Write("Parsing Tokens ... ");
                 AST ast = Parse(tokens);
                 if (!silent) Console.WriteLine("OK");
-                //if (!silent) PrintAST(ast);
+                if (!silent && debug) PrintAST(ast);
 
                 //generator
                 if (!silent) Console.Write("Generating Assembly ... ");
                 string assembly = Generate(ast);
                 if (!silent) Console.WriteLine("OK");
-                //if (!silent) PrintAssembly(assembly);
+                if (!silent && debug) PrintAssembly(assembly);
 
                 //writer
                 if (!silent) Console.Write("Writing Assembly File ... ");
