@@ -171,7 +171,16 @@ namespace mcc
                 using (Process? process = System.Diagnostics.Process.Start(start))
                 {
                     while (!process.HasExited) ;
-                    if (!silent) Console.WriteLine(process.ExitCode == 0 ? "OK" : "FAIL");
+
+                    if (process.ExitCode == 0)
+                    {
+                        if (!silent) Console.WriteLine("OK");
+                    }
+                    else
+                    {
+                        if (!silent) Console.WriteLine("FAIL");
+                        finished = false;
+                    }
                 };
             }
             catch (UnknownTokenException exception)
