@@ -111,6 +111,7 @@ namespace mcc
                 if (Compile(validFile))
                     validCount++;
                 AST.VariableMap.Clear();
+                AST.FunctionReturn.Clear();
                 AST.StackIndex = -AST.WordSize;
                 File.Delete(validFile.Replace(".c", ".exe"));
             }
@@ -121,6 +122,7 @@ namespace mcc
                 if (!Compile(invalidFile))
                     invalidCount++;
                 AST.VariableMap.Clear();
+                AST.FunctionReturn.Clear();
                 AST.StackIndex = -AST.WordSize;
                 File.Delete(invalidFile.Replace(".c", ".exe"));
             }

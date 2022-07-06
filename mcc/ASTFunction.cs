@@ -30,6 +30,11 @@ namespace mcc
 
             while (!parser.PeekSymbol('}'))
             {
+                if (parser.PeekKeyword(Keyword.KeywordTypes.RETURN))
+                {
+                    FunctionReturn.Add(Identifier.Value);
+                }
+
                 ASTStatement statement = new ASTStatement();
                 statement.Parse(parser);
                 StatementList.Add(statement);
@@ -61,6 +66,17 @@ namespace mcc
 
             foreach (var statement in StatementList)
                 statement.GenerateX86(stringBuilder);
+
+            if (!FunctionReturn.Contains(Identifier.Value))
+            {  
+                // return 0 if no return statement found
+                stringBuilder.AppendLine("movq $0, %rax");
+                // func epilogue
+                stringBuilder.AppendLine("movq %rbp, %rsp");
+                stringBuilder.AppendLine("pop %rbp");
+
+                stringBuilder.AppendLine("ret");
+            }
         }
     }
 }
