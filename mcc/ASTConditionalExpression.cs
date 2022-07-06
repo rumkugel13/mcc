@@ -65,16 +65,21 @@ namespace mcc
 
         public override void GenerateX86(Generator generator)
         {
-            //if (Expression != null)
-            //{
-            //    Expression.GenerateX86(generator);
-            //}
-            //else
-            //{
-            //    generator.IntegerConstant(0); // no value given, assign 0
-            //}
-
-            //generator.DeclareVariable(Identifier.Value);
+            if (Expression != null)
+            {
+                LogicalOrExpression.GenerateX86(generator);
+                generator.Instruction("cmpq $0, %rax");
+                string elseLabel = generator.JumpEqual();
+                Expression.GenerateX86(generator);
+                string endLabel = generator.Jump();
+                generator.Label(elseLabel);
+                ConditionalExpression.GenerateX86(generator);
+                generator.Label(endLabel);
+            }
+            else
+            {
+                LogicalOrExpression.GenerateX86(generator);
+            }
         }
     }
 }

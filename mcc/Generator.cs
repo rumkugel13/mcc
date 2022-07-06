@@ -8,10 +8,11 @@ namespace mcc
         Dictionary<string, int> varMap = new Dictionary<string, int>();
         const int varSize = 8; // 32bit = 4, 64bit = 8
         int varOffset = -varSize;
+        int labelCounter = 0;
 
         public void Label(string label)
         {
-            sb.AppendLine("_" + label + ":");
+            sb.AppendLine(label + ":");
         }
 
         public void Instruction(string instruction)
@@ -22,6 +23,27 @@ namespace mcc
         public void IntegerConstant(int value)
         {
             Instruction("movq $" + value + ", %rax");
+        }
+
+        public string Jump()
+        {
+            string jmpLabel = "_jmp" + labelCounter++;
+            Instruction("jmp " + jmpLabel);
+            return jmpLabel;
+        }
+
+        public string JumpEqual()
+        {
+            string jmpLabel = "_je" + labelCounter++;
+            Instruction("je " + jmpLabel);
+            return jmpLabel;
+        }
+
+        public string JumpNotEqual()
+        {
+            string jmpLabel = "_jne" + labelCounter++;
+            Instruction("jne " + jmpLabel);
+            return jmpLabel;
         }
 
         public void UnaryOperation(char op)
@@ -53,11 +75,11 @@ namespace mcc
                 case "^": Instruction("xor %rcx, %rax"); break;
                 case "/":
                     Instruction("cdq");
-                    Instruction("idivq %rcx");
+                    Instruction("idivl %ecx");
                     break;
                 case "%":
                    Instruction("cdq");
-                   Instruction("idivq %rcx");
+                   Instruction("idivl %ecx");
                    Instruction("movq %rdx, %rax");
                     break;
             }
@@ -111,7 +133,7 @@ namespace mcc
 
         public void FunctionPrologue(string label)
         {
-            sb.AppendLine(label + ":");
+            Label(label);
             Instruction("pushq %rbp");
             Instruction("movq %rsp, %rbp");
         }

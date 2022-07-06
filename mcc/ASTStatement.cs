@@ -120,16 +120,25 @@ namespace mcc
         {
             if (Statement != null)
             {
-                //if (Expression != null)
-                //{
-                //    Expression.GenerateX86(generator);
-                //}
-                //else
-                //{
-                //    generator.IntegerConstant(0); // no value given, assign 0
-                //}
+                Expression.GenerateX86(generator);
+                generator.Instruction("cmpq $0, %rax");
+                string label = generator.JumpEqual();
 
-                //generator.DeclareVariable(Identifier.Value);
+                if (OptionalStatement != null)
+                {
+                    // with else
+                    Statement.GenerateX86(generator);
+                    string end = generator.Jump();
+                    generator.Label(label);
+                    OptionalStatement.GenerateX86(generator);
+                    generator.Label(end);
+                }
+                else
+                {
+                    // without else
+                    Statement.GenerateX86(generator);
+                    generator.Label(label);
+                }
             }
             else if (isReturn)
             {
