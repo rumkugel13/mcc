@@ -19,7 +19,6 @@ namespace mcc
 
                 Expression = new ASTExpression();
                 Expression.Parse(parser);
-
             }
             else
             {

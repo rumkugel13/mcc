@@ -4,16 +4,19 @@ namespace mcc
 {
     class ASTStatement : AST
     {
-        ASTExpression Expression;
+        ASTAbstractExpression Expression;
         ASTStatement Statement, OptionalStatement;
+        ASTDeclaration Declaration;
+        ASTExpressionOptionalClosingParenthesis ExpressionOptionalClosingParenthesis;
+        ASTExpressionOptionalSemicolon ExpressionOptionalSemicolon, ExpressionOptionalSemicolon2;
         List<ASTBlockItem> BlockItemList = new List<ASTBlockItem>();
-        bool isReturn = false;
+        Keyword.KeywordTypes keyWord;
 
         public override void Parse(Parser parser)
         {
             if (parser.PeekKeyword(Keyword.KeywordTypes.RETURN))
             {
-                isReturn = true;
+                keyWord = Keyword.KeywordTypes.RETURN;
                 parser.ExpectKeyword(Keyword.KeywordTypes.RETURN);
 
                 Expression = new ASTExpression();
@@ -23,6 +26,7 @@ namespace mcc
             }
             else if (parser.PeekKeyword(Keyword.KeywordTypes.IF))
             {
+                keyWord = Keyword.KeywordTypes.IF;
                 parser.ExpectKeyword(Keyword.KeywordTypes.IF);
                 parser.ExpectSymbol('(');
 
@@ -55,18 +59,91 @@ namespace mcc
 
                 parser.ExpectSymbol('}');
             }
-            else
+            else if (parser.PeekKeyword(Keyword.KeywordTypes.FOR))
             {
+                keyWord = Keyword.KeywordTypes.FOR;
+                parser.ExpectKeyword(Keyword.KeywordTypes.FOR);
+                parser.ExpectSymbol('(');
+
+                if (parser.PeekKeyword(Keyword.KeywordTypes.INT))
+                {
+                    Declaration = new ASTDeclaration();
+                    Declaration.Parse(parser);
+                    // note: declaration already contains semicolon
+                }
+                else
+                {
+                    ExpressionOptionalSemicolon = new ASTExpressionOptionalSemicolon();
+                    ExpressionOptionalSemicolon.Parse(parser);
+                    // note: this already contains semicolon
+                }
+
+                ExpressionOptionalSemicolon2 = new ASTExpressionOptionalSemicolon();
+                ExpressionOptionalSemicolon2.Parse(parser);
+                // note: this already contains semicolon
+
+                ExpressionOptionalClosingParenthesis = new ASTExpressionOptionalClosingParenthesis();
+                ExpressionOptionalClosingParenthesis.Parse(parser);
+                // note: this already contains closing parenthesis
+
+                Statement = new ASTStatement();
+                Statement.Parse(parser);
+            }
+            else if (parser.PeekKeyword(Keyword.KeywordTypes.WHILE))
+            {
+                keyWord = Keyword.KeywordTypes.WHILE;
+                parser.ExpectKeyword(Keyword.KeywordTypes.WHILE);
+                parser.ExpectSymbol('(');
+
                 Expression = new ASTExpression();
                 Expression.Parse(parser);
 
+                parser.ExpectSymbol(')');
+
+                Statement = new ASTStatement();
+                Statement.Parse(parser);
+
+            }
+            else if (parser.PeekKeyword(Keyword.KeywordTypes.DO))
+            {
+                keyWord = Keyword.KeywordTypes.DO;
+                parser.ExpectKeyword(Keyword.KeywordTypes.DO);
+
+                Statement = new ASTStatement();
+                Statement.Parse(parser);
+
+                parser.ExpectKeyword(Keyword.KeywordTypes.WHILE);
+                parser.ExpectSymbol('(');
+
+                Expression = new ASTExpression();
+                Expression.Parse(parser);
+
+                parser.ExpectSymbol(')');
                 parser.ExpectSymbol(';');
+            }
+            else if (parser.PeekKeyword(Keyword.KeywordTypes.BREAK))
+            {
+                keyWord = Keyword.KeywordTypes.BREAK;
+                parser.ExpectKeyword(Keyword.KeywordTypes.BREAK);
+                parser.ExpectSymbol(';');
+            }
+            else if (parser.PeekKeyword(Keyword.KeywordTypes.CONTINUE))
+            {
+                keyWord = Keyword.KeywordTypes.CONTINUE;
+                parser.ExpectKeyword(Keyword.KeywordTypes.CONTINUE);
+                parser.ExpectSymbol(';');
+            }
+            else
+            {
+                Expression = new ASTExpressionOptionalSemicolon();
+                Expression.Parse(parser);
+                // note: this already contains semicolon
             }
         }
 
         public override void Print(int indent)
         {
-            if (Statement != null)
+            if (keyWord == Keyword.KeywordTypes.IF)
             {
                 Console.WriteLine(new string(' ', indent) + "IF");
 
@@ -83,10 +160,55 @@ namespace mcc
                     OptionalStatement.Print(indent + 3);
                 }
             }
-            else if (isReturn)
+            else if (keyWord == Keyword.KeywordTypes.RETURN)
             {
                 Console.WriteLine(new string(' ', indent) + "RETURN");
                 Expression.Print(indent + 3);
+            }
+            else if (keyWord == Keyword.KeywordTypes.FOR)
+            {
+                Console.WriteLine(new string(' ', indent) + "FOR");
+                Console.WriteLine(new string(' ', indent + 3) + "INITIAL");
+                if (Declaration != null)
+                {
+                    Declaration.Print(indent + 6);
+                }
+                else
+                {
+                    ExpressionOptionalSemicolon.Print(indent + 6);
+                }
+                Console.WriteLine(new string(' ', indent + 3) + "CONDITION");
+
+                ExpressionOptionalSemicolon2.Print(indent + 6);
+
+                Console.WriteLine(new string(' ', indent + 3) + "POST");
+
+                ExpressionOptionalClosingParenthesis.Print(indent + 6);
+
+                Console.WriteLine(new string(' ', indent) + "DO");
+                Statement.Print(indent + 3);
+            }
+            else if (keyWord == Keyword.KeywordTypes.WHILE)
+            {
+                Console.WriteLine(new string(' ', indent) + "WHILE");
+                Expression.Print(indent + 3);
+                Console.WriteLine(new string(' ', indent) + "DO");
+                Statement.Print(indent + 3);
+            }
+            else if (keyWord == Keyword.KeywordTypes.DO)
+            {
+                Console.WriteLine(new string(' ', indent) + "DO");
+                Statement.Print(indent + 3);
+                Console.WriteLine(new string(' ', indent) + "WHILE");
+                Expression.Print(indent + 3);
+            }
+            else if (keyWord == Keyword.KeywordTypes.BREAK)
+            {
+                Console.WriteLine(new string(' ', indent) + "BREAK");
+            }
+            else if (keyWord == Keyword.KeywordTypes.CONTINUE)
+            {
+                Console.WriteLine(new string(' ', indent) + "CONTINUE");
             }
             else if (BlockItemList.Count > 0)
             {
@@ -104,7 +226,7 @@ namespace mcc
 
         public override void GenerateX86(Generator generator)
         {
-            if (Statement != null)
+            if (keyWord == Keyword.KeywordTypes.IF)
             {
                 Expression.GenerateX86(generator);
                 generator.CompareZero();
@@ -126,10 +248,30 @@ namespace mcc
                     generator.Label(label);
                 }
             }
-            else if (isReturn)
+            else if (keyWord == Keyword.KeywordTypes.RETURN)
             {
                 Expression.GenerateX86(generator);
                 generator.FunctionEpilogue();
+            }
+            else if (keyWord == Keyword.KeywordTypes.FOR)
+            {
+
+            }
+            else if (keyWord == Keyword.KeywordTypes.WHILE)
+            {
+
+            }
+            else if (keyWord == Keyword.KeywordTypes.DO)
+            {
+
+            }
+            else if (keyWord == Keyword.KeywordTypes.BREAK)
+            {
+
+            }
+            else if (keyWord == Keyword.KeywordTypes.CONTINUE)
+            {
+
             }
             else if (BlockItemList.Count > 0)
             {
