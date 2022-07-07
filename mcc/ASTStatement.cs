@@ -272,7 +272,7 @@ namespace mcc
                 if (ForCondition.Expression != null)
                     ForCondition.GenerateX86(generator);
                 else
-                    generator.IntegerConstant(0); // non zero value if condition is empty; todo: change to 1, 0 to not loop in test since break not implemented yet
+                    generator.IntegerConstant(1); // non zero value if condition is empty;
                 generator.CompareZero();
                 generator.LoopJumpEqualEnd(loopCount);
                 generator.BeginLoopBlock();

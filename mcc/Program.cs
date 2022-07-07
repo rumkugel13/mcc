@@ -8,7 +8,7 @@ namespace mcc
     {
         static bool silent = true;
         static bool debug = false;
-        static string VersionString = "mcc v0.7";
+        static string VersionString = "mcc v0.8";
 
         static void Main(string[] args)
         {

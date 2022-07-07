@@ -16,6 +16,8 @@ namespace mcc
 
         int loopScope = 0;
         int loopCounter = 0;
+        int loopEndCounter = 0;
+        bool loopScopeWentDown = false;
 
         public void Label(string label)
         {
@@ -127,6 +129,7 @@ namespace mcc
         public void LoopEndLabel(int count)
         {
             Label("loop_end" + count);
+            loopEndCounter++;
         }
 
         public void LoopJumpEqualEnd(int count)
@@ -144,30 +147,42 @@ namespace mcc
             Instruction("jmp loop_begin" + count);
         }
 
+        public void LoopJumpEnd(int count)
+        {
+            Instruction("jmp loop_end" + count);
+        }
+
+        public void LoopJumpContinue(int count)
+        {
+            Instruction("jmp loop_continue" + count);
+        }
+
         public void BeginLoopBlock()
         {
             loopScope++;
             BeginBlock();
+            loopScopeWentDown = false;
         }
 
         public void EndLoopBlock()
         {
             EndBlock();
             loopScope--;
+            loopScopeWentDown = true;
         }
 
         public void LoopBreak()
         {
             if (loopScope == 0)
                 throw new ASTLoopScopeException("Can't break out of non existing loop scope");
-            // todo: implement
+            LoopJumpEnd(loopScopeWentDown ? loopCounter - loopEndCounter + 1 : loopCounter - 1);
         }
 
         public void LoopContinue()
         {
             if (loopScope == 0)
                 throw new ASTLoopScopeException("Can't continue in non existing loop scope");
-            // todo: implement
+            LoopJumpContinue(loopScopeWentDown ? loopCounter - loopEndCounter + 1 : loopCounter - 1);
         }
 
         public void BeginBlock()
