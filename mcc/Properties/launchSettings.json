@@ -43,6 +43,11 @@
       "commandName": "Project",
       "commandLineArgs": "-t stage_7",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
+    "stage8": {
+      "commandName": "Project",
+      "commandLineArgs": "-t stage_8",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     }
   }
 }

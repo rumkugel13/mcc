@@ -18,6 +18,11 @@
             {"return", KeywordTypes.RETURN },
             {"if", KeywordTypes.IF },
             {"else", KeywordTypes.ELSE },
+            {"for", KeywordTypes.FOR },
+            {"while", KeywordTypes.WHILE },
+            {"do", KeywordTypes.DO },
+            {"break", KeywordTypes.BREAK },
+            {"continue" , KeywordTypes.CONTINUE },
         };
 
         public enum KeywordTypes
@@ -25,7 +30,12 @@
             INT,
             RETURN,
             IF,
-            ELSE
+            ELSE,
+            FOR,
+            WHILE,
+            DO,
+            BREAK,
+            CONTINUE,
         }
 
         public override string ToString()
