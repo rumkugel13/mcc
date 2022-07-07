@@ -52,8 +52,10 @@ namespace mcc
             Console.WriteLine("   params: ()");
             Console.WriteLine("   body:");
 
+            Console.WriteLine(new string(' ', 6) + "BLK_BEGIN");
             foreach (var statement in BlockItemList)
-                statement.Print(6);
+                statement.Print(9);
+            Console.WriteLine(new string(' ', 6) + "BLK_END");
         }
 
         public override void GenerateX86(Generator generator)
@@ -61,7 +63,7 @@ namespace mcc
             generator.Instruction(".globl " + Identifier.Value);
             generator.FunctionPrologue(Identifier.Value);
 
-            generator.StartBlock();
+            generator.BeginBlock();
 
             foreach (var statement in BlockItemList)
                 statement.GenerateX86(generator);

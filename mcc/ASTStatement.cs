@@ -7,8 +7,8 @@ namespace mcc
         ASTAbstractExpression Expression;
         ASTStatement Statement, OptionalStatement;
         ASTDeclaration Declaration;
-        ASTExpressionOptionalClosingParenthesis ExpressionOptionalClosingParenthesis;
-        ASTExpressionOptionalSemicolon ExpressionOptionalSemicolon, ExpressionOptionalSemicolon2;
+        ASTExpressionOptionalClosingParenthesis ForPostExpression;
+        ASTExpressionOptionalSemicolon ForInit, ForCondition;
         List<ASTBlockItem> BlockItemList = new List<ASTBlockItem>();
         Keyword.KeywordTypes keyWord;
 
@@ -73,17 +73,17 @@ namespace mcc
                 }
                 else
                 {
-                    ExpressionOptionalSemicolon = new ASTExpressionOptionalSemicolon();
-                    ExpressionOptionalSemicolon.Parse(parser);
+                    ForInit = new ASTExpressionOptionalSemicolon();
+                    ForInit.Parse(parser);
                     // note: this already contains semicolon
                 }
 
-                ExpressionOptionalSemicolon2 = new ASTExpressionOptionalSemicolon();
-                ExpressionOptionalSemicolon2.Parse(parser);
+                ForCondition = new ASTExpressionOptionalSemicolon();
+                ForCondition.Parse(parser);
                 // note: this already contains semicolon
 
-                ExpressionOptionalClosingParenthesis = new ASTExpressionOptionalClosingParenthesis();
-                ExpressionOptionalClosingParenthesis.Parse(parser);
+                ForPostExpression = new ASTExpressionOptionalClosingParenthesis();
+                ForPostExpression.Parse(parser);
                 // note: this already contains closing parenthesis
 
                 Statement = new ASTStatement();
@@ -175,15 +175,15 @@ namespace mcc
                 }
                 else
                 {
-                    ExpressionOptionalSemicolon.Print(indent + 6);
+                    ForInit.Print(indent + 6);
                 }
                 Console.WriteLine(new string(' ', indent + 3) + "CONDITION");
 
-                ExpressionOptionalSemicolon2.Print(indent + 6);
+                ForCondition.Print(indent + 6);
 
                 Console.WriteLine(new string(' ', indent + 3) + "POST");
 
-                ExpressionOptionalClosingParenthesis.Print(indent + 6);
+                ForPostExpression.Print(indent + 6);
 
                 Console.WriteLine(new string(' ', indent) + "DO");
                 Statement.Print(indent + 3);
@@ -212,7 +212,7 @@ namespace mcc
             }
             else if (BlockItemList.Count > 0)
             {
-                Console.WriteLine(new string(' ', indent) + "BLK_START");
+                Console.WriteLine(new string(' ', indent) + "BLK_BEGIN");
                 foreach (var statement in BlockItemList)
                     statement.Print(indent + 3);
                 Console.WriteLine(new string(' ', indent) + "BLK_END");
@@ -255,27 +255,72 @@ namespace mcc
             }
             else if (keyWord == Keyword.KeywordTypes.FOR)
             {
+                generator.BeginBlock();
 
+                // init
+                if (Declaration != null)
+                {
+                    Declaration.GenerateX86(generator);
+                }
+                else
+                {
+                    ForInit.GenerateX86(generator);
+                }
+
+                int loopCount = generator.LoopBeginLabel();
+
+                if (ForCondition.Expression != null)
+                    ForCondition.GenerateX86(generator);
+                else
+                    generator.IntegerConstant(0); // non zero value if condition is empty; todo: change to 1, 0 to not loop in test since break not implemented yet
+                generator.CompareZero();
+                generator.LoopJumpEqualEnd(loopCount);
+                generator.BeginLoopBlock();
+                Statement.GenerateX86(generator);
+                generator.LoopContinueLabel(loopCount);
+                generator.EndLoopBlock();
+                ForPostExpression.GenerateX86(generator);
+                generator.LoopJumpBegin(loopCount);
+                generator.LoopEndLabel(loopCount);
+
+                generator.EndBlock();
             }
             else if (keyWord == Keyword.KeywordTypes.WHILE)
             {
-
+                int loopCount = generator.LoopBeginLabel();
+                Expression.GenerateX86(generator);
+                generator.CompareZero();
+                generator.LoopJumpEqualEnd(loopCount);
+                generator.BeginLoopBlock();
+                Statement.GenerateX86(generator);
+                generator.LoopContinueLabel(loopCount);
+                generator.EndLoopBlock();
+                generator.LoopJumpBegin(loopCount);
+                generator.LoopEndLabel(loopCount);
             }
             else if (keyWord == Keyword.KeywordTypes.DO)
             {
-
+                int loopCount = generator.LoopBeginLabel();
+                generator.BeginLoopBlock();
+                Statement.GenerateX86(generator);
+                generator.LoopContinueLabel(loopCount);
+                generator.EndLoopBlock();
+                Expression.GenerateX86(generator);
+                generator.CompareZero();
+                generator.LoopJumpNotEqualBegin(loopCount);
+                generator.LoopEndLabel(loopCount);
             }
             else if (keyWord == Keyword.KeywordTypes.BREAK)
             {
-
+                generator.LoopBreak();
             }
             else if (keyWord == Keyword.KeywordTypes.CONTINUE)
             {
-
+                generator.LoopContinue();
             }
             else if (BlockItemList.Count > 0)
             {
-                generator.StartBlock();
+                generator.BeginBlock();
 
                 foreach (var statement in BlockItemList)
                     statement.GenerateX86(generator);

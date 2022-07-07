@@ -4,7 +4,7 @@ namespace mcc
 {
     class ASTExpressionOptionalSemicolon : ASTAbstractExpression
     {
-        ASTAbstractExpression Expression;
+        public ASTAbstractExpression Expression;
 
         public override void Parse(Parser parser)
         {

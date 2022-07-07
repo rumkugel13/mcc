@@ -10,9 +10,12 @@ namespace mcc
         int varOffset = -varSize;
         int labelCounter = 0;
 
-        int currentScope = -1;
+        int varScope = -1;
         List<Dictionary<string, int>> varMapList = new List<Dictionary<string, int>>();
         List<HashSet<string>> varScopeList = new List<HashSet<string>>();
+
+        int loopScope = 0;
+        int loopCounter = 0;
 
         public void Label(string label)
         {
@@ -110,13 +113,70 @@ namespace mcc
             }
         }
 
-        public void StartBlock()
+        public int LoopBeginLabel()
         {
-            currentScope++;
+            Label("loop_begin" + loopCounter);
+            return loopCounter++;
+        }
+
+        public void LoopContinueLabel(int count)
+        {
+            Label("loop_continue" + count);
+        }
+
+        public void LoopEndLabel(int count)
+        {
+            Label("loop_end" + count);
+        }
+
+        public void LoopJumpEqualEnd(int count)
+        {
+            Instruction("je loop_end" + count);
+        }
+
+        public void LoopJumpNotEqualBegin(int count)
+        {
+            Instruction("jne loop_begin" + count);
+        }
+
+        public void LoopJumpBegin(int count)
+        {
+            Instruction("jmp loop_begin" + count);
+        }
+
+        public void BeginLoopBlock()
+        {
+            loopScope++;
+            BeginBlock();
+        }
+
+        public void EndLoopBlock()
+        {
+            EndBlock();
+            loopScope--;
+        }
+
+        public void LoopBreak()
+        {
+            if (loopScope == 0)
+                throw new ASTLoopScopeException("Can't break out of non existing loop scope");
+            // todo: implement
+        }
+
+        public void LoopContinue()
+        {
+            if (loopScope == 0)
+                throw new ASTLoopScopeException("Can't continue in non existing loop scope");
+            // todo: implement
+        }
+
+        public void BeginBlock()
+        {
+            this.varScope++;
             Dictionary<string, int> varMap;
             HashSet<string> varScope = new HashSet<string>();
 
-            varMap = currentScope > 0 ? new Dictionary<string, int>(varMapList[currentScope - 1]) : new Dictionary<string, int>();
+            varMap = this.varScope > 0 ? new Dictionary<string, int>(varMapList[this.varScope - 1]) : new Dictionary<string, int>();
 
             varMapList.Add(varMap);
             varScopeList.Add(varScope);
@@ -124,18 +184,18 @@ namespace mcc
 
         public void EndBlock()
         {
-            int newVarCount = varScopeList[currentScope].Count;
-            varMapList.RemoveAt(currentScope);
-            varScopeList.RemoveAt(currentScope);
+            int newVarCount = varScopeList[varScope].Count;
+            varMapList.RemoveAt(varScope);
+            varScopeList.RemoveAt(varScope);
 
             varOffset += newVarCount * varSize;
             Instruction($"addq ${newVarCount * varSize}, %rsp"); // pop off variables from current scope
-            currentScope--;
+            varScope--;
         }
 
         public void ReferenceVariable(string variable)
         {
-            if (varMapList[currentScope].TryGetValue(variable, out int offset))
+            if (varMapList[varScope].TryGetValue(variable, out int offset))
             {
                 Instruction("movq " + offset + "(%rbp), %rax");
             }
@@ -145,7 +205,7 @@ namespace mcc
 
         public void AssignVariable(string variable)
         {
-            if (varMapList[currentScope].TryGetValue(variable, out int offset))
+            if (varMapList[varScope].TryGetValue(variable, out int offset))
             {
                 Instruction("movq %rax, " + offset + "(%rbp)");
             }
@@ -155,12 +215,12 @@ namespace mcc
 
         public void DeclareVariable(string variable)
         {
-            if (varScopeList[currentScope].Contains(variable))
+            if (varScopeList[varScope].Contains(variable))
                 throw new ASTVariableException("Trying to declare existing Variable: " + variable);
 
             Instruction("pushq %rax"); // push current value of variable to stack
-            varMapList[currentScope][variable] = varOffset; // add or update variable offset
-            varScopeList[currentScope].Add(variable);
+            varMapList[varScope][variable] = varOffset; // add or update variable offset
+            varScopeList[varScope].Add(variable);
             varOffset -= varSize;
         }
 

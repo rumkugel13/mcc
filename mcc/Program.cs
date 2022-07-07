@@ -198,6 +198,11 @@ namespace mcc
                 Console.WriteLine(exception.Message);
                 finished = false;
             }
+            catch (ASTLoopScopeException exception)
+            {
+                Console.WriteLine(exception.Message);
+                finished = false;
+            }
             finally
             {
                 //remove assembly file
