@@ -154,6 +154,7 @@
             '^',
             '?',
             ':',
+            ',',
         };
 
         public static HashSet<char> Unary = new HashSet<char>
