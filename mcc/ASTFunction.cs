@@ -5,45 +5,61 @@ namespace mcc
     class ASTFunction : AST
     {
         public ASTIdentifier Identifier;
+        public List<ASTIdentifier> Parameters = new List<ASTIdentifier>();
         public List<ASTBlockItem> BlockItemList = new List<ASTBlockItem>();
         bool hasReturn;
 
         public override void Parse(Parser parser)
         {
-            Token token = parser.Next();
-            if (token is not Keyword || (token as Keyword).KeywordType != Keyword.KeywordTypes.INT)
-                parser.Fail(Token.TokenType.KEYWORD, "int");
+            parser.ExpectKeyword(Keyword.KeywordTypes.INT);
 
             Identifier = new ASTIdentifier();
             Identifier.Parse(parser);
 
-            token = parser.Next();
-            if (token is not Symbol || (token as Symbol).Value != '(')
-                parser.Fail(Token.TokenType.SYMBOL, "(");
+            parser.ExpectSymbol('(');
 
-            token = parser.Next();
-            if (token is not Symbol || (token as Symbol).Value != ')')
-                parser.Fail(Token.TokenType.SYMBOL, ")");
-
-            token = parser.Next();
-            if (token is not Symbol || (token as Symbol).Value != '{')
-                parser.Fail(Token.TokenType.SYMBOL, "{");
-
-            while (!parser.PeekSymbol('}'))
+            if (parser.PeekKeyword(Keyword.KeywordTypes.INT))
             {
-                if (parser.PeekKeyword(Keyword.KeywordTypes.RETURN))
-                {
-                    hasReturn = true;
-                }
+                parser.ExpectKeyword(Keyword.KeywordTypes.INT);
+                ASTIdentifier id = new ASTIdentifier();
+                id.Parse(parser);
+                Parameters.Add(id);
 
-                ASTBlockItem blockItem = new ASTBlockItem();
-                blockItem.Parse(parser);
-                BlockItemList.Add(blockItem);
+                while (parser.PeekSymbol(','))
+                {
+                    parser.ExpectSymbol(',');
+
+                    parser.ExpectKeyword(Keyword.KeywordTypes.INT);
+                    id = new ASTIdentifier();
+                    id.Parse(parser);
+                    Parameters.Add(id);
+                }
             }
 
-            token = parser.Next();
-            if (token is not Symbol || (token as Symbol).Value != '}')
-                parser.Fail(Token.TokenType.SYMBOL, "}");
+            parser.ExpectSymbol(')');
+
+            if (parser.PeekSymbol(';'))
+            {
+                parser.ExpectSymbol(';');
+            }
+            else
+            {
+                parser.ExpectSymbol('{');
+
+                while (!parser.PeekSymbol('}'))
+                {
+                    if (parser.PeekKeyword(Keyword.KeywordTypes.RETURN))
+                    {
+                        hasReturn = true;
+                    }
+
+                    ASTBlockItem blockItem = new ASTBlockItem();
+                    blockItem.Parse(parser);
+                    BlockItemList.Add(blockItem);
+                }
+
+                parser.ExpectSymbol('}');
+            }
         }
 
         public override void Print(int indent)
