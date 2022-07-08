@@ -130,7 +130,7 @@ namespace mcc
             string fileName = Path.GetFileNameWithoutExtension(filePath);
             string assemblyFile = Path.Combine(Path.GetDirectoryName(filePath), fileName + ".s");
             if (!silent) Console.WriteLine("Input: " + filePath);
-            if (!silent) Console.WriteLine(File.ReadAllText(filePath).Trim());
+            if (!silent && debug) Console.WriteLine(File.ReadAllText(filePath).Trim());
 
             try
             {
@@ -281,7 +281,7 @@ namespace mcc
         {
             List<Token> tokens = new();
 
-            string content = File.ReadAllText(file).Trim();
+            string content = File.ReadAllText(file).ReplaceLineEndings("");
 
             Tokenizer tokenizer = new Tokenizer(content);
 
