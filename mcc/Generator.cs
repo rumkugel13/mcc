@@ -174,14 +174,14 @@ namespace mcc
         public void LoopBreak()
         {
             if (loopScope == 0)
-                throw new ASTLoopScopeException("Can't break out of non existing loop scope");
+                throw new ASTLoopScopeException("Fail: Can't break out of non existing loop scope");
             LoopJumpEnd(loopScopeWentDown ? loopCounter - loopEndCounter + 1 : loopCounter - 1);
         }
 
         public void LoopContinue()
         {
             if (loopScope == 0)
-                throw new ASTLoopScopeException("Can't continue in non existing loop scope");
+                throw new ASTLoopScopeException("Fail: Can't continue in non existing loop scope");
             LoopJumpContinue(loopScopeWentDown ? loopCounter - loopEndCounter + 1 : loopCounter - 1);
         }
 
@@ -215,7 +215,7 @@ namespace mcc
                 Instruction("movq " + offset + "(%rbp), %rax");
             }
             else
-                throw new ASTVariableException("Trying to reference a non existing Variable: " + variable);
+                throw new ASTVariableException("Fail: Trying to reference a non existing Variable: " + variable);
         }
 
         public void AssignVariable(string variable)
@@ -225,13 +225,13 @@ namespace mcc
                 Instruction("movq %rax, " + offset + "(%rbp)");
             }
             else
-                throw new ASTVariableException("Trying to assign to non existing Variable: " + variable);
+                throw new ASTVariableException("Fail: Trying to assign to non existing Variable: " + variable);
         }
 
         public void DeclareVariable(string variable)
         {
             if (varScopeList[varScope].Contains(variable))
-                throw new ASTVariableException("Trying to declare existing Variable: " + variable);
+                throw new ASTVariableException("Fail: Trying to declare existing Variable: " + variable);
 
             Instruction("pushq %rax"); // push current value of variable to stack
             varMapList[varScope][variable] = varOffset; // add or update variable offset

@@ -65,8 +65,14 @@ namespace mcc
         public override void Print(int indent)
         {
             Console.WriteLine("FUNC INT " + Identifier.Value + ":");
-            Console.WriteLine("   params: ()");
-            Console.WriteLine("   body:");
+            Console.WriteLine("   PARAMS");
+
+            foreach (var p in Parameters)
+            {
+                Console.WriteLine(new string(' ', 6) + "INT ID<" + p.Value + ">");
+            }
+
+            Console.WriteLine("   BODY");
 
             Console.WriteLine(new string(' ', 6) + "BLK_BEGIN");
             foreach (var statement in BlockItemList)

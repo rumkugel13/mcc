@@ -6,7 +6,7 @@
     },
     "single": {
       "commandName": "Project",
-      "commandLineArgs": "-d stage_8/valid/for_empty.c",
+      "commandLineArgs": "-d stage_9/valid/expression_args.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {

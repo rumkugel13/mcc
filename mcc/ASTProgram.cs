@@ -4,31 +4,28 @@ namespace mcc
 {
     class ASTProgram : AST
     {
-        public ASTFunction Function;
-
-        public ASTProgram()
-        {
-            Function = new ASTFunction();
-        }
+        List<ASTFunction> FunctionList = new List<ASTFunction>();
 
         public override void Parse(Parser parser)
         {
-            Function.Parse(parser);
-
-            if (parser.HasMoreTokens())
+            while (parser.HasMoreTokens())
             {
-                parser.Fail("Fail: Too many Tokens");
+                ASTFunction function = new ASTFunction();
+                function.Parse(parser);
+                FunctionList.Add(function);
             }
         }
 
         public override void Print(int indent)
         {
-            Function.Print(0);
+            foreach (var function in FunctionList)
+                function.Print(indent);
         }
 
         public override void GenerateX86(Generator generator)
         {
-            Function.GenerateX86(generator);
+            foreach (var function in FunctionList)
+                function.GenerateX86(generator);
         }
     }
 }

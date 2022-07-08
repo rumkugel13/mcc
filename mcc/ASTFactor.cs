@@ -8,6 +8,7 @@ namespace mcc
         ASTUnaryOperation UnaryOperation;
         ASTInteger Integer;
         ASTIdentifier Identifier;
+        ASTFunctionCall FunctionCall;
 
         public override void Parse(Parser parser)
         {
@@ -15,16 +16,12 @@ namespace mcc
 
             if (peek is Symbol symbol && symbol.Value == '(')
             {
-                Token next = parser.Next();
-                if (next is not Symbol || (next as Symbol).Value != '(')
-                    parser.Fail(Token.TokenType.SYMBOL, "(");
+                parser.ExpectSymbol('(');
 
                 Expression = new ASTExpression();
                 Expression.Parse(parser);
 
-                next = parser.Next();
-                if (next is not Symbol || (next as Symbol).Value != ')')
-                    parser.Fail(Token.TokenType.SYMBOL, ")");
+                parser.ExpectSymbol(')');
             }
             else if (peek is Symbol && Symbol.Unary.Contains((peek as Symbol).Value))
             {
@@ -38,8 +35,16 @@ namespace mcc
             }
             else if (peek is Identifier)
             {
-                Identifier = new ASTIdentifier();
-                Identifier.Parse(parser);
+                if (parser.PeekNext() is Symbol s && s.Value == '(')
+                {
+                    FunctionCall = new ASTFunctionCall();
+                    FunctionCall.Parse(parser);
+                }
+                else
+                {
+                    Identifier = new ASTIdentifier();
+                    Identifier.Parse(parser);
+                }
             }
             else
             {
@@ -63,6 +68,10 @@ namespace mcc
             {
                 Integer.Print(indent);
             }
+            else if (FunctionCall != null)
+            {
+                FunctionCall.Print(indent);
+            }
             else if (Identifier != null)
             {
                 Identifier.Print(indent);
@@ -82,6 +91,10 @@ namespace mcc
             else if (Integer != null)
             {
                 Integer.GenerateX86(generator);
+            }
+            else if (FunctionCall != null)
+            {
+                FunctionCall.GenerateX86(generator);
             }
             else if (Identifier != null)
             {
