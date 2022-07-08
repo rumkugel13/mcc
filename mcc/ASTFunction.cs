@@ -8,6 +8,7 @@ namespace mcc
         public List<ASTIdentifier> Parameters = new List<ASTIdentifier>();
         public List<ASTBlockItem> BlockItemList = new List<ASTBlockItem>();
         bool hasReturn;
+        bool isDeclaration;
 
         public override void Parse(Parser parser)
         {
@@ -40,6 +41,7 @@ namespace mcc
 
             if (parser.PeekSymbol(';'))
             {
+                isDeclaration = true;
                 parser.ExpectSymbol(';');
             }
             else
@@ -82,7 +84,7 @@ namespace mcc
 
         public override void GenerateX86(Generator generator)
         {
-            if (BlockItemList.Count == 0)
+            if (isDeclaration)
             {
                 // declaration
                 generator.DeclareFunction(Identifier.Value, Parameters.Count);
