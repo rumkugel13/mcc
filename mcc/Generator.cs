@@ -8,16 +8,13 @@ namespace mcc
 
         const int varSize = 8; // 32bit = 4, 64bit = 8
         int varOffset = -varSize;
-        int labelCounter = 0;
+        int varLabelCounter = 0;
 
-        int varScope = -1;
-        List<Dictionary<string, int>> varMapList = new List<Dictionary<string, int>>(); // todo: maybe as stack?
-        List<HashSet<string>> varScopeList = new List<HashSet<string>>();
+        Stack<Dictionary<string, int>> varMaps = new Stack<Dictionary<string, int>>();
+        Stack<HashSet<string>> varScopes = new Stack<HashSet<string>>();
 
-        int loopScope = 0;
-        int loopCounter = 0;
-        int loopEndCounter = 0;
-        bool loopScopeWentDown = false; // todo: maybe as stack?
+        int loopLabelCounter = 0;
+        Stack<int> loops = new Stack<int>();
 
         struct Function
         {
@@ -52,21 +49,21 @@ namespace mcc
 
         public string Jump()
         {
-            string jmpLabel = "_jmp" + labelCounter++;
+            string jmpLabel = "_jmp" + varLabelCounter++;
             Instruction("jmp " + jmpLabel);
             return jmpLabel;
         }
 
         public string JumpEqual()
         {
-            string jmpLabel = "_je" + labelCounter++;
+            string jmpLabel = "_je" + varLabelCounter++;
             Instruction("je " + jmpLabel);
             return jmpLabel;
         }
 
         public string JumpNotEqual()
         {
-            string jmpLabel = "_jne" + labelCounter++;
+            string jmpLabel = "_jne" + varLabelCounter++;
             Instruction("jne " + jmpLabel);
             return jmpLabel;
         }
@@ -128,8 +125,9 @@ namespace mcc
 
         public int LoopBeginLabel()
         {
-            Label("loop_begin" + loopCounter);
-            return loopCounter++;
+            Label("loop_begin" + loopLabelCounter);
+            loops.Push(loopLabelCounter);
+            return loopLabelCounter++;
         }
 
         public void LoopContinueLabel(int count)
@@ -140,7 +138,7 @@ namespace mcc
         public void LoopEndLabel(int count)
         {
             Label("loop_end" + count);
-            loopEndCounter++;
+            loops.Pop();
         }
 
         public void LoopJumpEqualEnd(int count)
@@ -170,58 +168,51 @@ namespace mcc
 
         public void BeginLoopBlock()
         {
-            loopScope++;
             BeginBlock();
-            loopScopeWentDown = false;
         }
 
         public void EndLoopBlock()
         {
             EndBlock();
-            loopScope--;
-            loopScopeWentDown = true;
         }
 
         public void LoopBreak()
         {
-            if (loopScope == 0)
+            if (loops.Count == 0)
                 throw new ASTLoopScopeException("Fail: Can't break out of non existing loop scope");
-            LoopJumpEnd(loopScopeWentDown ? loopCounter - loopEndCounter + 1 : loopCounter - 1);
+            LoopJumpEnd(loops.Peek());
         }
 
         public void LoopContinue()
         {
-            if (loopScope == 0)
+            if (loops.Count == 0)
                 throw new ASTLoopScopeException("Fail: Can't continue in non existing loop scope");
-            LoopJumpContinue(loopScopeWentDown ? loopCounter - loopEndCounter + 1 : loopCounter - 1);
+            LoopJumpContinue(loops.Peek());
         }
 
         public void BeginBlock()
         {
-            this.varScope++;
             Dictionary<string, int> varMap;
             HashSet<string> varScope = new HashSet<string>();
 
-            varMap = this.varScope > 0 ? new Dictionary<string, int>(varMapList[this.varScope - 1]) : new Dictionary<string, int>();
-
-            varMapList.Add(varMap);
-            varScopeList.Add(varScope);
+            varMap = this.varMaps.Count > 0 ? new Dictionary<string, int>(varMaps.Peek()) : new Dictionary<string, int>();
+            varMaps.Push(varMap);
+            varScopes.Push(varScope);
         }
 
         public void EndBlock()
         {
-            int newVarCount = varScopeList[varScope].Count - paramCount; // exclude variables from arguments
-            varMapList.RemoveAt(varScope);
-            varScopeList.RemoveAt(varScope);
+            int newVarCount = varScopes.Peek().Count - paramCount; // exclude variables from arguments
+            varMaps.Pop();
+            varScopes.Pop();
 
             varOffset += newVarCount * varSize;
             Instruction($"addq ${newVarCount * varSize}, %rsp"); // pop off variables from current scope
-            varScope--;
         }
 
         public void ReferenceVariable(string variable)
         {
-            if (varMapList[varScope].TryGetValue(variable, out int offset))
+            if (varMaps.Peek().TryGetValue(variable, out int offset))
             {
                 Instruction("movq " + offset + "(%rbp), %rax");
             }
@@ -231,7 +222,7 @@ namespace mcc
 
         public void AssignVariable(string variable)
         {
-            if (varMapList[varScope].TryGetValue(variable, out int offset))
+            if (varMaps.Peek().TryGetValue(variable, out int offset))
             {
                 Instruction("movq %rax, " + offset + "(%rbp)");
             }
@@ -241,19 +232,19 @@ namespace mcc
 
         public void DeclareVariable(string variable)
         {
-            if (varScopeList[varScope].Contains(variable))
+            if (varScopes.Peek().Contains(variable))
                 throw new ASTVariableException("Fail: Trying to declare existing Variable: " + variable);
 
             Instruction("pushq %rax"); // push current value of variable to stack
-            varMapList[varScope][variable] = varOffset; // add or update variable offset
-            varScopeList[varScope].Add(variable);
+            varMaps.Peek()[variable] = varOffset; // add or update variable offset
+            varScopes.Peek().Add(variable);
             varOffset -= varSize;
         }
 
         public void DeclareParameter(string variable)
         {
-            varMapList[varScope][variable] = paramOffset + paramCount * varSize;
-            varScopeList[varScope].Add(variable);
+            varMaps.Peek()[variable] = paramOffset + paramCount * varSize;
+            varScopes.Peek().Add(variable);
             paramCount++;
         }
 
