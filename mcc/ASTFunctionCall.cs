@@ -47,7 +47,16 @@ namespace mcc
 
         public override void GenerateX86(Generator generator)
         {
-            
+            List<ASTExpression> reversed = new List<ASTExpression>(Arguments);
+            reversed.Reverse();
+            foreach (var argument in reversed)
+            {
+                argument.GenerateX86(generator);
+                generator.Instruction("pushq %rax");
+            }
+
+            generator.CallFunction(Identifier.Value, Arguments.Count);
+            generator.RemoveArguments(Arguments.Count);
         }
     }
 }

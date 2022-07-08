@@ -82,14 +82,25 @@ namespace mcc
 
         public override void GenerateX86(Generator generator)
         {
+            if (BlockItemList.Count == 0)
+            {
+                // declaration
+                generator.DeclareFunction(Identifier.Value, Parameters.Count);
+                return;
+            }
+
+            // definition
             generator.Instruction(".globl " + Identifier.Value);
-            generator.FunctionPrologue(Identifier.Value);
+            generator.FunctionPrologue(Identifier.Value, Parameters.Count);
 
             generator.BeginBlock();
 
+            foreach (var param in Parameters)
+                generator.DeclareParameter(param.Value);
+
             foreach (var statement in BlockItemList)
                 statement.GenerateX86(generator);
-
+            
             generator.EndBlock();
 
             if (!hasReturn)

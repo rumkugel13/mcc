@@ -8,7 +8,7 @@ namespace mcc
     {
         static bool silent = true;
         static bool debug = false;
-        static string VersionString = "mcc v0.8";
+        static string VersionString = "mcc v0.9";
 
         static void Main(string[] args)
         {
@@ -130,6 +130,7 @@ namespace mcc
             string fileName = Path.GetFileNameWithoutExtension(filePath);
             string assemblyFile = Path.Combine(Path.GetDirectoryName(filePath), fileName + ".s");
             if (!silent) Console.WriteLine("Input: " + filePath);
+            if (!silent) Console.WriteLine(File.ReadAllText(filePath).Trim());
 
             try
             {
@@ -199,6 +200,11 @@ namespace mcc
                 finished = false;
             }
             catch (ASTLoopScopeException exception)
+            {
+                Console.WriteLine(exception.Message);
+                finished = false;
+            }
+            catch (ASTFunctionException exception)
             {
                 Console.WriteLine(exception.Message);
                 finished = false;
@@ -275,16 +281,9 @@ namespace mcc
         {
             List<Token> tokens = new();
 
-            string[] content = File.ReadAllLines(file);
+            string content = File.ReadAllText(file).Trim();
 
-            // put all in one line
-            StringBuilder complete = new StringBuilder();
-            foreach (string line in content)
-            {
-                complete.AppendLine(line);
-            }
-
-            Tokenizer tokenizer = new Tokenizer(complete.ToString().Trim());
+            Tokenizer tokenizer = new Tokenizer(content);
 
             while (tokenizer.HasMoreTokens())
             {

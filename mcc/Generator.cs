@@ -11,13 +11,24 @@ namespace mcc
         int labelCounter = 0;
 
         int varScope = -1;
-        List<Dictionary<string, int>> varMapList = new List<Dictionary<string, int>>();
+        List<Dictionary<string, int>> varMapList = new List<Dictionary<string, int>>(); // todo: maybe as stack?
         List<HashSet<string>> varScopeList = new List<HashSet<string>>();
 
         int loopScope = 0;
         int loopCounter = 0;
         int loopEndCounter = 0;
-        bool loopScopeWentDown = false;
+        bool loopScopeWentDown = false; // todo: maybe as stack?
+
+        struct Function
+        {
+            public int ParameterCount;
+            public bool Defined;
+        }
+
+        Dictionary<string, Function> funcMap = new Dictionary<string, Function>();
+
+        const int paramOffset = 2 * varSize;
+        int paramCount = 0;
 
         public void Label(string label)
         {
@@ -199,7 +210,7 @@ namespace mcc
 
         public void EndBlock()
         {
-            int newVarCount = varScopeList[varScope].Count;
+            int newVarCount = varScopeList[varScope].Count - paramCount; // exclude variables from arguments
             varMapList.RemoveAt(varScope);
             varScopeList.RemoveAt(varScope);
 
@@ -239,8 +250,41 @@ namespace mcc
             varOffset -= varSize;
         }
 
-        public void FunctionPrologue(string label)
+        public void DeclareParameter(string variable)
         {
+            varMapList[varScope][variable] = paramOffset + paramCount * varSize;
+            varScopeList[varScope].Add(variable);
+            paramCount++;
+        }
+
+        public void DeclareFunction(string label, int parameterCount)
+        {
+            if (funcMap.TryGetValue(label, out Function function))
+            {
+                if (function.ParameterCount != parameterCount)
+                    throw new ASTFunctionException("Fail: Trying to declare already existing function");
+            }
+            else
+            {
+                funcMap.Add(label, new Function() { Defined = false, ParameterCount = parameterCount });
+            }
+        }
+
+        public void FunctionPrologue(string label, int parameterCount)
+        {
+            if (funcMap.TryGetValue(label, out Function function))
+            {
+                if (function.Defined)
+                    throw new ASTFunctionException("Fail: Trying to define already existing function");
+                else if (function.ParameterCount != parameterCount)
+                    throw new ASTFunctionException("Fail: Trying to define declared function with wrong parameter count");
+                else funcMap[label] = new Function() { Defined = true, ParameterCount = parameterCount };
+            }
+            else 
+                funcMap.Add(label, new Function() { Defined = true, ParameterCount = parameterCount });
+
+            paramCount = 0;
+            varOffset = -varSize;
             Label(label);
             Instruction("pushq %rbp");
             Instruction("movq %rsp, %rbp");
@@ -251,6 +295,24 @@ namespace mcc
             Instruction("movq %rbp, %rsp");
             Instruction("popq %rbp");
             Instruction("ret");
+        }
+
+        public void CallFunction(string function, int arguments)
+        {
+            if (funcMap.TryGetValue(function, out Function value))
+            {
+                if (value.ParameterCount != arguments)
+                    throw new ASTFunctionException("Fail: Trying to call function with too little/many parameters");
+            }
+            else
+                throw new ASTFunctionException("Fail: Trying to call non existing function");
+
+            Instruction("call " + function);
+        }
+
+        public void RemoveArguments(int count)
+        {
+            Instruction("addq $" + count * varSize + ", %rsp");
         }
 
         public string CreateOutput()
