@@ -281,9 +281,16 @@ namespace mcc
         {
             List<Token> tokens = new();
 
-            string content = File.ReadAllText(file).ReplaceLineEndings("");
+            string[] content = File.ReadAllLines(file);
 
-            Tokenizer tokenizer = new Tokenizer(content);
+            // put all in one line
+            StringBuilder complete = new StringBuilder();
+            foreach (string line in content)
+            {
+                complete.AppendLine(line);
+            }
+
+            Tokenizer tokenizer = new Tokenizer(complete.ToString().Trim());
 
             while (tokenizer.HasMoreTokens())
             {
