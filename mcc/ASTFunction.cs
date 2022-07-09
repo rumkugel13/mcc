@@ -4,9 +4,9 @@ namespace mcc
 {
     class ASTFunction : AST
     {
-        public ASTIdentifier Identifier;
-        public List<ASTIdentifier> Parameters = new List<ASTIdentifier>();
-        public List<ASTBlockItem> BlockItemList = new List<ASTBlockItem>();
+        ASTIdentifier Identifier;
+        List<ASTIdentifier> Parameters = new List<ASTIdentifier>();
+        List<ASTBlockItem> BlockItemList = new List<ASTBlockItem>();
         bool hasReturn;
         bool isDeclaration;
 

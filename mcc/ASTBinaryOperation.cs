@@ -4,9 +4,8 @@ namespace mcc
 {
     class ASTBinaryOperation : AST
     {
-        public static int LabelCounter = 0;
-        public ASTAbstractExpression Expression;
-        public string Value;
+        ASTAbstractExpression Expression;
+        string Value;
 
         public ASTBinaryOperation(ASTAbstractExpression expression)
         {
@@ -85,7 +84,7 @@ namespace mcc
 
             generator.Instruction("pushq %rax");
             Expression.GenerateX86(generator);
-            generator.Instruction("movq %rax, %rcx");    // need to switch src and dest for - and /
+            generator.Instruction("movl %eax, %ecx");    // need to switch src and dest for - and /
             generator.Instruction("popq %rax");
 
             if (Symbol2.Comparison.Contains(Value))

@@ -4,8 +4,8 @@ namespace mcc
 {
     class ASTUnaryOperation : AST
     {
-        public ASTFactor Factor;
-        public char Value;
+        ASTFactor Factor;
+        char Value;
 
         public ASTUnaryOperation()
         {

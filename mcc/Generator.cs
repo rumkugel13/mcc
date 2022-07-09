@@ -39,12 +39,12 @@ namespace mcc
 
         public void IntegerConstant(int value)
         {
-            Instruction("movq $" + value + ", %rax");
+            Instruction("movl $" + value + ", %eax");
         }
 
         public void CompareZero()
         {
-            Instruction("cmpq $0, %rax");
+            Instruction("cmpl $0, %eax");
         }
 
         public string Jump()
@@ -73,11 +73,11 @@ namespace mcc
             switch (op)
             {
                 case '+': break;    // just for completeness
-                case '-': Instruction("negq %rax"); break;
-                case '~': Instruction("notq %rax"); break;
+                case '-': Instruction("negl %eax"); break;
+                case '~': Instruction("notl %eax"); break;
                 case '!':
-                    Instruction("cmpq $0, %rax");
-                    Instruction("movq $0, %rax");
+                    Instruction("cmpl $0, %eax");
+                    Instruction("movl $0, %eax");
                     Instruction("sete %al");
                     break;
             }
@@ -87,14 +87,14 @@ namespace mcc
         {
             switch (op)
             {
-                case "+": Instruction("addq %rcx, %rax"); break;
-                case "*": Instruction("imulq %rcx, %rax"); break;
-                case "-": Instruction("subq %rcx, %rax"); break;
-                case "<<": Instruction("sal %rcx, %rax"); break;
-                case ">>": Instruction("sar %rcx, %rax"); break;
-                case "&": Instruction("and %rcx, %rax"); break;
-                case "|": Instruction("or %rcx, %rax"); break;
-                case "^": Instruction("xor %rcx, %rax"); break;
+                case "+": Instruction("addl %ecx, %eax"); break;
+                case "*": Instruction("imull %ecx, %eax"); break;
+                case "-": Instruction("subl %ecx, %eax"); break;
+                case "<<": Instruction("sall %ecx, %eax"); break;
+                case ">>": Instruction("sarl %ecx, %eax"); break;
+                case "&": Instruction("andl %ecx, %eax"); break;
+                case "|": Instruction("orl %ecx, %eax"); break;
+                case "^": Instruction("xorl %ecx, %eax"); break;
                 case "/":
                     Instruction("cdq");
                     Instruction("idivl %ecx");
@@ -102,14 +102,14 @@ namespace mcc
                 case "%":
                    Instruction("cdq");
                    Instruction("idivl %ecx");
-                   Instruction("movq %rdx, %rax");
+                   Instruction("movl %edx, %eax");
                     break;
             }
         }
 
         public void ComparisonOperation(string op)
         {
-            Instruction("cmpq %rcx, %rax");
+            Instruction("cmpl %ecx, %eax");
             IntegerConstant(0);
 
             switch (op)
@@ -214,7 +214,7 @@ namespace mcc
         {
             if (varMaps.Peek().TryGetValue(variable, out int offset))
             {
-                Instruction("movq " + offset + "(%rbp), %rax");
+                Instruction("movl " + offset + "(%rbp), %eax");
             }
             else
                 throw new ASTVariableException("Fail: Trying to reference a non existing Variable: " + variable);
@@ -224,7 +224,7 @@ namespace mcc
         {
             if (varMaps.Peek().TryGetValue(variable, out int offset))
             {
-                Instruction("movq %rax, " + offset + "(%rbp)");
+                Instruction("movl %eax, " + offset + "(%rbp)");
             }
             else
                 throw new ASTVariableException("Fail: Trying to assign to non existing Variable: " + variable);

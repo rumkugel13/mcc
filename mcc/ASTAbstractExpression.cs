@@ -4,8 +4,8 @@ namespace mcc
 {
     abstract class ASTAbstractExpression : AST
     {
-        public ASTAbstractExpression Expression;
-        public List<ASTBinaryOperation> BinaryOperations = new List<ASTBinaryOperation>();
+        protected ASTAbstractExpression Expression;
+        protected List<ASTBinaryOperation> BinaryOperations = new List<ASTBinaryOperation>();
 
         public override void Print(int indent)
         {
