@@ -6,7 +6,7 @@
     },
     "single": {
       "commandName": "Project",
-      "commandLineArgs": "-d stage_3/valid/add.c",
+      "commandLineArgs": "-d stage_10/valid/forward_declaration.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {
@@ -52,6 +52,11 @@
     "stage9": {
       "commandName": "Project",
       "commandLineArgs": "-t stage_9",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
+    "stage10": {
+      "commandName": "Project",
+      "commandLineArgs": "-t stage_10",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     }
   }

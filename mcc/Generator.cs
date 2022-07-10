@@ -27,6 +27,9 @@ namespace mcc
         const int paramOffset = 2 * varSize;
         int paramCount = 0;
 
+        Dictionary<string, bool> globalVarMap = new Dictionary<string, bool>();
+        string justDeclared;
+
         public void Label(string label)
         {
             sb.AppendLine(label + ":");
@@ -39,6 +42,12 @@ namespace mcc
 
         public void IntegerConstant(int value)
         {
+            if (varMaps.Count == 0)
+            {
+                DefineGlobalVariable(value);
+                return;
+            }
+
             Instruction("movl $" + value + ", %eax");
         }
 
@@ -210,11 +219,26 @@ namespace mcc
             Instruction($"addq ${newVarCount * varSize}, %rsp"); // pop off variables from current scope
         }
 
+        public void EndFunctionBlock()
+        {
+            // no need to pop off variables, since prologue restores stackpointer
+            varMaps.Pop();
+            varScopes.Pop();
+        }
+
         public void ReferenceVariable(string variable)
         {
+            if (varMaps.Count == 0)
+            {
+                throw new ASTVariableException("Fail: Trying to reference a non Constant Variable: " + variable);
+            }
             if (varMaps.Peek().TryGetValue(variable, out int offset))
             {
                 Instruction("movl " + offset + "(%rbp), %eax");
+            }
+            else if (globalVarMap.ContainsKey(variable))
+            {
+                Instruction("movl " + variable + "(%rip), %eax");
             }
             else
                 throw new ASTVariableException("Fail: Trying to reference a non existing Variable: " + variable);
@@ -226,12 +250,22 @@ namespace mcc
             {
                 Instruction("movl %eax, " + offset + "(%rbp)");
             }
+            else if (globalVarMap.ContainsKey(variable))
+            {
+                Instruction("movl %eax, " + variable + "(%rip)");
+            }
             else
                 throw new ASTVariableException("Fail: Trying to assign to non existing Variable: " + variable);
         }
 
         public void DeclareVariable(string variable)
         {
+            if (varScopes.Count == 0)
+            {
+                DeclareGlobalVariable(variable);
+                return;
+            }
+
             if (varScopes.Peek().Contains(variable))
                 throw new ASTVariableException("Fail: Trying to declare existing Variable: " + variable);
 
@@ -239,6 +273,23 @@ namespace mcc
             varMaps.Peek()[variable] = varOffset; // add or update variable offset
             varScopes.Peek().Add(variable);
             varOffset -= varSize;
+        }
+
+        public void DeclareGlobalVariable(string variable)
+        {
+            if (globalVarMap.TryGetValue(variable, out bool defined))
+            {
+                if (defined)
+                    throw new ASTVariableException("Fail: Trying to declare existing Global Variable: " + variable);
+            }
+
+            if (funcMap.ContainsKey(variable))
+            {
+                throw new ASTVariableException("Fail: Trying to declare Variable as existing Function: " + variable);
+            }
+
+            globalVarMap[variable] = false;
+            justDeclared = variable;
         }
 
         public void DeclareParameter(string variable)
@@ -250,7 +301,11 @@ namespace mcc
 
         public void DeclareFunction(string label, int parameterCount)
         {
-            if (funcMap.TryGetValue(label, out Function function))
+            if (globalVarMap.ContainsKey(label))
+            {
+                throw new ASTFunctionException("Fail: Trying to declare Function as existing Global Variable: " + label);
+            }
+            else if (funcMap.TryGetValue(label, out Function function))
             {
                 if (function.ParameterCount != parameterCount)
                     throw new ASTFunctionException("Fail: Trying to declare already existing function");
@@ -263,7 +318,11 @@ namespace mcc
 
         public void FunctionPrologue(string label, int parameterCount)
         {
-            if (funcMap.TryGetValue(label, out Function function))
+            if (globalVarMap.ContainsKey(label))
+            {
+                throw new ASTFunctionException("Fail: Trying to define Function as existing Global Variable: " + label);
+            }
+            else if (funcMap.TryGetValue(label, out Function function))
             {
                 if (function.Defined)
                     throw new ASTFunctionException("Fail: Trying to define already existing function");
@@ -276,6 +335,8 @@ namespace mcc
 
             paramCount = 0;
             varOffset = -varSize;
+            Instruction(".globl " + label);
+            Instruction(".text");
             Label(label);
             Instruction("pushq %rbp");
             Instruction("movq %rsp, %rbp");
@@ -304,6 +365,43 @@ namespace mcc
         public void RemoveArguments(int count)
         {
             Instruction("addq $" + count * varSize + ", %rsp");
+        }
+
+        public bool IsGlobalVariable()
+        {
+            return varMaps.Count == 0;
+        }
+
+        public void DefineGlobalVariable(int value)
+        {
+            if (globalVarMap.TryGetValue(justDeclared, out bool defined))
+            {
+                if (defined)
+                    throw new ASTVariableException("Fail: Trying to redefine Global Variable: " + justDeclared);
+            }
+
+            Instruction(".globl " + justDeclared);
+            Instruction(".data");
+            Instruction(".align 4");
+            Label(justDeclared);
+            Instruction(".long " + value);
+            globalVarMap[justDeclared] = true;
+        }
+
+        public void DefineUninitializedVariables()
+        {
+            foreach (var item in globalVarMap)
+            {
+                if (!item.Value)
+                {
+                    // not defined, add to bss
+                    Instruction(".globl " + item.Key);
+                    Instruction(".bss");
+                    Instruction(".align 4");
+                    Label(item.Key);
+                    Instruction(".zero 4");
+                }
+            }
         }
 
         public string CreateOutput()

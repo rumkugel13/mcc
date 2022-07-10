@@ -92,7 +92,6 @@ namespace mcc
             }
 
             // definition
-            generator.Instruction(".globl " + Identifier.Value);
             generator.FunctionPrologue(Identifier.Value, Parameters.Count);
 
             generator.BeginBlock();
@@ -103,7 +102,7 @@ namespace mcc
             foreach (var statement in BlockItemList)
                 statement.GenerateX86(generator);
             
-            generator.EndBlock();
+            generator.EndFunctionBlock();
 
             if (!hasReturn)
             {

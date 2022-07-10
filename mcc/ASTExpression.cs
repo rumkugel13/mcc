@@ -9,7 +9,7 @@ namespace mcc
 
         public override void Parse(Parser parser)
         {
-            if (parser.Peek().Type == Token.TokenType.IDENTIFIER && parser.PeekNext() is Symbol symbol && symbol.Value == '=')
+            if (parser.Peek().Type == Token.TokenType.IDENTIFIER && parser.Peek(1) is Symbol symbol && symbol.Value == '=')
             {
                 // assignment
                 Identifier = new ASTIdentifier();

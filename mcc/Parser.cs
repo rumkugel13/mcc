@@ -38,14 +38,12 @@
             return tokens[index];
         }
 
-        public Token PeekNext()
+        public Token Peek(int forward)
         {
-            if (!(index + 1 < tokens.Count))
-            {
+            if (!(index + forward < tokens.Count))
                 Fail("Fail: Missing Tokens");
-            }
 
-            return tokens[index + 1];
+            return tokens[index + forward];
         }
 
         public void ExpectSymbol(char value)

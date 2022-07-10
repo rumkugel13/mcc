@@ -41,6 +41,15 @@ namespace mcc
 
         public override void GenerateX86(Generator generator)
         {
+            if (generator.IsGlobalVariable())
+            {
+                generator.DeclareGlobalVariable(Identifier.Value);
+
+                if (Expression != null)
+                    Expression.GenerateX86(generator);
+                return;
+            }
+
             if (Expression != null)
             {
                 Expression.GenerateX86(generator);

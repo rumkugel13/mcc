@@ -35,7 +35,7 @@ namespace mcc
             }
             else if (peek is Identifier)
             {
-                if (parser.PeekNext() is Symbol s && s.Value == '(')
+                if (parser.Peek(1) is Symbol s && s.Value == '(')
                 {
                     FunctionCall = new ASTFunctionCall();
                     FunctionCall.Parse(parser);

@@ -4,28 +4,30 @@ namespace mcc
 {
     class ASTProgram : AST
     {
-        List<ASTFunction> FunctionList = new List<ASTFunction>();
+        List<ASTTopLevelItem> TopLevelItemList = new List<ASTTopLevelItem>();
 
         public override void Parse(Parser parser)
         {
             while (parser.HasMoreTokens())
             {
-                ASTFunction function = new ASTFunction();
-                function.Parse(parser);
-                FunctionList.Add(function);
+                ASTTopLevelItem item = new ASTTopLevelItem();
+                item.Parse(parser);
+                TopLevelItemList.Add(item);
             }
         }
 
         public override void Print(int indent)
         {
-            foreach (var function in FunctionList)
+            foreach (var function in TopLevelItemList)
                 function.Print(indent);
         }
 
         public override void GenerateX86(Generator generator)
         {
-            foreach (var function in FunctionList)
+            foreach (var function in TopLevelItemList)
                 function.GenerateX86(generator);
+
+            generator.DefineUninitializedVariables();
         }
     }
 }
