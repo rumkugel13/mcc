@@ -101,8 +101,6 @@ namespace mcc
 
             foreach (var statement in BlockItemList)
                 statement.GenerateX86(generator);
-            
-            generator.EndFunctionBlock();
 
             if (!hasReturn)
             {
@@ -110,6 +108,8 @@ namespace mcc
                 generator.IntegerConstant(0);
                 generator.FunctionEpilogue();
             }
+
+            generator.EndFunctionBlock();
         }
     }
 }
