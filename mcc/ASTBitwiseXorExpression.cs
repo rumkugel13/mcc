@@ -9,14 +9,11 @@ namespace mcc
             Expression = new ASTBitwiseAndExpression();
             Expression.Parse(parser);
 
-            Token peek = parser.Peek();
-            while ((peek is Symbol && (peek as Symbol).Value == '^'))
+            while (parser.PeekSymbol('^'))
             {
                 ASTBinaryOperation binaryOperation = new ASTBinaryOperation(new ASTBitwiseAndExpression());
                 binaryOperation.Parse(parser);
                 BinaryOperations.Add(binaryOperation);
-
-                peek = parser.Peek();
             }
         }
     }

@@ -2,9 +2,9 @@
 
 namespace mcc
 {
-    class ASTExpressionOptionalSemicolon : ASTAbstractExpression
+    class ASTExpressionOptionalSemicolon : ASTExpression
     {
-        public ASTAbstractExpression Expression;
+        public ASTExpression Expression;
 
         public override void Parse(Parser parser)
         {

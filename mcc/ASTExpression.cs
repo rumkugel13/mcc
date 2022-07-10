@@ -2,10 +2,11 @@
 
 namespace mcc
 {
-    class ASTExpression : ASTAbstractExpression
+    class ASTExpression : AST
     {
-        ASTAbstractExpression Expression;
+        ASTExpression Expression;
         ASTIdentifier Identifier;
+        ASTConditionalExpression ConditionalExpression;
 
         public override void Parse(Parser parser)
         {
@@ -22,8 +23,8 @@ namespace mcc
             }
             else
             {
-                Expression = new ASTConditionalExpression();
-                Expression.Parse(parser);
+                ConditionalExpression = new ASTConditionalExpression();
+                ConditionalExpression.Parse(parser);
             }
         }
 
@@ -37,7 +38,7 @@ namespace mcc
             }
             else
             {
-                Expression.Print(indent);
+                ConditionalExpression.Print(indent);
             }
         }
 
@@ -51,7 +52,7 @@ namespace mcc
             }
             else
             {
-                Expression.GenerateX86(generator);
+                ConditionalExpression.GenerateX86(generator);
             }
         }
     }

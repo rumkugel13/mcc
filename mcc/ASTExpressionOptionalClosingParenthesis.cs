@@ -2,9 +2,9 @@
 
 namespace mcc
 {
-    class ASTExpressionOptionalClosingParenthesis : ASTAbstractExpression
+    class ASTExpressionOptionalClosingParenthesis : AST
     {
-        ASTAbstractExpression Expression;
+        ASTExpression Expression;
 
         public override void Parse(Parser parser)
         {

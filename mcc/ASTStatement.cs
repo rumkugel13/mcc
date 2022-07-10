@@ -4,7 +4,7 @@ namespace mcc
 {
     class ASTStatement : AST
     {
-        ASTAbstractExpression Expression;
+        ASTExpression Expression;
         ASTStatement Statement, OptionalStatement;
         ASTDeclaration Declaration;
         ASTExpressionOptionalClosingParenthesis ForPostExpression;

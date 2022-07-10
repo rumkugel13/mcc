@@ -9,15 +9,12 @@ namespace mcc
             Expression = new ASTShiftExpression();
             Expression.Parse(parser);
 
-            Token peek = parser.Peek();
-            while ((peek is Symbol && (peek as Symbol).Value == '<') || (peek is Symbol && (peek as Symbol).Value == '>') ||
-                    (peek is Symbol2 && (peek as Symbol2).Value == "<=") || (peek is Symbol2 && (peek as Symbol2).Value == ">="))
+            while (parser.PeekSymbol('<') || parser.PeekSymbol('>') ||
+                   parser.PeekSymbol2("<=") || parser.PeekSymbol2(">="))
             {
                 ASTBinaryOperation binaryOperation = new ASTBinaryOperation(new ASTShiftExpression());
                 binaryOperation.Parse(parser);
                 BinaryOperations.Add(binaryOperation);
-
-                peek = parser.Peek();
             }
         }
     }

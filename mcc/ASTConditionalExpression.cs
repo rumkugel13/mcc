@@ -2,7 +2,7 @@
 
 namespace mcc
 {
-    class ASTConditionalExpression : ASTAbstractExpression
+    class ASTConditionalExpression : AST
     {
         ASTLogicalOrExpression LogicalOrExpression;
         ASTExpression Expression;
