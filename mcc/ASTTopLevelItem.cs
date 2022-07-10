@@ -22,6 +22,8 @@ namespace mcc
                     Declaration.Parse(parser);
                 }
             }
+            else
+                parser.Fail(Token.TokenType.KEYWORD, "int");
         }
 
         public override void Print(int indent)
