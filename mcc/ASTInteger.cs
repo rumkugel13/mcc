@@ -13,11 +13,9 @@ namespace mcc
 
         public override void Parse(Parser parser)
         {
-            Token token = parser.Next();
-            if (token is not Integer)
-                parser.Fail(Token.TokenType.INTEGER);
+            parser.ExpectInteger(out int value);
 
-            Value = (token as Integer).Value;
+            Value = value;
         }
 
         public override void Print(int indent)

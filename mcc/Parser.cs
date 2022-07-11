@@ -48,8 +48,9 @@
 
         public void ExpectSymbol(char value)
         {
-            Token next = Next();
-            if (next is not Symbol symbol || symbol.Value != value)
+            if (PeekSymbol(value))
+                Next();
+            else
                 Fail(Token.TokenType.SYMBOL, value.ToString());
         }
 
@@ -58,11 +59,17 @@
             return Peek() is Symbol symbol && symbol.Value == value;
         }
 
+        public bool PeekUnarySymbol()
+        {
+            return Peek() is Symbol symbol && Symbol.Unary.Contains(symbol.Value);
+        }
+
         public void ExpectSymbol2(string value)
         {
-            Token next = Next();
-            if (next is not Symbol2 symbol2 || symbol2.Value != value)
-                Fail(Token.TokenType.SYMBOL, value);
+            if (PeekSymbol2(value))
+                Next();
+            else
+                Fail(Token.TokenType.SYMBOL2, value);
         }
 
         public bool PeekSymbol2(string value)
@@ -72,8 +79,9 @@
 
         public void ExpectKeyword(Keyword.KeywordTypes type)
         {
-            Token next = Next();
-            if (next is not Keyword keyword || keyword.KeywordType != type)
+            if (PeekKeyword(type))
+                Next();
+            else
                 Fail(Token.TokenType.KEYWORD, type.ToString());
         }
 
@@ -82,10 +90,38 @@
             return Peek() is Keyword keyword && keyword.KeywordType == type;
         }
 
+        public void ExpectIdentifier(out string id)
+        {
+            id = string.Empty;
+            if (Peek() is Identifier)
+                id = ((Identifier)Next()).Value;
+            else
+                Fail(Token.TokenType.IDENTIFIER);
+        }
+
+        public void ExpectInteger(out int value)
+        {
+            value = 0;
+            if (Peek() is Integer)
+                value = ((Integer)Next()).Value;
+            else
+                Fail(Token.TokenType.INTEGER);
+        }
+
+        public void ExpectUnarySymbol(out char symbol)
+        {
+            symbol = char.MinValue;
+            if (PeekUnarySymbol())
+                symbol = ((Symbol)Next()).Value;
+            else
+                Fail(Token.TokenType.SYMBOL, "'-' or '~' or '!' or '+'");
+        }
+
         public void Fail(string message)
         {
             failed = true;
-            throw new UnexpectedValueException(message + " at " + index);
+            if (index == tokens.Count) index--;
+            throw new UnexpectedValueException(message + " at Line: " + tokens[index].Line + ", Column: " + tokens[index].Column);
         }
 
         public void Fail(Token.TokenType expected)

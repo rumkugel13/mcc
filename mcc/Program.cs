@@ -130,7 +130,7 @@ namespace mcc
             string fileName = Path.GetFileNameWithoutExtension(filePath);
             string assemblyFile = Path.Combine(Path.GetDirectoryName(filePath), fileName + ".s");
             if (!silent) Console.WriteLine("Input: " + filePath);
-            if (!silent && debug) Console.WriteLine(File.ReadAllText(filePath).Trim());
+            if (!silent && debug) Console.WriteLine(File.ReadAllText(filePath));
 
             try
             {
@@ -281,21 +281,12 @@ namespace mcc
         {
             List<Token> tokens = new();
 
-            string[] content = File.ReadAllLines(file);
+            string content = string.Join("\n", File.ReadAllLines(file)).TrimEnd();
+            Lexer lexer = new Lexer(content);
 
-            // put all in one line
-            StringBuilder complete = new StringBuilder();
-            foreach (string line in content)
+            while (lexer.HasMoreTokens())
             {
-                complete.AppendLine(line);
-            }
-
-            Tokenizer tokenizer = new Tokenizer(complete.ToString().Trim());
-
-            while (tokenizer.HasMoreTokens())
-            {
-                tokenizer.Advance();
-                tokens.Add(tokenizer.GetCurrentToken());
+                tokens.Add(lexer.GetNextToken());
             }
 
             return tokens;

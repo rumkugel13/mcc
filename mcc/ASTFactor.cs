@@ -12,9 +12,7 @@ namespace mcc
 
         public override void Parse(Parser parser)
         {
-            Token peek = parser.Peek();
-
-            if (peek is Symbol symbol && symbol.Value == '(')
+            if (parser.PeekSymbol('('))
             {
                 parser.ExpectSymbol('(');
 
@@ -23,17 +21,17 @@ namespace mcc
 
                 parser.ExpectSymbol(')');
             }
-            else if (peek is Symbol && Symbol.Unary.Contains((peek as Symbol).Value))
+            else if (parser.PeekUnarySymbol())
             {
                 UnaryOperation = new ASTUnaryOperation();
                 UnaryOperation.Parse(parser);
             }
-            else if (peek is Integer)
+            else if (parser.Peek() is Integer)
             {
                 Integer = new ASTInteger();
                 Integer.Parse(parser);
             }
-            else if (peek is Identifier)
+            else if (parser.Peek() is Identifier)
             {
                 if (parser.Peek(1) is Symbol s && s.Value == '(')
                 {

@@ -14,11 +14,9 @@ namespace mcc
 
         public override void Parse(Parser parser)
         {
-            Token token = parser.Next();
-            if (token is not Symbol && Symbol.Unary.Contains((token as Symbol).Value))
-                parser.Fail(Token.TokenType.SYMBOL, "'-' or '~' or '!'");
+            parser.ExpectUnarySymbol(out char value);
 
-            Value = (token as Symbol).Value;
+            Value = value;
 
             Factor.Parse(parser);
         }

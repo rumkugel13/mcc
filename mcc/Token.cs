@@ -46,7 +46,6 @@
 
     class Identifier : Token
     {
-        public static string IdentifierRegEx = @"[a-zA-Z]\w*$";
         public string Value = "";
 
         public Identifier(string name)
@@ -63,7 +62,6 @@
 
     class Integer : Token
     {
-        public static string IntegerRegEx = "[0-9]+";
         public int Value;
 
         public Integer(int number)
@@ -185,9 +183,18 @@
         }
     }
 
+    class EndToken : Token
+    {
+        public EndToken()
+        {
+            Type = TokenType.END;
+        }
+    }
+
     abstract class Token
     {
         public TokenType Type;
+        public int Line, Column;
 
         public enum TokenType
         {
@@ -196,11 +203,12 @@
             SYMBOL2,
             IDENTIFIER,
             INTEGER,
+            END
         }
 
         public override string ToString()
         {
-            return Type.ToString();
+            return "Line: " + Line + ", Column: " + Column + " | " + Type.ToString();
         }
     }
 }

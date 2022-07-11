@@ -6,7 +6,7 @@
     },
     "single": {
       "commandName": "Project",
-      "commandLineArgs": "-d stage_7/invalid/syntax_err_extra_brace.c",
+      "commandLineArgs": "-d stage_1/valid/newlines.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {
