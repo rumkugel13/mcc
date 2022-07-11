@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace mcc
 {
@@ -21,13 +20,6 @@ namespace mcc
                     if (!args[0].StartsWith('-'))
                     {
                         string filePath = args[0];
-
-                        if (!File.Exists(filePath))
-                        {
-                            Console.WriteLine("Unknown file.");
-                            return;
-                        }
-
                         Compile(filePath);
                     }
                     else if (args[0].Equals("-v"))
@@ -52,13 +44,6 @@ namespace mcc
                     {
                         silent = false;
                         string filePath = args[1];
-
-                        if (!File.Exists(filePath))
-                        {
-                            Console.WriteLine("Unknown file.");
-                            return;
-                        }
-
                         Compile(filePath);
                     }
                     else if (args[0].Equals("-d"))
@@ -66,13 +51,6 @@ namespace mcc
                         silent = false;
                         debug = true;
                         string filePath = args[1];
-
-                        if (!File.Exists(filePath))
-                        {
-                            Console.WriteLine("Unknown file.");
-                            return;
-                        }
-
                         Compile(filePath);
                     }
 
@@ -84,13 +62,13 @@ namespace mcc
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("Usage:");
-            builder.AppendLine("   mcc [-p | -d] <c_file>");
+            builder.AppendLine("   mcc [-p | -d] <c-file>");
             builder.AppendLine("   mcc -v");
             builder.AppendLine("   mcc -t <stage_folder>");
             builder.AppendLine("Options:");
-            builder.AppendLine("   <c_file>             Compile c-file silently");
-            builder.AppendLine("   -p <c_file>          Compile c-file with Verbose output");
-            builder.AppendLine("   -d <c_file>          Compile c-file with Debug output");
+            builder.AppendLine("   <c-file>             Compile c-file silently");
+            builder.AppendLine("   -p <c-file>          Compile c-file with Verbose output");
+            builder.AppendLine("   -d <c-file>          Compile c-file with Debug output");
             builder.AppendLine("   -v                   Print Version");
             builder.AppendLine("   -t <stage_folder>    Test c-files in stage folder");
             Console.Write(builder.ToString());
@@ -126,6 +104,12 @@ namespace mcc
 
         static bool Compile(string filePath)
         {
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("Unknown file: " + filePath);
+                return false;
+            }
+
             bool finished = true;
             string fileName = Path.GetFileNameWithoutExtension(filePath);
             string assemblyFile = Path.Combine(Path.GetDirectoryName(filePath), fileName + ".s");
@@ -291,7 +275,5 @@ namespace mcc
 
             return tokens;
         }
-
-        private static readonly Regex whitespace = new Regex(@"\s+");
     }
 }
