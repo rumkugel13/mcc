@@ -124,17 +124,29 @@ namespace mcc
                 if (!silent) Console.WriteLine("OK");
                 if (!silent && debug) PrintTokenList(tokens);
 
-                //parser
+                //nodeparser
                 if (!silent) Console.Write("Parsing Tokens ... ");
-                AST ast = Parse(tokens);
+                ASTProgramNode program = ParseProgramNode(fileName, tokens);
                 if (!silent) Console.WriteLine("OK");
-                if (!silent && debug) PrintAST(ast);
+                if (!silent && debug) PrintFromASTNode(program);
 
-                //generator
+                //nodegenerator
                 if (!silent) Console.Write("Generating Assembly ... ");
-                string assembly = Generate(ast);
+                string assembly = GenerateFromASTNode(program);
                 if (!silent) Console.WriteLine("OK");
                 if (!silent && debug) PrintAssembly(assembly);
+
+                ////parser
+                //if (!silent) Console.Write("Parsing Tokens ... ");
+                //AST ast = Parse(tokens);
+                //if (!silent) Console.WriteLine("OK");
+                //if (!silent && debug) PrintAST(ast);
+
+                ////generator
+                //if (!silent) Console.Write("Generating Assembly ... ");
+                //string assembly = Generate(ast);
+                //if (!silent) Console.WriteLine("OK");
+                //if (!silent && debug) PrintAssembly(assembly);
 
                 //writer
                 if (!silent) Console.Write("Writing Assembly File ... ");
@@ -274,6 +286,24 @@ namespace mcc
             }
 
             return tokens;
+        }
+
+        static ASTProgramNode ParseProgramNode(string programName, List<Token> tokens)
+        {
+            NodeParser parser = new NodeParser(tokens);
+            return parser.ParseProgram(programName);
+        }
+
+        static string GenerateFromASTNode(ASTNode program)
+        {
+            return new NodeGenerator(program).GenerateX86();
+        }
+
+        static void PrintFromASTNode(ASTNode program)
+        {
+            NodePrinter printer = new NodePrinter();
+            printer.Print(program);
+            Console.WriteLine(program.ToString());
         }
     }
 }
