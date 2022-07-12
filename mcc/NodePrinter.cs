@@ -25,8 +25,8 @@ namespace mcc
                 case ASTReturnNode ret:
                     PrintReturnNode(ret);
                     break;
-                case ASTConstantNode constant:
-                    PrintConstantNode(constant);
+                case ASTExpressionNode exp:
+                    PrintExpressionNode(exp);
                     break;
             }
         }
@@ -51,7 +51,36 @@ namespace mcc
         {
             PrintLine("RETURN:");
             indent++;
-            Print(ret.Constant);
+            Print(ret.Expression);
+            indent--;
+        }
+
+        private void PrintExpressionNode(ASTExpressionNode exp)
+        {
+            switch (exp)
+            {
+                case ASTUnaryOpNode unaryOp: PrintUnaryOpNode(unaryOp); break;
+                case ASTConstantNode constant: PrintConstantNode(constant); break;
+                case ASTBinaryOpNode binaryOp: PrintBinaryOpNode(binaryOp); break;
+            }
+        }
+
+        private void PrintBinaryOpNode(ASTBinaryOpNode binaryOp)
+        {
+            indent++;
+            Print(binaryOp.ExpressionLeft);
+            indent--;
+            PrintLine("BinaryOp<" + binaryOp.Value + ">");
+            indent++;
+            Print(binaryOp.ExpressionRight);
+            indent--;
+        }
+
+        private void PrintUnaryOpNode(ASTUnaryOpNode unaryOp)
+        {
+            PrintLine("UnaryOp<" + unaryOp.Value + ">");
+            indent++;
+            Print(unaryOp.Expression);
             indent--;
         }
 

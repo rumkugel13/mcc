@@ -3,11 +3,11 @@ namespace mcc
 {
     class ASTReturnNode : ASTNode
     {
-        public ASTConstantNode Constant;
+        public ASTExpressionNode Expression;
 
-        public ASTReturnNode(ASTConstantNode constant)
+        public ASTReturnNode(ASTExpressionNode expression)
         {
-            Constant = constant;
+            Expression = expression;
         }
     }
 }

@@ -34,15 +34,102 @@
         public ASTReturnNode ParseReturn()
         {
             ExpectKeyword(Keyword.KeywordTypes.RETURN);
-            ASTConstantNode constant = ParseConstant();
+            ASTExpressionNode exp = ParseExpression();
             ExpectSymbol(';');
-            return new ASTReturnNode(constant);
+            return new ASTReturnNode(exp);
         }
 
         public ASTConstantNode ParseConstant()
         {
             ExpectInteger(out int value);
             return new ASTConstantNode(value);
+        }
+
+        public ASTUnaryOpNode ParseUnaryOp()
+        {
+            ExpectUnarySymbol(out char symbol);
+            ASTExpressionNode exp = ParseFactor();
+            return new ASTUnaryOpNode(symbol, exp);
+        }
+
+        public ASTExpressionNode ParseFactor()
+        {
+            if (PeekUnarySymbol())
+            {
+                return ParseUnaryOp();
+            }
+            else if (Peek() is Integer)
+            {
+                return ParseConstant();
+            }
+            else if (PeekSymbol('('))
+            {
+                ExpectSymbol('(');
+                ASTExpressionNode exp = ParseExpression();
+                ExpectSymbol(')');
+                return exp;
+            }
+            else
+            {
+                Fail("Expected UnaryOp or Integer");
+                return new ASTNoExpressionNode();
+            }
+        }
+
+        public ASTExpressionNode ParseTerm()
+        {
+            ASTExpressionNode exp = ParseFactor();
+            while (PeekSymbol('*') || PeekSymbol('/') || PeekSymbol('%'))
+            {
+                ExpectBinarySymbol(out char binOp);
+                ASTExpressionNode second = ParseFactor();
+                exp = new ASTBinaryOpNode(binOp, exp, second);
+            }
+            return exp;
+        }
+
+        public ASTExpressionNode ParseExpression()
+        {
+            ASTExpressionNode exp = ParseTerm();
+            while (PeekSymbol('+') || PeekSymbol('-'))
+            {
+                ExpectBinarySymbol(out char binOp);
+                ASTExpressionNode second = ParseTerm();
+                exp = new ASTBinaryOpNode(binOp, exp, second);
+            }
+            return exp;
+        }
+
+        private void ExpectBinarySymbol(out char value)
+        {
+            value = default;
+            Token token = Next();
+            if (token is Symbol symbol)
+            {
+                if (!Symbol.Binary.Contains(symbol.Value))
+                {
+                    Fail(Token.TokenType.SYMBOL, symbol.Value.ToString());
+                }
+                else
+                {
+                    value = symbol.Value;//.ToString();
+                }
+            }
+            //else if (token is Symbol2 symbol2)
+            //{
+            //    if (!Symbol2.Dual.Contains(symbol2.Value))
+            //    {
+            //        Fail(Token.TokenType.SYMBOL2, symbol2.Value);
+            //    }
+            //    else
+            //    {
+            //        Value = symbol2.Value;
+            //    }
+            //}
+            else
+            {
+                Fail(Token.TokenType.SYMBOL, "or Symbol2");
+            }
         }
 
         public bool HasMoreTokens()

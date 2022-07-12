@@ -303,7 +303,7 @@ namespace mcc
         {
             NodePrinter printer = new NodePrinter();
             printer.Print(program);
-            Console.WriteLine(program.ToString());
+            Console.WriteLine(printer.ToString());
         }
     }
 }
