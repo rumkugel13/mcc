@@ -3,10 +3,10 @@ namespace mcc
 {
     class ASTBinaryOpNode : ASTExpressionNode
     {
-        public char Value;
+        public string Value;
         public ASTExpressionNode ExpressionLeft, ExpressionRight;
 
-        public ASTBinaryOpNode(char value, ASTExpressionNode expLeft, ASTExpressionNode expRight)
+        public ASTBinaryOpNode(string value, ASTExpressionNode expLeft, ASTExpressionNode expRight)
         {
             Value = value;
             ExpressionLeft = expLeft;

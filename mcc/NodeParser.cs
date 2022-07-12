@@ -81,8 +81,105 @@
             ASTExpressionNode exp = ParseFactor();
             while (PeekSymbol('*') || PeekSymbol('/') || PeekSymbol('%'))
             {
-                ExpectBinarySymbol(out char binOp);
+                ExpectBinarySymbol(out string binOp);
                 ASTExpressionNode second = ParseFactor();
+                exp = new ASTBinaryOpNode(binOp, exp, second);
+            }
+            return exp;
+        }
+
+        public ASTExpressionNode ParseAdditiveExpression()
+        {
+            ASTExpressionNode exp = ParseTerm();
+            while (PeekSymbol('+') || PeekSymbol('-'))
+            {
+                ExpectBinarySymbol(out string binOp);
+                ASTExpressionNode second = ParseTerm();
+                exp = new ASTBinaryOpNode(binOp, exp, second);
+            }
+            return exp;
+        }
+
+        public ASTExpressionNode ParseShiftExpression()
+        {
+            ASTExpressionNode exp = ParseAdditiveExpression();
+            while (PeekSymbol2("<<") || PeekSymbol2(">>"))
+            {
+                ExpectBinarySymbol(out string binOp);
+                ASTExpressionNode second = ParseAdditiveExpression();
+                exp = new ASTBinaryOpNode(binOp, exp, second);
+            }
+            return exp;
+        }
+
+        public ASTExpressionNode ParseRelationalExpression()
+        {
+            ASTExpressionNode exp = ParseShiftExpression();
+            while (PeekSymbol('<') || PeekSymbol('>') ||
+                   PeekSymbol2("<=") || PeekSymbol2(">="))
+            {
+                ExpectBinarySymbol(out string binOp);
+                ASTExpressionNode second = ParseShiftExpression();
+                exp = new ASTBinaryOpNode(binOp, exp, second);
+            }
+            return exp;
+        }
+
+        public ASTExpressionNode ParseEqualityExpression()
+        {
+            ASTExpressionNode exp = ParseRelationalExpression();
+            while (PeekSymbol2("!=") || PeekSymbol2("=="))
+            {
+                ExpectBinarySymbol(out string binOp);
+                ASTExpressionNode second = ParseRelationalExpression();
+                exp = new ASTBinaryOpNode(binOp, exp, second);
+            }
+            return exp;
+        }
+
+        public ASTExpressionNode ParseBitwiseAndExpression()
+        {
+            ASTExpressionNode exp = ParseEqualityExpression();
+            while (PeekSymbol('&'))
+            {
+                ExpectBinarySymbol(out string binOp);
+                ASTExpressionNode second = ParseEqualityExpression();
+                exp = new ASTBinaryOpNode(binOp, exp, second);
+            }
+            return exp;
+        }
+
+        public ASTExpressionNode ParseBitwiseXorExpression()
+        {
+            ASTExpressionNode exp = ParseBitwiseAndExpression();
+            while (PeekSymbol('^'))
+            {
+                ExpectBinarySymbol(out string binOp);
+                ASTExpressionNode second = ParseBitwiseAndExpression();
+                exp = new ASTBinaryOpNode(binOp, exp, second);
+            }
+            return exp;
+        }
+
+        public ASTExpressionNode ParseBitwiseOrExpression()
+        {
+            ASTExpressionNode exp = ParseBitwiseXorExpression();
+            while (PeekSymbol('|'))
+            {
+                ExpectBinarySymbol(out string binOp);
+                ASTExpressionNode second = ParseBitwiseXorExpression();
+                exp = new ASTBinaryOpNode(binOp, exp, second);
+            }
+            return exp;
+        }
+
+        public ASTExpressionNode ParseLogicalAndExpression()
+        {
+            ASTExpressionNode exp = ParseBitwiseOrExpression();
+            while (PeekSymbol2("&&"))
+            {
+                ExpectBinarySymbol(out string binOp);
+                ASTExpressionNode second = ParseBitwiseOrExpression();
                 exp = new ASTBinaryOpNode(binOp, exp, second);
             }
             return exp;
@@ -90,19 +187,19 @@
 
         public ASTExpressionNode ParseExpression()
         {
-            ASTExpressionNode exp = ParseTerm();
-            while (PeekSymbol('+') || PeekSymbol('-'))
+            ASTExpressionNode exp = ParseLogicalAndExpression();
+            while (PeekSymbol2("||"))
             {
-                ExpectBinarySymbol(out char binOp);
-                ASTExpressionNode second = ParseTerm();
+                ExpectBinarySymbol(out string binOp);
+                ASTExpressionNode second = ParseLogicalAndExpression();
                 exp = new ASTBinaryOpNode(binOp, exp, second);
             }
             return exp;
         }
 
-        private void ExpectBinarySymbol(out char value)
+        private void ExpectBinarySymbol(out string value)
         {
-            value = default;
+            value = string.Empty;
             Token token = Next();
             if (token is Symbol symbol)
             {
@@ -112,20 +209,20 @@
                 }
                 else
                 {
-                    value = symbol.Value;//.ToString();
+                    value = symbol.Value.ToString();
                 }
             }
-            //else if (token is Symbol2 symbol2)
-            //{
-            //    if (!Symbol2.Dual.Contains(symbol2.Value))
-            //    {
-            //        Fail(Token.TokenType.SYMBOL2, symbol2.Value);
-            //    }
-            //    else
-            //    {
-            //        Value = symbol2.Value;
-            //    }
-            //}
+            else if (token is Symbol2 symbol2)
+            {
+                if (!Symbol2.Dual.Contains(symbol2.Value))
+                {
+                    Fail(Token.TokenType.SYMBOL2, symbol2.Value);
+                }
+                else
+                {
+                    value = symbol2.Value;
+                }
+            }
             else
             {
                 Fail(Token.TokenType.SYMBOL, "or Symbol2");

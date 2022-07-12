@@ -6,6 +6,7 @@ namespace mcc
     {
         ASTNode rootNode;
         StringBuilder sb = new StringBuilder();
+        int varLabelCounter = 0;
 
         public NodeGenerator(ASTNode rootNode)
         {
@@ -46,33 +47,51 @@ namespace mcc
             }
         }
 
+        private void GenerateShortCircuit(ASTBinaryOpNode binOp)
+        {
+            Generate(binOp.ExpressionLeft);
+            CompareZero();
+            string jumpEqualOrNotLabel = "";
+            if (binOp.Value == "||")
+            {
+                jumpEqualOrNotLabel = JumpEqual();
+                IntegerConstant(1);
+            }
+            else if (binOp.Value == "&&")
+            {
+                jumpEqualOrNotLabel = JumpNotEqual();
+            }
+
+            string endLabel = Jump();
+            Label(jumpEqualOrNotLabel);
+            Generate(binOp.ExpressionRight);
+            CompareZero();
+            IntegerConstant(0);
+            Instruction("setne %al");
+            Label(endLabel);
+        }
+
         private void GenerateBinaryOpNode(ASTBinaryOpNode binOp)
         {
+            if (Symbol2.ShortCircuit.Contains(binOp.Value))
+            {
+                GenerateShortCircuit(binOp);
+                return;
+            }
+
             Generate(binOp.ExpressionLeft);
             Instruction("push %rax");
             Generate(binOp.ExpressionRight);
             Instruction("movl %eax, %ecx"); // need to switch src and dest for - and /
             Instruction("pop %rax");
 
-            switch (binOp.Value.ToString())
+            if (Symbol2.Comparison.Contains(binOp.Value))
             {
-                case "+": Instruction("addl %ecx, %eax"); break;
-                case "*": Instruction("imull %ecx, %eax"); break;
-                case "-": Instruction("subl %ecx, %eax"); break;
-                //case "<<": Instruction("sall %ecx, %eax"); break;
-                //case ">>": Instruction("sarl %ecx, %eax"); break;
-                //case "&": Instruction("andl %ecx, %eax"); break;
-                //case "|": Instruction("orl %ecx, %eax"); break;
-                //case "^": Instruction("xorl %ecx, %eax"); break;
-                case "/":
-                    Instruction("cdq");
-                    Instruction("idivl %ecx");
-                    break;
-                case "%":
-                    Instruction("cdq");
-                    Instruction("idivl %ecx");
-                    Instruction("movl %edx, %eax");
-                    break;
+                ComparisonOperation(binOp.Value);
+            }
+            else
+            {
+                BinaryOperation(binOp.Value);
             }
         }
 
@@ -103,6 +122,83 @@ namespace mcc
         public void Label(string label)
         {
             sb.AppendLine(label + ":");
+        }
+
+        public void CompareZero()
+        {
+            Instruction("cmpl $0, %eax");
+        }
+
+        public string Jump()
+        {
+            string jmpLabel = "_jmp" + varLabelCounter++;
+            Instruction("jmp " + jmpLabel);
+            return jmpLabel;
+        }
+
+        public string JumpEqual()
+        {
+            string jmpLabel = "_je" + varLabelCounter++;
+            Instruction("je " + jmpLabel);
+            return jmpLabel;
+        }
+
+        public string JumpNotEqual()
+        {
+            string jmpLabel = "_jne" + varLabelCounter++;
+            Instruction("jne " + jmpLabel);
+            return jmpLabel;
+        }
+
+        public void IntegerConstant(int value)
+        {
+            //if (varMaps.Count == 0)
+            //{
+            //    DefineGlobalVariable(value);
+            //    return;
+            //}
+
+            Instruction("movl $" + value + ", %eax");
+        }
+
+        public void ComparisonOperation(string op)
+        {
+            Instruction("cmpl %ecx, %eax");
+            IntegerConstant(0);
+
+            switch (op)
+            {
+                case "==": Instruction("sete %al"); break;
+                case "!=": Instruction("setne %al"); break;
+                case ">=": Instruction("setge %al"); break;
+                case ">": Instruction("setg %al"); break;
+                case "<=": Instruction("setle %al"); break;
+                case "<": Instruction("setl %al"); break;
+            }
+        }
+
+        public void BinaryOperation(string op)
+        {
+            switch (op)
+            {
+                case "+": Instruction("addl %ecx, %eax"); break;
+                case "*": Instruction("imull %ecx, %eax"); break;
+                case "-": Instruction("subl %ecx, %eax"); break;
+                case "<<": Instruction("sall %ecx, %eax"); break;
+                case ">>": Instruction("sarl %ecx, %eax"); break;
+                case "&": Instruction("andl %ecx, %eax"); break;
+                case "|": Instruction("orl %ecx, %eax"); break;
+                case "^": Instruction("xorl %ecx, %eax"); break;
+                case "/":
+                    Instruction("cdq");
+                    Instruction("idivl %ecx");
+                    break;
+                case "%":
+                    Instruction("cdq");
+                    Instruction("idivl %ecx");
+                    Instruction("movl %edx, %eax");
+                    break;
+            }
         }
 
         public void Instruction(string instruction)
