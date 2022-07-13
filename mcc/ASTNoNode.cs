@@ -1,9 +1,17 @@
 ﻿
 namespace mcc
 {
-    class ASTNoExpressionNode : ASTExpressionNode
+    class ASTNoExpressionNode : ASTAbstractExpressionNode
     {
         public ASTNoExpressionNode()
+        {
+
+        }
+    }
+
+    class ASTNoStatementNode : ASTStatementNode
+    {
+        public ASTNoStatementNode()
         {
 
         }

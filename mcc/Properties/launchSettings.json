@@ -6,7 +6,7 @@
     },
     "single": {
       "commandName": "Project",
-      "commandLineArgs": "-d stage_3/valid/unop_add.c",
+      "commandLineArgs": "-d stage_5/valid/assign.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {

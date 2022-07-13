@@ -1,7 +1,7 @@
 ﻿
 namespace mcc
 {
-    class ASTConstantNode : ASTExpressionNode
+    class ASTConstantNode : ASTAbstractExpressionNode
     {
         public int Value;
 

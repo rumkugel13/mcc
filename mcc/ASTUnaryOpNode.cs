@@ -1,12 +1,12 @@
 ﻿
 namespace mcc
 {
-    class ASTUnaryOpNode : ASTExpressionNode
+    class ASTUnaryOpNode : ASTAbstractExpressionNode
     {
         public char Value;
-        public ASTExpressionNode Expression;
+        public ASTAbstractExpressionNode Expression;
 
-        public ASTUnaryOpNode(char value, ASTExpressionNode expression)
+        public ASTUnaryOpNode(char value, ASTAbstractExpressionNode expression)
         {
             Value = value;
             Expression = expression;

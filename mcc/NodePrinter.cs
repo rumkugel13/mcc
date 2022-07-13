@@ -22,12 +22,13 @@ namespace mcc
                 case ASTFunctionNode function:
                     PrintFunctionNode(function);
                     break;
-                case ASTReturnNode ret:
-                    PrintReturnNode(ret);
+                case ASTAbstractExpressionNode exp:
+                    PrintAbstractExpressionNode(exp);
                     break;
-                case ASTExpressionNode exp:
-                    PrintExpressionNode(exp);
+                case ASTStatementNode statement:
+                    PrintStatementNode(statement);
                     break;
+                default: PrintLine("Unkown ASTNode type: " + node.GetType()); break;
             }
         }
 
@@ -43,7 +44,42 @@ namespace mcc
         {
             PrintLine("FUNCTION INT " + function.Name + ":");
             indent++;
-            Print(function.Return);
+            foreach (var statement in function.Statements)
+                Print(statement);
+            indent--;
+        }
+
+        private void PrintStatementNode(ASTStatementNode statement)
+        {
+            switch (statement)
+            {
+                case ASTReturnNode ret: PrintReturnNode(ret); break;
+                case ASTExpressionNode exp: PrintExpressionNode(exp); break;
+                case ASTDeclarationNode dec: PrintDeclarationNode(dec); break;
+                default: PrintLine("Unkown ASTNode type: " + statement.GetType()); break;
+            }
+        }
+
+        private void PrintDeclarationNode(ASTDeclarationNode dec)
+        {
+            PrintLine("DECLARE:");
+            indent++;
+            PrintLine("VAR<" + dec.Name + ">");
+            if (dec.Initializer is not ASTNoExpressionNode)
+            {
+                PrintLine("ASSIGN:");
+                indent++;
+                Print(dec.Initializer);
+                indent--;
+            }
+            indent--;
+        }
+
+        private void PrintExpressionNode(ASTExpressionNode exp)
+        {
+            PrintLine("EXPRESSION:");
+            indent++;
+            Print(exp.Expression);
             indent--;
         }
 
@@ -55,14 +91,26 @@ namespace mcc
             indent--;
         }
 
-        private void PrintExpressionNode(ASTExpressionNode exp)
+        private void PrintAbstractExpressionNode(ASTAbstractExpressionNode exp)
         {
             switch (exp)
             {
                 case ASTUnaryOpNode unaryOp: PrintUnaryOpNode(unaryOp); break;
                 case ASTConstantNode constant: PrintConstantNode(constant); break;
                 case ASTBinaryOpNode binaryOp: PrintBinaryOpNode(binaryOp); break;
+                case ASTAssignNode assign: PrintAssignNode(assign); break;
+                case ASTVariableNode variable: PrintVariableNode(variable); break;
+                default: PrintLine("Unkown ASTNode type: " + exp.GetType()); break;
             }
+        }
+
+        private void PrintAssignNode(ASTAssignNode assign)
+        {
+            PrintLine("ASSIGN:");
+            PrintLine("VAR<" + assign.Name + ">");
+            indent++;
+            Print(assign.Expression);
+            indent--;
         }
 
         private void PrintBinaryOpNode(ASTBinaryOpNode binaryOp)
@@ -82,6 +130,11 @@ namespace mcc
             indent++;
             Print(unaryOp.Expression);
             indent--;
+        }
+
+        private void PrintVariableNode(ASTVariableNode variable)
+        {
+            PrintLine("VAR<" + variable.Name + ">");
         }
 
         private void PrintConstantNode(ASTConstantNode constant)

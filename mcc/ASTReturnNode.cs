@@ -1,11 +1,11 @@
 ﻿
 namespace mcc
 {
-    class ASTReturnNode : ASTNode
+    class ASTReturnNode : ASTStatementNode
     {
-        public ASTExpressionNode Expression;
+        public ASTAbstractExpressionNode Expression;
 
-        public ASTReturnNode(ASTExpressionNode expression)
+        public ASTReturnNode(ASTAbstractExpressionNode expression)
         {
             Expression = expression;
         }

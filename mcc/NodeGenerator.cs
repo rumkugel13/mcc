@@ -23,7 +23,37 @@ namespace mcc
                 case ASTConstantNode constant: GenerateConstantNode(constant); break;
                 case ASTUnaryOpNode unOp: GenerateUnaryOpNode(unOp); break;
                 case ASTBinaryOpNode binOp: GenerateBinaryOpNode(binOp); break;
+                case ASTExpressionNode exp: GenerateExpressionNode(exp); break;
+                case ASTDeclarationNode dec: GenerateDeclarationNode(dec); break;
+                case ASTAssignNode assign: GenerateAssignNode(assign); break;
+                case ASTVariableNode variable: GenerateVariableNode(variable); break;
+                default: Console.WriteLine("Fail: Unkown ASTNode type: " + node.GetType()); break;
             }
+        }
+
+        private void GenerateVariableNode(ASTVariableNode variable)
+        {
+            Instruction("movl " + variable.Offset + "(%rbp), %eax");
+        }
+
+        private void GenerateAssignNode(ASTAssignNode assign)
+        {
+            Generate(assign.Expression);
+            Instruction("movl %eax, " + assign.Offset + "(%rbp)");
+        }
+
+        private void GenerateDeclarationNode(ASTDeclarationNode dec)
+        {
+            if (dec.Initializer is not ASTNoExpressionNode)
+            {
+                Generate(dec.Initializer);
+            }
+            else
+            {
+                IntegerConstant(0); // no value given, assign 0
+            }
+
+            Instruction("push %rax"); // push current value of variable to stack
         }
 
         private void GenerateConstantNode(ASTConstantNode constant)
@@ -98,14 +128,37 @@ namespace mcc
         private void GenerateReturnNode(ASTReturnNode ret)
         {
             Generate(ret.Expression);
-            Instruction("ret");
+            FunctionEpilogue();
+        }
+
+        private void GenerateExpressionNode(ASTExpressionNode exp)
+        {
+            Generate(exp.Expression);
         }
 
         private void GenerateFunctionNode(ASTFunctionNode function)
         {
-            Instruction(".globl " + function.Name);
-            Label(function.Name);
-            GenerateReturnNode(function.Return);
+            FunctionPrologue(function.Name);
+
+            foreach (var statement in function.Statements)
+                Generate(statement);
+
+
+        }
+
+        private void FunctionPrologue(string name)
+        {
+            Instruction(".globl " + name);
+            Label(name);
+            Instruction("pushq %rbp");
+            Instruction("movq %rsp, %rbp");
+        }
+
+        private void FunctionEpilogue()
+        {
+            Instruction("movq %rbp, %rsp");
+            Instruction("popq %rbp");
+            Instruction("ret");
         }
 
         private void GenerateProgramNode(ASTProgramNode program)

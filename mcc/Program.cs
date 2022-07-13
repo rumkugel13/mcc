@@ -130,6 +130,11 @@ namespace mcc
                 if (!silent) Console.WriteLine("OK");
                 if (!silent && debug) PrintFromASTNode(program);
 
+                //validator
+                if (!silent) Console.Write("Validating AST ... ");
+                ValidateASTNode(program);
+                if (!silent) Console.WriteLine("OK");
+
                 //nodegenerator
                 if (!silent) Console.Write("Generating Assembly ... ");
                 string assembly = GenerateFromASTNode(program);
@@ -304,6 +309,12 @@ namespace mcc
             NodePrinter printer = new NodePrinter();
             printer.Print(program);
             Console.WriteLine(printer.ToString());
+        }
+
+        static void ValidateASTNode(ASTNode program)
+        {
+            NodeValidator validator = new NodeValidator(program);
+            validator.Validate(program);
         }
     }
 }

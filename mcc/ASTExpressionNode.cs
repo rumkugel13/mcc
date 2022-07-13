@@ -1,8 +1,13 @@
 ﻿
 namespace mcc
 {
-    abstract class ASTExpressionNode : ASTNode
+    class ASTExpressionNode : ASTStatementNode
     {
+        public ASTAbstractExpressionNode Expression;
 
+        public ASTExpressionNode(ASTAbstractExpressionNode expression)
+        {
+            Expression = expression;
+        }
     }
 }

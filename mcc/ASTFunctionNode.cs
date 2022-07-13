@@ -4,12 +4,12 @@ namespace mcc
     class ASTFunctionNode : ASTNode
     {
         public string Name;
-        public ASTReturnNode Return;
+        public List<ASTStatementNode> Statements;
 
-        public ASTFunctionNode(string name, ASTReturnNode returnNode)
+        public ASTFunctionNode(string name, List<ASTStatementNode> statements)
         {
             Name = name;
-            Return = returnNode;
+            Statements = statements;
         }
     }
 }
