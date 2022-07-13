@@ -143,7 +143,12 @@ namespace mcc
             foreach (var statement in function.Statements)
                 Generate(statement);
 
-
+            if (!function.ContainsReturn)
+            {
+                // return 0 if no return statement found
+                IntegerConstant(0);
+                FunctionEpilogue();
+            }
         }
 
         private void FunctionPrologue(string name)

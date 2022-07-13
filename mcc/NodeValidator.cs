@@ -93,9 +93,16 @@ namespace mcc
         private void ValidateFunctionNode(ASTFunctionNode function)
         {
             varOffset = -varSize;
+            bool containsReturn = false;
 
             foreach (var statement in function.Statements)
+            {
                 Validate(statement);
+                if (statement is ASTReturnNode)
+                    containsReturn = true;
+            }
+
+            function.ContainsReturn = containsReturn;
         }
 
         private void ValidateProgramNode(ASTProgramNode program)

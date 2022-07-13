@@ -5,6 +5,7 @@ namespace mcc
     {
         public string Name;
         public List<ASTStatementNode> Statements;
+        public bool ContainsReturn;
 
         public ASTFunctionNode(string name, List<ASTStatementNode> statements)
         {
