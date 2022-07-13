@@ -64,6 +64,85 @@
             return new ASTCompundNode(blockItems);
         }
 
+        public ASTWhileNode ParseWhile()
+        {
+            ExpectKeyword(Keyword.KeywordTypes.WHILE);
+            ExpectSymbol('(');
+            ASTAbstractExpressionNode exp = ParseExpression();
+            ExpectSymbol(')');
+            ASTStatementNode statement = ParseStatement();
+            return new ASTWhileNode(exp, statement);
+        }
+
+        public ASTDoWhileNode ParseDoWhile()
+        {
+            ExpectKeyword(Keyword.KeywordTypes.DO);
+            ASTStatementNode statement = ParseStatement();
+            ExpectKeyword(Keyword.KeywordTypes.WHILE);
+            ExpectSymbol('(');
+            ASTAbstractExpressionNode exp = ParseExpression();
+            ExpectSymbol(')');
+            ExpectSymbol(';');
+            return new ASTDoWhileNode(statement, exp);
+        }
+
+        public ASTBreakNode ParseBreak()
+        {
+            ExpectKeyword(Keyword.KeywordTypes.BREAK);
+            ExpectSymbol(';');
+            return new ASTBreakNode();
+        }
+
+        public ASTContinueNode ParseContinue()
+        {
+            ExpectKeyword(Keyword.KeywordTypes.CONTINUE);
+            ExpectSymbol(';');
+            return new ASTContinueNode();
+        }
+
+        public ASTForNode ParseFor()
+        {
+            ExpectKeyword(Keyword.KeywordTypes.FOR);
+            ExpectSymbol('(');
+            ASTAbstractExpressionNode init = ParseOptionalExpression();
+            ExpectSymbol(';');
+            ASTAbstractExpressionNode condition = ParseOptionalExpression();
+            if (condition is ASTNoExpressionNode)
+                condition = new ASTConstantNode(1);
+            ExpectSymbol(';');
+            ASTAbstractExpressionNode post = ParseOptionalExpression();
+            ExpectSymbol(')');
+            ASTStatementNode statement = ParseStatement();
+            return new ASTForNode(statement, init, condition, post);
+        }
+
+        public ASTForDeclarationNode ParseForDeclaration()
+        {
+            ExpectKeyword(Keyword.KeywordTypes.FOR);
+            ExpectSymbol('(');
+            ASTDeclarationNode decl = ParseDeclaration(); // includes ;
+            ASTAbstractExpressionNode condition = ParseOptionalExpression();
+            if (condition is ASTNoExpressionNode)
+                condition = new ASTConstantNode(1);
+            ExpectSymbol(';');
+            ASTAbstractExpressionNode post = ParseOptionalExpression();
+            ExpectSymbol(')');
+            ASTStatementNode statement = ParseStatement();
+            return new ASTForDeclarationNode(statement, decl, condition, post);
+        }
+
+        public ASTAbstractExpressionNode ParseOptionalExpression()
+        {
+            if (!PeekSymbol(';') && !PeekSymbol(')'))
+            {
+                return ParseExpression();
+            }
+            else
+            {
+                return new ASTNoExpressionNode();
+            }
+        }
+
         public ASTStatementNode ParseStatement()
         {
             if (PeekKeyword(Keyword.KeywordTypes.RETURN))
@@ -74,19 +153,46 @@
             {
                 return ParseCondition();
             }
+            else if (PeekKeyword(Keyword.KeywordTypes.DO))
+            {
+                return ParseDoWhile();
+            }
+            else if (PeekKeyword(Keyword.KeywordTypes.FOR))
+            {
+                if (Peek(2) is Keyword kw && kw.KeywordType == Keyword.KeywordTypes.INT)
+                {
+                    return ParseForDeclaration();
+                }
+                else
+                {
+                    return ParseFor();
+                }
+            }
+            else if (PeekKeyword(Keyword.KeywordTypes.WHILE))
+            {
+                return ParseWhile();
+            }
+            else if (PeekKeyword(Keyword.KeywordTypes.BREAK))
+            {
+                return ParseBreak();
+            }
+            else if (PeekKeyword(Keyword.KeywordTypes.CONTINUE))
+            {
+                return ParseContinue();
+            }
             else if (PeekSymbol('{'))
             {
                 return ParseCompound();
             }
             else
             {
-                ASTAbstractExpressionNode exp = ParseExpression();
+                ASTAbstractExpressionNode exp = ParseOptionalExpression();
                 ExpectSymbol(';');
                 return new ASTExpressionNode(exp);
             }
         }
 
-        public ASTStatementNode ParseCondition()
+        public ASTConditionNode ParseCondition()
         {
             ExpectKeyword(Keyword.KeywordTypes.IF);
             ExpectSymbol('(');
@@ -324,7 +430,7 @@
             }
         }
 
-        public ASTAbstractExpressionNode ParseAssignment()
+        public ASTAssignNode ParseAssignment()
         {
             ExpectIdentifier(out string id);
             ExpectSymbol('=');

@@ -17,32 +17,112 @@ namespace mcc
         {
             switch (node)
             {
-                case ASTProgramNode program: GenerateProgramNode(program); break;
-                case ASTFunctionNode function: GenerateFunctionNode(function); break;
-                case ASTReturnNode ret: GenerateReturnNode(ret); break;
-                case ASTConstantNode constant: GenerateConstantNode(constant); break;
-                case ASTUnaryOpNode unOp: GenerateUnaryOpNode(unOp); break;
-                case ASTBinaryOpNode binOp: GenerateBinaryOpNode(binOp); break;
-                case ASTExpressionNode exp: GenerateExpressionNode(exp); break;
-                case ASTDeclarationNode dec: GenerateDeclarationNode(dec); break;
-                case ASTAssignNode assign: GenerateAssignNode(assign); break;
-                case ASTVariableNode variable: GenerateVariableNode(variable); break;
-                case ASTConditionNode cond: GenerateConditionNode(cond); break;
-                case ASTConditionalExpressionNode condEx: GenerateConditionalExpressionNode(condEx); break;
-                case ASTCompundNode comp: GenerateCompoundNode(comp); break;
-                default: Console.WriteLine("Fail: Unkown ASTNode type: " + node.GetType()); break;
+                case ASTNoExpressionNode: break;
+                case ASTNoStatementNode: break;
+                case ASTProgramNode program: GenerateProgram(program); break;
+                case ASTFunctionNode function: GenerateFunction(function); break;
+                case ASTReturnNode ret: GenerateReturn(ret); break;
+                case ASTConstantNode constant: GenerateConstant(constant); break;
+                case ASTUnaryOpNode unOp: GenerateUnaryOp(unOp); break;
+                case ASTBinaryOpNode binOp: GenerateBinaryOp(binOp); break;
+                case ASTExpressionNode exp: GenerateExpression(exp); break;
+                case ASTDeclarationNode dec: GenerateDeclaration(dec); break;
+                case ASTAssignNode assign: GenerateAssign(assign); break;
+                case ASTVariableNode variable: GenerateVariable(variable); break;
+                case ASTConditionNode cond: GenerateCondition(cond); break;
+                case ASTConditionalExpressionNode condEx: GenerateConditionalExpression(condEx); break;
+                case ASTCompundNode comp: GenerateCompound(comp); break;
+                case ASTWhileNode whil: GenerateWhile(whil); break;
+                case ASTDoWhileNode doWhil: GenerateDoWhile(doWhil); break;
+                case ASTForNode fo: GenerateFor(fo); break;
+                case ASTForDeclarationNode forDecl: GenerateForDeclaration(forDecl); break;
+                case ASTBreakNode br: GenerateBreak(br); break;
+                case ASTContinueNode con: GenerateContinue(con); break;
+                default: throw new NotImplementedException("Unkown ASTNode type: " + node.GetType());
             }
         }
 
-        private void GenerateCompoundNode(ASTCompundNode comp)
+        private void GenerateContinue(ASTContinueNode con)
+        {
+            Instruction("jmp loop_continue_" + con.LoopCount);
+        }
+
+        private void GenerateBreak(ASTBreakNode br)
+        {
+            Instruction("jmp loop_end_" + br.LoopCount);
+        }
+
+        private void GenerateForDeclaration(ASTForDeclarationNode forDecl)
+        {
+            Generate(forDecl.Declaration);
+            Label("loop_begin_" + forDecl.LoopCount);
+            Generate(forDecl.Condition);
+            CompareZero();
+            Instruction("je loop_end_" + forDecl.LoopCount);
+            Generate(forDecl.Statement);
+            Label("loop_continue_" + forDecl.LoopCount);
+            Deallocate(forDecl.BytesToDeallocate);
+            Generate(forDecl.Post);
+            Instruction("jmp loop_begin_" + forDecl.LoopCount);
+            Label("loop_end_" + forDecl.LoopCount);
+            Deallocate(forDecl.BytesToDeallocateInit);
+        }
+
+        private void GenerateFor(ASTForNode fo)
+        {
+            Generate(fo.Init);
+            Label("loop_begin_" + fo.LoopCount);
+            Generate(fo.Condition);
+            CompareZero();
+            Instruction("je loop_end_" + fo.LoopCount);
+            Generate(fo.Statement);
+            Label("loop_continue_" + fo.LoopCount);
+            Deallocate(fo.BytesToDeallocate);
+            Generate(fo.Post);
+            Instruction("jmp loop_begin_" + fo.LoopCount);
+            Label("loop_end_" + fo.LoopCount);
+            Deallocate(fo.BytesToDeallocateInit);
+        }
+
+        private void GenerateDoWhile(ASTDoWhileNode doWhil)
+        {
+            Label("loop_begin_" + doWhil.LoopCount);
+            Generate(doWhil.Statement);
+            Label("loop_continue_" + doWhil.LoopCount);
+            Deallocate(doWhil.BytesToDeallocate);
+            Generate(doWhil.Expression);
+            CompareZero();
+            Instruction("jne loop_begin_" + doWhil.LoopCount);
+            Label("loop_end_" + doWhil.LoopCount);
+        }
+
+        private void GenerateWhile(ASTWhileNode whil)
+        {
+            Label("loop_begin_" + whil.LoopCount);
+            Generate(whil.Expression);
+            CompareZero();
+            Instruction("je loop_end_" + whil.LoopCount);
+            Generate(whil.Statement);
+            Label("loop_continue_" + whil.LoopCount);
+            Deallocate(whil.BytesToDeallocate);
+            Instruction("jmp loop_begin_" + whil.LoopCount);
+            Label("loop_end_" + whil.LoopCount);
+        }
+
+        private void GenerateCompound(ASTCompundNode comp)
         {
             foreach (var blockItem in comp.BlockItems)
                 Generate(blockItem);
 
-            Instruction($"addq ${comp.BytesToPop}, %rsp"); // pop off variables from current scope
+            Deallocate(comp.BytesToDeallocate);
         }
 
-        private void GenerateConditionalExpressionNode(ASTConditionalExpressionNode condEx)
+        private void Deallocate(int bytes)
+        {
+            Instruction($"addq ${bytes}, %rsp"); // pop off variables from current scope
+        }
+
+        private void GenerateConditionalExpression(ASTConditionalExpressionNode condEx)
         {
             Generate(condEx.Condition);
             CompareZero();
@@ -54,7 +134,7 @@ namespace mcc
             Label(end);
         }
 
-        private void GenerateConditionNode(ASTConditionNode cond)
+        private void GenerateCondition(ASTConditionNode cond)
         {
             Generate(cond.Condition);
             CompareZero();
@@ -75,18 +155,18 @@ namespace mcc
             }
         }
 
-        private void GenerateVariableNode(ASTVariableNode variable)
+        private void GenerateVariable(ASTVariableNode variable)
         {
             Instruction("movl " + variable.Offset + "(%rbp), %eax");
         }
 
-        private void GenerateAssignNode(ASTAssignNode assign)
+        private void GenerateAssign(ASTAssignNode assign)
         {
             Generate(assign.Expression);
             Instruction("movl %eax, " + assign.Offset + "(%rbp)");
         }
 
-        private void GenerateDeclarationNode(ASTDeclarationNode dec)
+        private void GenerateDeclaration(ASTDeclarationNode dec)
         {
             if (dec.Initializer is not ASTNoExpressionNode)
             {
@@ -100,12 +180,12 @@ namespace mcc
             Instruction("push %rax"); // push current value of variable to stack
         }
 
-        private void GenerateConstantNode(ASTConstantNode constant)
+        private void GenerateConstant(ASTConstantNode constant)
         {
             Instruction("movl $" + constant.Value + ", %eax");
         }
 
-        private void GenerateUnaryOpNode(ASTUnaryOpNode unaryOp)
+        private void GenerateUnaryOp(ASTUnaryOpNode unaryOp)
         {
             Generate(unaryOp.Expression);
             switch (unaryOp.Value)
@@ -145,7 +225,7 @@ namespace mcc
             Label(endLabel);
         }
 
-        private void GenerateBinaryOpNode(ASTBinaryOpNode binOp)
+        private void GenerateBinaryOp(ASTBinaryOpNode binOp)
         {
             if (Symbol2.ShortCircuit.Contains(binOp.Value))
             {
@@ -169,18 +249,18 @@ namespace mcc
             }
         }
 
-        private void GenerateReturnNode(ASTReturnNode ret)
+        private void GenerateReturn(ASTReturnNode ret)
         {
             Generate(ret.Expression);
             FunctionEpilogue();
         }
 
-        private void GenerateExpressionNode(ASTExpressionNode exp)
+        private void GenerateExpression(ASTExpressionNode exp)
         {
             Generate(exp.Expression);
         }
 
-        private void GenerateFunctionNode(ASTFunctionNode function)
+        private void GenerateFunction(ASTFunctionNode function)
         {
             FunctionPrologue(function.Name);
 
@@ -210,9 +290,9 @@ namespace mcc
             Instruction("ret");
         }
 
-        private void GenerateProgramNode(ASTProgramNode program)
+        private void GenerateProgram(ASTProgramNode program)
         {
-            GenerateFunctionNode(program.Function);
+            GenerateFunction(program.Function);
         }
 
         public string GenerateX86()

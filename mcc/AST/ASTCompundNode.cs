@@ -4,7 +4,7 @@ namespace mcc
     class ASTCompundNode : ASTStatementNode
     {
         public List<ASTBlockItemNode> BlockItems;
-        public int BytesToPop;
+        public int BytesToDeallocate;
 
         public ASTCompundNode(List<ASTBlockItemNode> blockItems)
         {

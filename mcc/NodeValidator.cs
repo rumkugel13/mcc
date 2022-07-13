@@ -11,6 +11,9 @@ namespace mcc
         const int varSize = 8; // 32bit = 4, 64bit = 8
         int varOffset = -varSize;
 
+        int loopLabelCounter = 0;
+        Stack<int> loops = new Stack<int>();
+
         public NodeValidator(ASTNode rootNode)
         {
             this.rootNode = rootNode;
@@ -20,48 +23,138 @@ namespace mcc
         {
             switch (node)
             {
-                case ASTProgramNode program: ValidateProgramNode(program); break;
-                case ASTFunctionNode function: ValidateFunctionNode(function); break;
-                case ASTReturnNode ret: ValidateReturnNode(ret); break;
-                case ASTConstantNode constant: ValidateConstantNode(constant); break;
-                case ASTUnaryOpNode unOp: ValidateUnaryOpNode(unOp); break;
-                case ASTBinaryOpNode binOp: ValidateBinaryOpNode(binOp); break;
-                case ASTExpressionNode exp: ValidateExpressionNode(exp); break;
-                case ASTDeclarationNode dec: ValidateDeclarationNode(dec); break;
-                case ASTAssignNode assign: ValidateAssignNode(assign); break;
-                case ASTVariableNode variable: ValidateVariableNode(variable); break;
-                case ASTConditionNode cond: ValidateConditionNode(cond); break;
-                case ASTConditionalExpressionNode condEx: ValidateConditionalExpressionNode(condEx); break;
-                case ASTCompundNode comp: ValidateCompoundNode(comp); break;
-                default: Console.WriteLine("Fail: Unkown ASTNode type: " + node.GetType()); break;
+                case ASTNoExpressionNode: break;
+                case ASTNoStatementNode: break;
+                case ASTProgramNode program: ValidateProgram(program); break;
+                case ASTFunctionNode function: ValidateFunction(function); break;
+                case ASTReturnNode ret: ValidateReturn(ret); break;
+                case ASTConstantNode constant: ValidateConstant(constant); break;
+                case ASTUnaryOpNode unOp: ValidateUnaryOp(unOp); break;
+                case ASTBinaryOpNode binOp: ValidateBinaryOp(binOp); break;
+                case ASTExpressionNode exp: ValidateExpression(exp); break;
+                case ASTDeclarationNode dec: ValidateDeclaration(dec); break;
+                case ASTAssignNode assign: ValidateAssign(assign); break;
+                case ASTVariableNode variable: ValidateVariable(variable); break;
+                case ASTConditionNode cond: ValidateCondition(cond); break;
+                case ASTConditionalExpressionNode condEx: ValidateConditionalExpression(condEx); break;
+                case ASTCompundNode comp: ValidateCompound(comp); break;
+                case ASTWhileNode whil: ValidateWhile(whil); break;
+                case ASTDoWhileNode doWhil: ValidateDoWhile(doWhil); break;
+                case ASTForNode fo: ValidateFor(fo); break;
+                case ASTForDeclarationNode forDecl: ValidateForDeclaration(forDecl); break;
+                case ASTBreakNode br: ValidateBreak(br); break;
+                case ASTContinueNode con: ValidateContinue(con); break;
+                default: throw new NotImplementedException("Unkown ASTNode type: " + node.GetType());
             }
         }
 
-        private void ValidateCompoundNode(ASTCompundNode comp)
+        private void ValidateContinue(ASTContinueNode con)
+        {
+            if (loops.Count == 0)
+            {
+                throw new ASTLoopScopeException("Fail: Can't continue in non existing loop scope");
+            }
+            else
+            {
+                con.LoopCount = loops.Peek();
+            }
+        }
+
+        private void ValidateBreak(ASTBreakNode br)
+        {
+            if (loops.Count == 0)
+            {
+                throw new ASTLoopScopeException("Fail: Can't break out of non existing loop scope");
+            }
+            else
+            {
+                br.LoopCount = loops.Peek();
+            }
+        }
+
+        private void ValidateForDeclaration(ASTForDeclarationNode forDecl)
+        {
+            forDecl.LoopCount = loopLabelCounter;
+            loops.Push(loopLabelCounter++);
+            PushScope();
+            Validate(forDecl.Declaration);
+            Validate(forDecl.Condition);
+            PushScope();
+            Validate(forDecl.Statement);
+            forDecl.BytesToDeallocate = PopScope();
+            Validate(forDecl.Post);
+            forDecl.BytesToDeallocateInit = PopScope();
+        }
+
+        private void ValidateFor(ASTForNode fo)
+        {
+            fo.LoopCount = loopLabelCounter;
+            loops.Push(loopLabelCounter++);
+            PushScope();
+            Validate(fo.Init);
+            Validate(fo.Condition);
+            PushScope();
+            Validate(fo.Statement);
+            fo.BytesToDeallocate = PopScope();
+            Validate(fo.Post);
+            fo.BytesToDeallocateInit = PopScope();
+        }
+
+        private void ValidateDoWhile(ASTDoWhileNode doWhil)
+        {
+            doWhil.LoopCount = loopLabelCounter;
+            loops.Push(loopLabelCounter++);
+            PushScope();
+            Validate(doWhil.Statement);
+            doWhil.BytesToDeallocate = PopScope();
+            Validate(doWhil.Expression);
+        }
+
+        private void ValidateWhile(ASTWhileNode whil)
+        {
+            whil.LoopCount = loopLabelCounter;
+            loops.Push(loopLabelCounter++);
+            Validate(whil.Expression);
+            PushScope();
+            Validate(whil.Statement);
+            whil.BytesToDeallocate = PopScope();
+        }
+
+        private void PushScope()
         {
             varMaps.Push(new Dictionary<string, int>(varMaps.Peek()));
             varScopes.Push(new HashSet<string>());
+        }
+
+        private int PopScope()
+        {
+            int newVarCount = varScopes.Peek().Count;
+            varMaps.Pop();
+            varScopes.Pop();
+            varOffset += newVarCount * varSize;
+            return newVarCount * varSize;
+        }
+
+        private void ValidateCompound(ASTCompundNode comp)
+        {
+            PushScope();
 
             foreach (var blockItem in comp.BlockItems)
             {
                 Validate(blockItem);
             }
 
-            int newVarCount = varScopes.Peek().Count;
-            varMaps.Pop();
-            varScopes.Pop();
-            varOffset += newVarCount * varSize;
-            comp.BytesToPop = newVarCount * varSize;
+            comp.BytesToDeallocate = PopScope();
         }
 
-        private void ValidateConditionalExpressionNode(ASTConditionalExpressionNode condEx)
+        private void ValidateConditionalExpression(ASTConditionalExpressionNode condEx)
         {
             Validate(condEx.Condition);
             Validate(condEx.IfBranch);
             Validate(condEx.ElseBranch);
         }
 
-        private void ValidateConditionNode(ASTConditionNode cond)
+        private void ValidateCondition(ASTConditionNode cond)
         {
             Validate(cond.Condition);
             Validate(cond.IfBranch);
@@ -69,7 +162,7 @@ namespace mcc
                 Validate(cond.ElseBranch);
         }
 
-        private void ValidateVariableNode(ASTVariableNode variable)
+        private void ValidateVariable(ASTVariableNode variable)
         {
             if (varMaps.Count == 0)
             {
@@ -85,7 +178,7 @@ namespace mcc
             }
         }
 
-        private void ValidateAssignNode(ASTAssignNode assign)
+        private void ValidateAssign(ASTAssignNode assign)
         {
             if (varMaps.Peek().TryGetValue(assign.Name, out int offset))
             {
@@ -98,7 +191,7 @@ namespace mcc
             }
         }
 
-        private void ValidateDeclarationNode(ASTDeclarationNode dec)
+        private void ValidateDeclaration(ASTDeclarationNode dec)
         {
             if (varScopes.Peek().Contains(dec.Name))
             {
@@ -115,33 +208,33 @@ namespace mcc
             varOffset -= varSize;
         }
 
-        private void ValidateExpressionNode(ASTExpressionNode exp)
+        private void ValidateExpression(ASTExpressionNode exp)
         {
             Validate(exp.Expression);
         }
 
-        private void ValidateBinaryOpNode(ASTBinaryOpNode binOp)
+        private void ValidateBinaryOp(ASTBinaryOpNode binOp)
         {
             Validate(binOp.ExpressionLeft);
             Validate(binOp.ExpressionRight);
         }
 
-        private void ValidateUnaryOpNode(ASTUnaryOpNode unOp)
+        private void ValidateUnaryOp(ASTUnaryOpNode unOp)
         {
             Validate(unOp.Expression);
         }
 
-        private void ValidateConstantNode(ASTConstantNode constant)
+        private void ValidateConstant(ASTConstantNode constant)
         {
             
         }
 
-        private void ValidateReturnNode(ASTReturnNode ret)
+        private void ValidateReturn(ASTReturnNode ret)
         {
             Validate(ret.Expression);
         }
 
-        private void ValidateFunctionNode(ASTFunctionNode function)
+        private void ValidateFunction(ASTFunctionNode function)
         {
             varOffset = -varSize;
             varMaps.Push(new Dictionary<string, int>());
@@ -161,9 +254,9 @@ namespace mcc
             varScopes.Pop();
         }
 
-        private void ValidateProgramNode(ASTProgramNode program)
+        private void ValidateProgram(ASTProgramNode program)
         {
-            ValidateFunctionNode(program.Function);
+            ValidateFunction(program.Function);
         }
     }
 }

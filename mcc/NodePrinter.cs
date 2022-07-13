@@ -16,15 +16,17 @@ namespace mcc
         { 
             switch (node)
             {
-                case ASTProgramNode program: PrintProgramNode(program); break;
-                case ASTFunctionNode function: PrintFunctionNode(function); break;
-                case ASTAbstractExpressionNode exp: PrintAbstractExpressionNode(exp); break;
-                case ASTBlockItemNode blockItem: PrintBlockItemNode(blockItem); break;
-                default: PrintLine("Unkown ASTNode type: " + node.GetType()); break;
+                case ASTNoExpressionNode: break;
+                case ASTNoStatementNode: break;
+                case ASTProgramNode program: PrintProgram(program); break;
+                case ASTFunctionNode function: PrintFunction(function); break;
+                case ASTAbstractExpressionNode exp: PrintAbstractExpression(exp); break;
+                case ASTBlockItemNode blockItem: PrintBlockItem(blockItem); break;
+                default: throw new NotImplementedException("Unkown ASTNode type: " + node.GetType());
             }
         }
 
-        private void PrintProgramNode(ASTProgramNode program)
+        private void PrintProgram(ASTProgramNode program)
         {
             PrintLine("PROGRAM " + program.Name + ":");
             indent++;
@@ -32,7 +34,7 @@ namespace mcc
             indent--;
         }
 
-        private void PrintFunctionNode(ASTFunctionNode function)
+        private void PrintFunction(ASTFunctionNode function)
         {
             PrintLine("FUNCTION INT " + function.Name + ":");
             indent++;
@@ -41,16 +43,16 @@ namespace mcc
             indent--;
         }
 
-        private void PrintBlockItemNode(ASTBlockItemNode blockItem)
+        private void PrintBlockItem(ASTBlockItemNode blockItem)
         {
             switch (blockItem)
             {
-                case ASTStatementNode statement: PrintStatementNode(statement); break;
-                case ASTDeclarationNode dec: PrintDeclarationNode(dec); break;
+                case ASTStatementNode statement: PrintStatement(statement); break;
+                case ASTDeclarationNode dec: PrintDeclaration(dec); break;
             }
         }
 
-        private void PrintConditionNode(ASTConditionNode condition)
+        private void PrintCondition(ASTConditionNode condition)
         {
             PrintLine("IF");
             indent++;
@@ -70,19 +72,106 @@ namespace mcc
             }
         }
 
-        private void PrintStatementNode(ASTStatementNode statement)
+        private void PrintStatement(ASTStatementNode statement)
         {
             switch (statement)
             {
-                case ASTReturnNode ret: PrintReturnNode(ret); break;
-                case ASTExpressionNode exp: PrintExpressionNode(exp); break;
-                case ASTConditionNode cond: PrintConditionNode(cond); break;
-                case ASTCompundNode comp: PrintCompoundNode(comp); break;
-                default: PrintLine("Unkown ASTNode type: " + statement.GetType()); break;
+                case ASTReturnNode ret: PrintReturn(ret); break;
+                case ASTExpressionNode exp: PrintExpression(exp); break;
+                case ASTConditionNode cond: PrintCondition(cond); break;
+                case ASTCompundNode comp: PrintCompound(comp); break;
+                case ASTWhileNode whil: PrintWhile(whil); break;
+                case ASTDoWhileNode doWhil: PrintDoWhile(doWhil); break;
+                case ASTForNode fo: PrintFor(fo); break;
+                case ASTForDeclarationNode forDecl: PrintDeclaration(forDecl); break;
+                case ASTBreakNode br: PrintBreak(br); break;
+                case ASTContinueNode con: PrintContinue(con); break;
+                default: throw new NotImplementedException("Unkown ASTNode type: " + statement.GetType());
             }
         }
 
-        private void PrintCompoundNode(ASTCompundNode comp)
+        private void PrintContinue(ASTContinueNode con)
+        {
+            PrintLine("CONTINUE");
+        }
+
+        private void PrintBreak(ASTBreakNode br)
+        {
+            PrintLine("BREAK");
+        }
+
+        private void PrintDeclaration(ASTForDeclarationNode forDecl)
+        {
+            PrintLine("FOR");
+            indent++;
+            PrintLine("INIT");
+            indent++;
+            Print(forDecl.Declaration);
+            indent--;
+            PrintLine("CONDITION");
+            indent++;
+            Print(forDecl.Condition);
+            indent--;
+            PrintLine("POST");
+            indent++;
+            Print(forDecl.Post);
+            indent--;
+            PrintLine("BEGINLOOP");
+            indent++;
+            Print(forDecl.Statement);
+            indent--;
+            PrintLine("ENDLOOP");
+            indent--;
+        }
+
+        private void PrintFor(ASTForNode fo)
+        {
+            PrintLine("FOR");
+            indent++;
+            PrintLine("INIT");
+            indent++;
+            Print(fo.Init);
+            indent--;
+            PrintLine("CONDITION");
+            indent++;
+            Print(fo.Condition);
+            indent--;
+            PrintLine("POST");
+            indent++;
+            Print(fo.Post);
+            indent--;
+            PrintLine("BEGINLOOP");
+            indent++;
+            Print(fo.Statement);
+            indent--;
+            PrintLine("ENDLOOP");
+            indent--;
+        }
+
+        private void PrintDoWhile(ASTDoWhileNode doWhil)
+        {
+            PrintLine("DO");
+            indent++;
+            Print(doWhil.Statement);
+            indent--;
+            PrintLine("WHILE");
+            indent++;
+            Print(doWhil.Expression);
+            indent--;
+        }
+
+        private void PrintWhile(ASTWhileNode whil)
+        {
+            PrintLine("WHILE");
+            indent++;
+            Print(whil.Expression);
+            PrintLine("DO");
+            indent++;
+            Print(whil.Statement);
+            indent--;
+        }
+
+        private void PrintCompound(ASTCompundNode comp)
         {
 
             PrintLine("BEGINBLOCK");
@@ -93,7 +182,7 @@ namespace mcc
             PrintLine("ENDBLOCK");
         }
 
-        private void PrintDeclarationNode(ASTDeclarationNode dec)
+        private void PrintDeclaration(ASTDeclarationNode dec)
         {
             PrintLine("DECLARE:");
             indent++;
@@ -108,7 +197,7 @@ namespace mcc
             indent--;
         }
 
-        private void PrintExpressionNode(ASTExpressionNode exp)
+        private void PrintExpression(ASTExpressionNode exp)
         {
             PrintLine("EXPRESSION:");
             indent++;
@@ -116,7 +205,7 @@ namespace mcc
             indent--;
         }
 
-        private void PrintReturnNode(ASTReturnNode ret)
+        private void PrintReturn(ASTReturnNode ret)
         {
             PrintLine("RETURN:");
             indent++;
@@ -124,21 +213,21 @@ namespace mcc
             indent--;
         }
 
-        private void PrintAbstractExpressionNode(ASTAbstractExpressionNode exp)
+        private void PrintAbstractExpression(ASTAbstractExpressionNode exp)
         {
             switch (exp)
             {
-                case ASTUnaryOpNode unaryOp: PrintUnaryOpNode(unaryOp); break;
-                case ASTConstantNode constant: PrintConstantNode(constant); break;
-                case ASTBinaryOpNode binaryOp: PrintBinaryOpNode(binaryOp); break;
-                case ASTAssignNode assign: PrintAssignNode(assign); break;
-                case ASTVariableNode variable: PrintVariableNode(variable); break;
-                case ASTConditionalExpressionNode cond: PrintConditionalExpressionNode(cond); break;
-                default: PrintLine("Unkown ASTNode type: " + exp.GetType()); break;
+                case ASTUnaryOpNode unaryOp: PrintUnaryOp(unaryOp); break;
+                case ASTConstantNode constant: PrintConstant(constant); break;
+                case ASTBinaryOpNode binaryOp: PrintBinaryOp(binaryOp); break;
+                case ASTAssignNode assign: PrintAssign(assign); break;
+                case ASTVariableNode variable: PrintVariable(variable); break;
+                case ASTConditionalExpressionNode cond: PrintConditionalExpression(cond); break;
+                default: throw new NotImplementedException("Unkown ASTNode type: " + exp.GetType());
             }
         }
 
-        private void PrintConditionalExpressionNode(ASTConditionalExpressionNode cond)
+        private void PrintConditionalExpression(ASTConditionalExpressionNode cond)
         {
             PrintLine("CONDITION");
             indent++;
@@ -154,7 +243,7 @@ namespace mcc
             indent--;
         }
 
-        private void PrintAssignNode(ASTAssignNode assign)
+        private void PrintAssign(ASTAssignNode assign)
         {
             PrintLine("ASSIGN:");
             PrintLine("VAR<" + assign.Name + ">");
@@ -163,7 +252,7 @@ namespace mcc
             indent--;
         }
 
-        private void PrintBinaryOpNode(ASTBinaryOpNode binaryOp)
+        private void PrintBinaryOp(ASTBinaryOpNode binaryOp)
         {
             indent++;
             Print(binaryOp.ExpressionLeft);
@@ -174,7 +263,7 @@ namespace mcc
             indent--;
         }
 
-        private void PrintUnaryOpNode(ASTUnaryOpNode unaryOp)
+        private void PrintUnaryOp(ASTUnaryOpNode unaryOp)
         {
             PrintLine("UnaryOp<" + unaryOp.Value + ">");
             indent++;
@@ -182,12 +271,12 @@ namespace mcc
             indent--;
         }
 
-        private void PrintVariableNode(ASTVariableNode variable)
+        private void PrintVariable(ASTVariableNode variable)
         {
             PrintLine("VAR<" + variable.Name + ">");
         }
 
-        private void PrintConstantNode(ASTConstantNode constant)
+        private void PrintConstant(ASTConstantNode constant)
         {
             PrintLine("INT<" + constant.Value + ">");
         }

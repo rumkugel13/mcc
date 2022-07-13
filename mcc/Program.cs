@@ -185,6 +185,11 @@ namespace mcc
                     }
                 };
             }
+            catch (NotImplementedException exception)
+            {
+                if (!silent) Console.WriteLine(exception.Message);
+                finished = false;
+            }
             catch (UnknownTokenException exception)
             {
                 if (!silent) Console.WriteLine(exception.Message);
@@ -212,10 +217,13 @@ namespace mcc
             }
             finally
             {
-                //remove assembly file
-                if (!silent) Console.Write("Cleaning Up ... ");
-                File.Delete(assemblyFile);
-                if (!silent) Console.WriteLine("OK");
+                if (File.Exists(assemblyFile))
+                {
+                    //remove assembly file
+                    if (!silent) Console.Write("Cleaning Up ... ");
+                    File.Delete(assemblyFile);
+                    if (!silent) Console.WriteLine("OK");
+                }
             }
 
             return finished;
