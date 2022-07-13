@@ -28,8 +28,25 @@ namespace mcc
                 case ASTDeclarationNode dec: ValidateDeclarationNode(dec); break;
                 case ASTAssignNode assign: ValidateAssignNode(assign); break;
                 case ASTVariableNode variable: ValidateVariableNode(variable); break;
+                case ASTConditionNode cond: ValidateConditionNode(cond); break;
+                case ASTConditionalExpressionNode condEx: ValidateConditionalExpressionNode(condEx); break;
                 default: Console.WriteLine("Fail: Unkown ASTNode type: " + node.GetType()); break;
             }
+        }
+
+        private void ValidateConditionalExpressionNode(ASTConditionalExpressionNode condEx)
+        {
+            Validate(condEx.Condition);
+            Validate(condEx.IfBranch);
+            Validate(condEx.ElseBranch);
+        }
+
+        private void ValidateConditionNode(ASTConditionNode cond)
+        {
+            Validate(cond.Condition);
+            Validate(cond.IfBranch);
+            if (cond.ElseBranch is not ASTNoStatementNode)
+                Validate(cond.ElseBranch);
         }
 
         private void ValidateVariableNode(ASTVariableNode variable)
@@ -95,7 +112,7 @@ namespace mcc
             varOffset = -varSize;
             bool containsReturn = false;
 
-            foreach (var statement in function.Statements)
+            foreach (var statement in function.BlockItems)
             {
                 Validate(statement);
                 if (statement is ASTReturnNode)

@@ -27,7 +27,42 @@ namespace mcc
                 case ASTDeclarationNode dec: GenerateDeclarationNode(dec); break;
                 case ASTAssignNode assign: GenerateAssignNode(assign); break;
                 case ASTVariableNode variable: GenerateVariableNode(variable); break;
+                case ASTConditionNode cond: GenerateConditionNode(cond); break;
+                case ASTConditionalExpressionNode condEx: GenerateConditionalExpressionNode(condEx); break;
                 default: Console.WriteLine("Fail: Unkown ASTNode type: " + node.GetType()); break;
+            }
+        }
+
+        private void GenerateConditionalExpressionNode(ASTConditionalExpressionNode condEx)
+        {
+            Generate(condEx.Condition);
+            CompareZero();
+            string label = JumpEqual();
+            Generate(condEx.IfBranch);
+            string end = Jump();
+            Label(label);
+            Generate(condEx.ElseBranch);
+            Label(end);
+        }
+
+        private void GenerateConditionNode(ASTConditionNode cond)
+        {
+            Generate(cond.Condition);
+            CompareZero();
+            string label = JumpEqual();
+
+            if (cond.ElseBranch is not ASTNoStatementNode)
+            {
+                Generate(cond.IfBranch);
+                string end = Jump();
+                Label(label);
+                Generate(cond.ElseBranch);
+                Label(end);
+            }
+            else
+            {
+                Generate(cond.IfBranch);
+                Label(label);
             }
         }
 
@@ -140,7 +175,7 @@ namespace mcc
         {
             FunctionPrologue(function.Name);
 
-            foreach (var statement in function.Statements)
+            foreach (var statement in function.BlockItems)
                 Generate(statement);
 
             if (!function.ContainsReturn)

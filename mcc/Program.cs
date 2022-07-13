@@ -187,27 +187,27 @@ namespace mcc
             }
             catch (UnknownTokenException exception)
             {
-                Console.WriteLine(exception.Message);
+                if (!silent) Console.WriteLine(exception.Message);
                 finished = false;
             }
             catch (UnexpectedValueException exception)
             {
-                Console.WriteLine(exception.Message);
+                if (!silent) Console.WriteLine(exception.Message);
                 finished = false;
             }
             catch (ASTVariableException exception)
             {
-                Console.WriteLine(exception.Message);
+                if (!silent) Console.WriteLine(exception.Message);
                 finished = false;
             }
             catch (ASTLoopScopeException exception)
             {
-                Console.WriteLine(exception.Message);
+                if (!silent) Console.WriteLine(exception.Message);
                 finished = false;
             }
             catch (ASTFunctionException exception)
             {
-                Console.WriteLine(exception.Message);
+                if (!silent) Console.WriteLine(exception.Message);
                 finished = false;
             }
             finally

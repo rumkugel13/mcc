@@ -27,13 +27,25 @@
             ExpectSymbol(')');
             ExpectSymbol('{');
 
-            List<ASTStatementNode> statements = new List<ASTStatementNode>();
+            List<ASTBlockItemNode> blockItems = new List<ASTBlockItemNode>();
             while (!PeekSymbol('}'))
             {
-                statements.Add(ParseStatement());
+                blockItems.Add(ParseBlockItem());
             }
             ExpectSymbol('}');
-            return new ASTFunctionNode(name, statements);
+            return new ASTFunctionNode(name, blockItems);
+        }
+
+        public ASTBlockItemNode ParseBlockItem()
+        {
+            if (PeekKeyword(Keyword.KeywordTypes.INT))
+            {
+                return ParseDeclaration();
+            }
+            else
+            {
+                return ParseStatement();
+            }
         }
 
         public ASTStatementNode ParseStatement()
@@ -42,15 +54,34 @@
             {
                 return ParseReturn();
             }
-            else if (PeekKeyword(Keyword.KeywordTypes.INT))
+            else if (PeekKeyword(Keyword.KeywordTypes.IF))
             {
-                return ParseDeclaration();
+                return ParseCondition();
             }
             else
             {
                 ASTAbstractExpressionNode exp = ParseExpression();
                 ExpectSymbol(';');
                 return new ASTExpressionNode(exp);
+            }
+        }
+
+        public ASTStatementNode ParseCondition()
+        {
+            ExpectKeyword(Keyword.KeywordTypes.IF);
+            ExpectSymbol('(');
+            ASTAbstractExpressionNode condition = ParseExpression();
+            ExpectSymbol(')');
+            ASTStatementNode ifBranch = ParseStatement();
+            if (PeekKeyword(Keyword.KeywordTypes.ELSE))
+            {
+                ExpectKeyword(Keyword.KeywordTypes.ELSE);
+                ASTStatementNode elseBranch = ParseStatement();
+                return new ASTConditionNode(condition, ifBranch, elseBranch);
+            }
+            else
+            {
+                return new ASTConditionNode(condition, ifBranch);
             }
         }
 
@@ -244,6 +275,23 @@
             return exp;
         }
 
+        public ASTAbstractExpressionNode ParseConditionalExpression()
+        {
+            ASTAbstractExpressionNode exp = ParseLogicalOrExpression();
+            if (PeekSymbol('?'))
+            {
+                ExpectSymbol('?');
+                ASTAbstractExpressionNode ifBranch = ParseExpression();
+                ExpectSymbol(':');
+                ASTAbstractExpressionNode elseBranch = ParseConditionalExpression();
+                return new ASTConditionalExpressionNode(exp, ifBranch, elseBranch);
+            }
+            else
+            {
+                return exp;
+            }
+        }
+
         public ASTAbstractExpressionNode ParseExpression()
         {
             if (Peek() is Identifier && Peek(1) is Symbol symbol && symbol.Value == '=')
@@ -252,7 +300,7 @@
             }
             else
             {
-                return ParseLogicalOrExpression();
+                return ParseConditionalExpression();
             }
         }
 

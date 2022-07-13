@@ -1,7 +1,7 @@
 ﻿
 namespace mcc
 {
-    abstract class ASTStatementNode : ASTNode
+    abstract class ASTStatementNode : ASTBlockItemNode
     {
 
     }

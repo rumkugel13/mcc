@@ -4,13 +4,13 @@ namespace mcc
     class ASTFunctionNode : ASTNode
     {
         public string Name;
-        public List<ASTStatementNode> Statements;
+        public List<ASTBlockItemNode> BlockItems;
         public bool ContainsReturn;
 
-        public ASTFunctionNode(string name, List<ASTStatementNode> statements)
+        public ASTFunctionNode(string name, List<ASTBlockItemNode> blockItems)
         {
             Name = name;
-            Statements = statements;
+            BlockItems = blockItems;
         }
     }
 }

@@ -16,18 +16,10 @@ namespace mcc
         { 
             switch (node)
             {
-                case ASTProgramNode program:
-                    PrintProgramNode(program);
-                    break;
-                case ASTFunctionNode function:
-                    PrintFunctionNode(function);
-                    break;
-                case ASTAbstractExpressionNode exp:
-                    PrintAbstractExpressionNode(exp);
-                    break;
-                case ASTStatementNode statement:
-                    PrintStatementNode(statement);
-                    break;
+                case ASTProgramNode program: PrintProgramNode(program); break;
+                case ASTFunctionNode function: PrintFunctionNode(function); break;
+                case ASTAbstractExpressionNode exp: PrintAbstractExpressionNode(exp); break;
+                case ASTStatementNode statement: PrintStatementNode(statement); break;
                 default: PrintLine("Unkown ASTNode type: " + node.GetType()); break;
             }
         }
@@ -44,9 +36,38 @@ namespace mcc
         {
             PrintLine("FUNCTION INT " + function.Name + ":");
             indent++;
-            foreach (var statement in function.Statements)
+            foreach (var statement in function.BlockItems)
                 Print(statement);
             indent--;
+        }
+
+        private void PrintBlockItemNode(ASTBlockItemNode blockItem)
+        {
+            switch (blockItem)
+            {
+                case ASTStatementNode statement: PrintStatementNode(statement); break;
+                case ASTDeclarationNode dec: PrintDeclarationNode(dec); break;
+            }
+        }
+
+        private void PrintConditionNode(ASTConditionNode condition)
+        {
+            PrintLine("IF");
+            indent++;
+            Print(condition.Condition);
+            indent--;
+            PrintLine("THEN");
+            indent++;
+            Print(condition.IfBranch);
+            indent--;
+
+            if (condition.ElseBranch is not ASTNoStatementNode)
+            {
+                PrintLine("ELSE");
+                indent++;
+                Print(condition.ElseBranch);
+                indent--;
+            }
         }
 
         private void PrintStatementNode(ASTStatementNode statement)
@@ -55,7 +76,7 @@ namespace mcc
             {
                 case ASTReturnNode ret: PrintReturnNode(ret); break;
                 case ASTExpressionNode exp: PrintExpressionNode(exp); break;
-                case ASTDeclarationNode dec: PrintDeclarationNode(dec); break;
+                case ASTConditionNode cond: PrintConditionNode(cond); break;
                 default: PrintLine("Unkown ASTNode type: " + statement.GetType()); break;
             }
         }
@@ -100,8 +121,25 @@ namespace mcc
                 case ASTBinaryOpNode binaryOp: PrintBinaryOpNode(binaryOp); break;
                 case ASTAssignNode assign: PrintAssignNode(assign); break;
                 case ASTVariableNode variable: PrintVariableNode(variable); break;
+                case ASTConditionalExpressionNode cond: PrintConditionalExpressionNode(cond); break;
                 default: PrintLine("Unkown ASTNode type: " + exp.GetType()); break;
             }
+        }
+
+        private void PrintConditionalExpressionNode(ASTConditionalExpressionNode cond)
+        {
+            PrintLine("CONDITION");
+            indent++;
+            Print(cond.Condition);
+            indent--;
+            PrintLine("THEN");
+            indent++;
+            Print(cond.IfBranch);
+            indent--;
+            PrintLine("ELSE");
+            indent++;
+            Print(cond.ElseBranch);
+            indent--;
         }
 
         private void PrintAssignNode(ASTAssignNode assign)

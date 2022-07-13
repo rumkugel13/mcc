@@ -1,7 +1,7 @@
 ﻿
 namespace mcc
 {
-    class ASTDeclarationNode : ASTStatementNode
+    class ASTDeclarationNode : ASTBlockItemNode
     {
         public string Name;
         public ASTAbstractExpressionNode Initializer;
