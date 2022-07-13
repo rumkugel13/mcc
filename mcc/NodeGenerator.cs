@@ -29,8 +29,17 @@ namespace mcc
                 case ASTVariableNode variable: GenerateVariableNode(variable); break;
                 case ASTConditionNode cond: GenerateConditionNode(cond); break;
                 case ASTConditionalExpressionNode condEx: GenerateConditionalExpressionNode(condEx); break;
+                case ASTCompundNode comp: GenerateCompoundNode(comp); break;
                 default: Console.WriteLine("Fail: Unkown ASTNode type: " + node.GetType()); break;
             }
+        }
+
+        private void GenerateCompoundNode(ASTCompundNode comp)
+        {
+            foreach (var blockItem in comp.BlockItems)
+                Generate(blockItem);
+
+            Instruction($"addq ${comp.BytesToPop}, %rsp"); // pop off variables from current scope
         }
 
         private void GenerateConditionalExpressionNode(ASTConditionalExpressionNode condEx)
@@ -175,8 +184,8 @@ namespace mcc
         {
             FunctionPrologue(function.Name);
 
-            foreach (var statement in function.BlockItems)
-                Generate(statement);
+            foreach (var blockItem in function.BlockItems)
+                Generate(blockItem);
 
             if (!function.ContainsReturn)
             {

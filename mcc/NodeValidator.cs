@@ -5,7 +5,9 @@ namespace mcc
     {
         ASTNode rootNode;
 
-        Dictionary<string, int> varMap = new Dictionary<string, int>();
+        Stack<Dictionary<string, int>> varMaps = new Stack<Dictionary<string, int>>();
+        Stack<HashSet<string>> varScopes = new Stack<HashSet<string>>();
+
         const int varSize = 8; // 32bit = 4, 64bit = 8
         int varOffset = -varSize;
 
@@ -30,8 +32,26 @@ namespace mcc
                 case ASTVariableNode variable: ValidateVariableNode(variable); break;
                 case ASTConditionNode cond: ValidateConditionNode(cond); break;
                 case ASTConditionalExpressionNode condEx: ValidateConditionalExpressionNode(condEx); break;
+                case ASTCompundNode comp: ValidateCompoundNode(comp); break;
                 default: Console.WriteLine("Fail: Unkown ASTNode type: " + node.GetType()); break;
             }
+        }
+
+        private void ValidateCompoundNode(ASTCompundNode comp)
+        {
+            varMaps.Push(new Dictionary<string, int>(varMaps.Peek()));
+            varScopes.Push(new HashSet<string>());
+
+            foreach (var blockItem in comp.BlockItems)
+            {
+                Validate(blockItem);
+            }
+
+            int newVarCount = varScopes.Peek().Count;
+            varMaps.Pop();
+            varScopes.Pop();
+            varOffset += newVarCount * varSize;
+            comp.BytesToPop = newVarCount * varSize;
         }
 
         private void ValidateConditionalExpressionNode(ASTConditionalExpressionNode condEx)
@@ -51,33 +71,47 @@ namespace mcc
 
         private void ValidateVariableNode(ASTVariableNode variable)
         {
-            if (!varMap.ContainsKey(variable.Name))
-                throw new ASTVariableException("Fail: Trying to reference a non existing Variable: " + variable);
+            if (varMaps.Count == 0)
+            {
+                throw new ASTVariableException("Fail: Trying to reference a non Constant Variable: " + variable.Name);
+            }
+            else if (varMaps.Peek().TryGetValue(variable.Name, out int offset))
+            {
+                variable.Offset = offset;
+            }
             else
             {
-                variable.Offset = varMap[variable.Name];
+                throw new ASTVariableException("Fail: Trying to reference a non existing Variable: " + variable.Name);
             }
         }
 
         private void ValidateAssignNode(ASTAssignNode assign)
         {
-            if (!varMap.ContainsKey(assign.Name))
-                throw new ASTVariableException("Fail: Trying to assign to non existing Variable: " + assign.Name);
-            else
+            if (varMaps.Peek().TryGetValue(assign.Name, out int offset))
             {
                 Validate(assign.Expression);
-                assign.Offset = varMap[assign.Name];
+                assign.Offset = offset;
+            }
+            else
+            {
+                throw new ASTVariableException("Fail: Trying to assign to non existing Variable: " + assign.Name);
             }
         }
 
         private void ValidateDeclarationNode(ASTDeclarationNode dec)
         {
-            if (varMap.ContainsKey(dec.Name))
+            if (varScopes.Peek().Contains(dec.Name))
+            {
                 throw new ASTVariableException("Fail: Trying to declare existing Variable: " + dec.Name);
-            if (dec.Initializer is not ASTNoExpressionNode)
-                Validate(dec.Initializer);
+            }
 
-            varMap.Add(dec.Name, varOffset);
+            if (dec.Initializer is not ASTNoExpressionNode)
+            {
+                Validate(dec.Initializer);
+            }
+
+            varMaps.Peek()[dec.Name] = varOffset;
+            varScopes.Peek().Add(dec.Name);
             varOffset -= varSize;
         }
 
@@ -110,16 +144,21 @@ namespace mcc
         private void ValidateFunctionNode(ASTFunctionNode function)
         {
             varOffset = -varSize;
+            varMaps.Push(new Dictionary<string, int>());
+            varScopes.Push(new HashSet<string>());
             bool containsReturn = false;
 
-            foreach (var statement in function.BlockItems)
+            foreach (var blockItem in function.BlockItems)
             {
-                Validate(statement);
-                if (statement is ASTReturnNode)
+                Validate(blockItem);
+                if (blockItem is ASTReturnNode)
                     containsReturn = true;
             }
 
             function.ContainsReturn = containsReturn;
+
+            varMaps.Pop();
+            varScopes.Pop();
         }
 
         private void ValidateProgramNode(ASTProgramNode program)

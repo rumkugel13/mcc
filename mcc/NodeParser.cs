@@ -16,6 +16,9 @@
         public ASTProgramNode ParseProgram(string programName)
         {
             ASTFunctionNode function = ParseFunction();
+            if (HasMoreTokens())
+                Fail("Fail: Unexpected Token " + tokens[index].Type);
+
             return new ASTProgramNode(programName, function);
         }
 
@@ -48,6 +51,19 @@
             }
         }
 
+        public ASTCompundNode ParseCompound()
+        {
+            ExpectSymbol('{');
+
+            List<ASTBlockItemNode> blockItems = new List<ASTBlockItemNode>();
+            while (!PeekSymbol('}'))
+            {
+                blockItems.Add(ParseBlockItem());
+            }
+            ExpectSymbol('}');
+            return new ASTCompundNode(blockItems);
+        }
+
         public ASTStatementNode ParseStatement()
         {
             if (PeekKeyword(Keyword.KeywordTypes.RETURN))
@@ -57,6 +73,10 @@
             else if (PeekKeyword(Keyword.KeywordTypes.IF))
             {
                 return ParseCondition();
+            }
+            else if (PeekSymbol('{'))
+            {
+                return ParseCompound();
             }
             else
             {

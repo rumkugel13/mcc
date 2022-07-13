@@ -19,7 +19,7 @@ namespace mcc
                 case ASTProgramNode program: PrintProgramNode(program); break;
                 case ASTFunctionNode function: PrintFunctionNode(function); break;
                 case ASTAbstractExpressionNode exp: PrintAbstractExpressionNode(exp); break;
-                case ASTStatementNode statement: PrintStatementNode(statement); break;
+                case ASTBlockItemNode blockItem: PrintBlockItemNode(blockItem); break;
                 default: PrintLine("Unkown ASTNode type: " + node.GetType()); break;
             }
         }
@@ -36,8 +36,8 @@ namespace mcc
         {
             PrintLine("FUNCTION INT " + function.Name + ":");
             indent++;
-            foreach (var statement in function.BlockItems)
-                Print(statement);
+            foreach (var blockItem in function.BlockItems)
+                Print(blockItem);
             indent--;
         }
 
@@ -77,8 +77,20 @@ namespace mcc
                 case ASTReturnNode ret: PrintReturnNode(ret); break;
                 case ASTExpressionNode exp: PrintExpressionNode(exp); break;
                 case ASTConditionNode cond: PrintConditionNode(cond); break;
+                case ASTCompundNode comp: PrintCompoundNode(comp); break;
                 default: PrintLine("Unkown ASTNode type: " + statement.GetType()); break;
             }
+        }
+
+        private void PrintCompoundNode(ASTCompundNode comp)
+        {
+
+            PrintLine("BEGINBLOCK");
+            indent++;
+            foreach (var blockItem in comp.BlockItems)
+                Print(blockItem);
+            indent--;
+            PrintLine("ENDBLOCK");
         }
 
         private void PrintDeclarationNode(ASTDeclarationNode dec)
