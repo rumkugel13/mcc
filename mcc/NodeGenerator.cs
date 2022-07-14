@@ -52,6 +52,10 @@ namespace mcc
                 Generate(exp);
                 Instruction("push %rax");
             }
+
+            // HACK: workaround for hello_world, expects parameter to be in rcx (MS x64 calling convention)
+            Instruction("movl %eax, %ecx");
+
             Instruction("call " + funCall.Name);
             Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
         }
