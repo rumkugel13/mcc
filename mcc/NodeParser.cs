@@ -15,11 +15,14 @@
 
         public ASTProgramNode ParseProgram(string programName)
         {
-            ASTFunctionNode function = ParseFunction();
-            if (HasMoreTokens())
-                Fail("Fail: Unexpected Token " + tokens[index].Type);
+            List<ASTFunctionNode> functions = new List<ASTFunctionNode>();
+            while(HasMoreTokens())
+            {
+                ASTFunctionNode function = ParseFunction();
+                functions.Add(function);
+            }
 
-            return new ASTProgramNode(programName, function);
+            return new ASTProgramNode(programName, functions);
         }
 
         public ASTFunctionNode ParseFunction()
@@ -27,16 +30,41 @@
             ExpectKeyword(Keyword.KeywordTypes.INT);
             ExpectIdentifier(out string name);
             ExpectSymbol('(');
-            ExpectSymbol(')');
-            ExpectSymbol('{');
 
-            List<ASTBlockItemNode> blockItems = new List<ASTBlockItemNode>();
-            while (!PeekSymbol('}'))
+            List<string> parameters = new List<string>();
+            if (PeekKeyword(Keyword.KeywordTypes.INT))
             {
-                blockItems.Add(ParseBlockItem());
+                ExpectKeyword(Keyword.KeywordTypes.INT);
+                ExpectIdentifier(out string id);
+                parameters.Add(id);
+
+                while (PeekSymbol(','))
+                {
+                    ExpectSymbol(',');
+                    ExpectKeyword(Keyword.KeywordTypes.INT);
+                    ExpectIdentifier(out string id2);
+                    parameters.Add(id2);
+                }
             }
-            ExpectSymbol('}');
-            return new ASTFunctionNode(name, blockItems);
+
+            ExpectSymbol(')');
+
+            if (PeekSymbol('{'))
+            {
+                List<ASTBlockItemNode> blockItems = new List<ASTBlockItemNode>();
+                ExpectSymbol('{');
+                while (!PeekSymbol('}'))
+                {
+                    blockItems.Add(ParseBlockItem());
+                }
+                ExpectSymbol('}');
+                return new ASTFunctionNode(name, parameters, blockItems);
+            }
+            else
+            {
+                ExpectSymbol(';');
+                return new ASTFunctionNode(name, parameters);
+            }
         }
 
         public ASTBlockItemNode ParseBlockItem()
@@ -251,6 +279,26 @@
             return new ASTUnaryOpNode(symbol, exp);
         }
 
+        public ASTFunctionCallNode ParseFunctionCall()
+        {
+            ExpectIdentifier(out string id);
+            ExpectSymbol('(');
+
+            List<ASTAbstractExpressionNode> arguments = new List<ASTAbstractExpressionNode>();
+            if (!PeekSymbol(')'))
+            {
+                arguments.Add(ParseExpression());
+                while (PeekSymbol(','))
+                {
+                    ExpectSymbol(',');
+                    arguments.Add(ParseExpression());
+                }
+            }
+
+            ExpectSymbol(')');
+            return new ASTFunctionCallNode(id, arguments);
+        }
+
         public ASTAbstractExpressionNode ParseFactor()
         {
             if (PeekUnarySymbol())
@@ -270,8 +318,15 @@
             }
             else if (Peek() is Identifier)
             {
-                ExpectIdentifier(out string id);
-                return new ASTVariableNode(id);
+                if (Peek(1) is Symbol symbol && symbol.Value == '(')
+                {
+                    return ParseFunctionCall();
+                }
+                else
+                {
+                    ExpectIdentifier(out string id);
+                    return new ASTVariableNode(id);
+                }
             }
             else
             {

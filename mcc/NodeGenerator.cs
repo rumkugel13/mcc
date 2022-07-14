@@ -38,8 +38,22 @@ namespace mcc
                 case ASTForDeclarationNode forDecl: GenerateForDeclaration(forDecl); break;
                 case ASTBreakNode br: GenerateBreak(br); break;
                 case ASTContinueNode con: GenerateContinue(con); break;
+                case ASTFunctionCallNode funCall: GenerateFunctionCall(funCall); break;
                 default: throw new NotImplementedException("Unkown ASTNode type: " + node.GetType());
             }
+        }
+
+        private void GenerateFunctionCall(ASTFunctionCallNode funCall)
+        {
+            var list = new List<ASTAbstractExpressionNode>(funCall.Arguments);
+            list.Reverse();
+            foreach (var exp in list)
+            {
+                Generate(exp);
+                Instruction("push %rax");
+            }
+            Instruction("call " + funCall.Name);
+            Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -262,16 +276,19 @@ namespace mcc
 
         private void GenerateFunction(ASTFunctionNode function)
         {
-            FunctionPrologue(function.Name);
-
-            foreach (var blockItem in function.BlockItems)
-                Generate(blockItem);
-
-            if (!function.ContainsReturn)
+            if (function.IsDefinition)
             {
-                // return 0 if no return statement found
-                IntegerConstant(0);
-                FunctionEpilogue();
+                FunctionPrologue(function.Name);
+
+                foreach (var blockItem in function.BlockItems)
+                    Generate(blockItem);
+
+                if (!function.ContainsReturn)
+                {
+                    // return 0 if no return statement found
+                    IntegerConstant(0);
+                    FunctionEpilogue();
+                }
             }
         }
 
@@ -292,7 +309,8 @@ namespace mcc
 
         private void GenerateProgram(ASTProgramNode program)
         {
-            GenerateFunction(program.Function);
+            foreach (var function in program.Functions)
+                GenerateFunction(function);
         }
 
         public string GenerateX86()

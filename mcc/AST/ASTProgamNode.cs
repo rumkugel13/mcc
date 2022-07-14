@@ -4,12 +4,12 @@ namespace mcc
     class ASTProgramNode : ASTNode
     {
         public string Name;
-        public ASTFunctionNode Function;
+        public List<ASTFunctionNode> Functions;
 
-        public ASTProgramNode(string programName, ASTFunctionNode function)
+        public ASTProgramNode(string programName, List<ASTFunctionNode> functions)
         {
             Name = programName;
-            Function = function;
+            Functions = functions;
         }
     }
 }

@@ -30,7 +30,8 @@ namespace mcc
         {
             PrintLine("PROGRAM " + program.Name + ":");
             indent++;
-            Print(program.Function);
+            foreach (var function in program.Functions)
+                Print(function);
             indent--;
         }
 
@@ -38,8 +39,23 @@ namespace mcc
         {
             PrintLine("FUNCTION INT " + function.Name + ":");
             indent++;
-            foreach (var blockItem in function.BlockItems)
-                Print(blockItem);
+            if (function.Parameters.Count > 0)
+            {
+                PrintLine("PARAMETERS");
+                indent++;
+                foreach (var parameter in function.Parameters)
+                    PrintLine("ID<" + parameter + ">");
+                indent--;
+            }
+            if (function.BlockItems.Count > 0)
+            {
+                PrintLine("BEGIN_FUNCTION");
+                indent++;
+                foreach (var blockItem in function.BlockItems)
+                    Print(blockItem);
+                indent--;
+                PrintLine("END_FUNCTION");
+            }
             indent--;
         }
 
@@ -223,8 +239,19 @@ namespace mcc
                 case ASTAssignNode assign: PrintAssign(assign); break;
                 case ASTVariableNode variable: PrintVariable(variable); break;
                 case ASTConditionalExpressionNode cond: PrintConditionalExpression(cond); break;
+                case ASTFunctionCallNode funCall: PrintFunctionCall(funCall); break;
                 default: throw new NotImplementedException("Unkown ASTNode type: " + exp.GetType());
             }
+        }
+
+        private void PrintFunctionCall(ASTFunctionCallNode funCall)
+        {
+            PrintLine("CALL " + funCall.Name);
+            PrintLine("ARGUMENTS");
+            indent++;
+            foreach (var arg in funCall.Arguments)
+                Print(arg);
+            indent--;
         }
 
         private void PrintConditionalExpression(ASTConditionalExpressionNode cond)
@@ -254,13 +281,11 @@ namespace mcc
 
         private void PrintBinaryOp(ASTBinaryOpNode binaryOp)
         {
-            indent++;
             Print(binaryOp.ExpressionLeft);
-            indent--;
-            PrintLine("BinaryOp<" + binaryOp.Value + ">");
             indent++;
-            Print(binaryOp.ExpressionRight);
+            PrintLine("BinaryOp<" + binaryOp.Value + ">");
             indent--;
+            Print(binaryOp.ExpressionRight);
         }
 
         private void PrintUnaryOp(ASTUnaryOpNode unaryOp)

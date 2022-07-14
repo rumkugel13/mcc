@@ -14,6 +14,17 @@ namespace mcc
         int loopLabelCounter = 0;
         Stack<int> loops = new Stack<int>();
 
+        struct Function
+        {
+            public int ParameterCount;
+            public bool Defined;
+        }
+
+        Dictionary<string, Function> funcMap = new Dictionary<string, Function>();
+
+        const int paramOffset = 2 * varSize;
+        int paramCount = 0;
+
         public NodeValidator(ASTNode rootNode)
         {
             this.rootNode = rootNode;
@@ -44,8 +55,26 @@ namespace mcc
                 case ASTForDeclarationNode forDecl: ValidateForDeclaration(forDecl); break;
                 case ASTBreakNode br: ValidateBreak(br); break;
                 case ASTContinueNode con: ValidateContinue(con); break;
+                case ASTFunctionCallNode funCall: ValidateFunctionCall(funCall); break;
                 default: throw new NotImplementedException("Unkown ASTNode type: " + node.GetType());
             }
+        }
+
+        private void ValidateFunctionCall(ASTFunctionCallNode funCall)
+        {
+            if (funcMap.TryGetValue(funCall.Name, out Function value))
+            {
+                if (value.ParameterCount != funCall.Arguments.Count)
+                    throw new ASTFunctionException("Fail: Trying to call function with too " + 
+                        (value.ParameterCount < funCall.Arguments.Count ? "many" : "little") + " parameters: Expected " + 
+                         value.ParameterCount + ", Actual " + funCall.Arguments.Count);
+            }
+            else
+                throw new ASTFunctionException("Fail: Trying to call non existing function: " + funCall.Name);
+
+            foreach (var arg in funCall.Arguments)
+                Validate(arg);
+            funCall.BytesToDeallocate = funCall.Arguments.Count * varSize;
         }
 
         private void ValidateContinue(ASTContinueNode con)
@@ -236,10 +265,46 @@ namespace mcc
 
         private void ValidateFunction(ASTFunctionNode function)
         {
+            if (!function.IsDefinition)
+            {
+                // declaration
+                if (funcMap.TryGetValue(function.Name, out Function fun))
+                {
+                    if (fun.ParameterCount != function.Parameters.Count)
+                        throw new ASTFunctionException("Fail: Trying to declare already existing function: " + function.Name);
+                }
+                else
+                {
+                    funcMap.Add(function.Name, new Function() { Defined = false, ParameterCount = function.Parameters.Count });
+                }
+            }
+            else
+            {
+                // definition
+                if (funcMap.TryGetValue(function.Name, out Function fun))
+                {
+                    if (fun.Defined)
+                        throw new ASTFunctionException("Fail: Trying to define already existing function: " + function.Name);
+                    else if (fun.ParameterCount != function.Parameters.Count)
+                        throw new ASTFunctionException("Fail: Trying to define declared function with wrong parameter count: " + function.Name);
+                    else funcMap[function.Name] = new Function() { Defined = true, ParameterCount = function.Parameters.Count };
+                }
+                else
+                    funcMap.Add(function.Name, new Function() { Defined = true, ParameterCount = function.Parameters.Count });
+            }
+
+            paramCount = 0;
             varOffset = -varSize;
             varMaps.Push(new Dictionary<string, int>());
             varScopes.Push(new HashSet<string>());
             bool containsReturn = false;
+
+            foreach (var parameter in function.Parameters)
+            {
+                varMaps.Peek()[parameter] = paramOffset + paramCount * varSize;
+                varScopes.Peek().Add(parameter);
+                paramCount++;
+            }
 
             foreach (var blockItem in function.BlockItems)
             {
@@ -256,7 +321,8 @@ namespace mcc
 
         private void ValidateProgram(ASTProgramNode program)
         {
-            ValidateFunction(program.Function);
+            foreach (var function in program.Functions)
+                ValidateFunction(function);
         }
     }
 }
