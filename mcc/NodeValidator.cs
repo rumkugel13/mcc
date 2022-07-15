@@ -291,32 +291,39 @@ namespace mcc
                 }
                 else
                     funcMap.Add(function.Name, new Function() { Defined = true, ParameterCount = function.Parameters.Count });
+
+                paramCount = 0;
+                varOffset = -varSize;
+                varMaps.Push(new Dictionary<string, int>());
+                varScopes.Push(new HashSet<string>());
+                bool containsReturn = false;
+
+                for (int i = 0; i < function.Parameters.Count; i++)
+                {
+                    ASTFunctionNode.Parameter parameter = function.Parameters[i];
+                    parameter.Offset = (i < 4) ? varOffset : (paramOffset + paramCount * varSize);
+                    function.Parameters[i] = parameter;
+                    varMaps.Peek()[parameter.Name] = parameter.Offset;
+                    varScopes.Peek().Add(parameter.Name);
+
+                    if (i < 4) varOffset -= varSize;
+                    else paramCount++;
+                }
+
+                foreach (var blockItem in function.BlockItems)
+                {
+                    Validate(blockItem);
+                    if (blockItem is ASTReturnNode)
+                        containsReturn = true;
+                }
+
+                function.ContainsReturn = containsReturn;
+                // doesnt work, because it only takes function scope into account, not loops/ifs/etc scopes
+                //function.BytesToAllocate = 16 + 16 * (((varMaps.Peek().Count * varSize) % 16) / 16); //TODO: figure out correct algorithm
+
+                varMaps.Pop();
+                varScopes.Pop();
             }
-
-            paramCount = 0;
-            varOffset = -varSize;
-            varMaps.Push(new Dictionary<string, int>());
-            varScopes.Push(new HashSet<string>());
-            bool containsReturn = false;
-
-            foreach (var parameter in function.Parameters)
-            {
-                varMaps.Peek()[parameter] = paramOffset + paramCount * varSize;
-                varScopes.Peek().Add(parameter);
-                paramCount++;
-            }
-
-            foreach (var blockItem in function.BlockItems)
-            {
-                Validate(blockItem);
-                if (blockItem is ASTReturnNode)
-                    containsReturn = true;
-            }
-
-            function.ContainsReturn = containsReturn;
-
-            varMaps.Pop();
-            varScopes.Pop();
         }
 
         private void ValidateProgram(ASTProgramNode program)
