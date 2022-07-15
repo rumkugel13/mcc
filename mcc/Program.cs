@@ -303,8 +303,8 @@ namespace mcc
 
         static ASTProgramNode ParseProgramNode(string programName, List<Token> tokens)
         {
-            NodeParser parser = new NodeParser(tokens);
-            return parser.ParseProgram(programName);
+            NodeParser parser = new NodeParser(tokens, programName);
+            return parser.ParseProgram();
         }
 
         static string GenerateFromASTNode(ASTNode program)
@@ -314,9 +314,8 @@ namespace mcc
 
         static void PrintFromASTNode(ASTNode program)
         {
-            NodePrinter printer = new NodePrinter();
-            printer.Print(program);
-            Console.WriteLine(printer.ToString());
+            NodePrinter printer = new NodePrinter(program);
+            Console.WriteLine(printer.Print());
         }
 
         static void ValidateASTNode(ASTNode program)
