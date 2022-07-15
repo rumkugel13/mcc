@@ -1,13 +1,13 @@
 ﻿namespace mcc
 {
-    class NodeParser
+    class Parser
     {
         List<Token> tokens;
         int index;
         bool failed;
         string programName;
 
-        public NodeParser(List<Token> tokens, string programName)
+        public Parser(List<Token> tokens, string programName)
         {
             this.tokens = tokens;
             this.programName = programName;

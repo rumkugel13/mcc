@@ -1,7 +1,7 @@
 ﻿
 namespace mcc
 {
-    class NodeValidator
+    class Validator
     {
         ASTNode rootNode;
 
@@ -27,7 +27,7 @@ namespace mcc
 
         Dictionary<string, bool> globalVarMap = new Dictionary<string, bool>();
 
-        public NodeValidator(ASTNode rootNode)
+        public Validator(ASTNode rootNode)
         {
             this.rootNode = rootNode;
         }

@@ -2,13 +2,13 @@
 
 namespace mcc
 {
-    class NodeGenerator
+    class Generator
     {
         ASTNode rootNode;
         StringBuilder sb = new StringBuilder();
         int varLabelCounter = 0;
 
-        public NodeGenerator(ASTNode rootNode)
+        public Generator(ASTNode rootNode)
         {
             this.rootNode = rootNode;
         }

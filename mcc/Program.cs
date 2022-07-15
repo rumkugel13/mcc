@@ -141,18 +141,6 @@ namespace mcc
                 if (!silent) Console.WriteLine("OK");
                 if (!silent && debug) PrintAssembly(assembly);
 
-                ////parser
-                //if (!silent) Console.Write("Parsing Tokens ... ");
-                //AST ast = Parse(tokens);
-                //if (!silent) Console.WriteLine("OK");
-                //if (!silent && debug) PrintAST(ast);
-
-                ////generator
-                //if (!silent) Console.Write("Generating Assembly ... ");
-                //string assembly = Generate(ast);
-                //if (!silent) Console.WriteLine("OK");
-                //if (!silent && debug) PrintAssembly(assembly);
-
                 //writer
                 if (!silent) Console.Write("Writing Assembly File ... ");
                 File.WriteAllText(assemblyFile, assembly);
@@ -245,37 +233,9 @@ namespace mcc
             return "";
         }
 
-        static string Generate(AST ast)
-        {
-            Generator generator = new Generator();
-            ast.GenerateX86(generator);
-            return generator.CreateOutput();
-        }
-
         static void PrintAssembly(string assembly)
         {
             Console.WriteLine(assembly);
-        }
-
-        static void PrintAST(AST ast)
-        {
-            ast.Print(0);
-        }
-
-        static AST Parse(List<Token> tokens)
-        {
-            Parser parser = new Parser(tokens);
-
-            ASTProgram program = new ASTProgram();
-
-            program.Parse(parser);
-
-            if (parser.Failed())
-            {
-                Console.WriteLine("Failed to Parse program.");
-            }
-
-            return program;
         }
 
         static void PrintTokenList(List<Token> tokens)
@@ -303,24 +263,24 @@ namespace mcc
 
         static ASTProgramNode ParseProgramNode(string programName, List<Token> tokens)
         {
-            NodeParser parser = new NodeParser(tokens, programName);
+            Parser parser = new Parser(tokens, programName);
             return parser.ParseProgram();
         }
 
         static string GenerateFromASTNode(ASTNode program)
         {
-            return new NodeGenerator(program).GenerateX86();
+            return new Generator(program).GenerateX86();
         }
 
         static void PrintFromASTNode(ASTNode program)
         {
-            NodePrinter printer = new NodePrinter(program);
+            PrettyPrinter printer = new PrettyPrinter(program);
             Console.WriteLine(printer.Print());
         }
 
         static void ValidateASTNode(ASTNode program)
         {
-            NodeValidator validator = new NodeValidator(program);
+            Validator validator = new Validator(program);
             validator.ValidateX86();
         }
     }

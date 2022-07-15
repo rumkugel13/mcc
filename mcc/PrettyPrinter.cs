@@ -2,13 +2,13 @@
 
 namespace mcc
 {
-    class NodePrinter
+    class PrettyPrinter
     {
         ASTNode rootNode;
         StringBuilder sb = new StringBuilder();
         int indent = 0;
 
-        public NodePrinter(ASTNode node)
+        public PrettyPrinter(ASTNode node)
         {
             rootNode = node;
         }
