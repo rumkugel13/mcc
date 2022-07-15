@@ -56,14 +56,23 @@ namespace mcc
             foreach (var exp in list)
             {
                 Generate(exp);
-                Instruction("push %rax");
+                Instruction("pushq %rax");
             }
 
-            // HACK: workaround for hello_world, expects parameter to be in rcx (MS x64 calling convention)
-            Instruction("movl %eax, %ecx");
+            for (int i = 0; i < funCall.Arguments.Count; i++)
+            {
+                switch (i)
+                {
+                    case 0: Instruction("popq %rcx"); break;
+                    case 1: Instruction("popq %rdx"); break;
+                    case 2: Instruction("popq %r8x"); break;
+                    case 3: Instruction("popq %r9x"); break;
+                    default: break;
+                }
+            }
 
             Instruction("call " + funCall.Name);
-            Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
+            Instruction("addq $" + funCall.BytesToDeallocate + ", %rsp");
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -221,7 +230,7 @@ namespace mcc
                 IntegerConstant(0); // no value given, assign 0
             }
 
-            Instruction("push %rax"); // push current value of variable to stack
+            Instruction("pushq %rax"); // push current value of variable to stack
         }
 
         private void GenerateGlobalDeclaration(ASTDeclarationNode dec)
@@ -300,10 +309,10 @@ namespace mcc
             }
 
             Generate(binOp.ExpressionLeft);
-            Instruction("push %rax");
+            Instruction("pushq %rax");
             Generate(binOp.ExpressionRight);
             Instruction("movl %eax, %ecx"); // need to switch src and dest for - and /
-            Instruction("pop %rax");
+            Instruction("popq %rax");
 
             if (Symbol2.Comparison.Contains(binOp.Value))
             {
@@ -331,6 +340,18 @@ namespace mcc
             if (function.IsDefinition)
             {
                 FunctionPrologue(function.Name);
+
+                for (int i = 0; i < function.Parameters.Count; i++)
+                {
+                    switch (i)
+                    {
+                        case 0: Instruction("movl %ecx, " + function.Parameters[i].Offset + "(%rbp)"); break;
+                        case 1: Instruction("movl %edx, " + function.Parameters[i].Offset + "(%rbp)"); break;
+                        case 2: Instruction("movl %e8x, " + function.Parameters[i].Offset + "(%rbp)"); break;
+                        case 3: Instruction("movl %e9x, " + function.Parameters[i].Offset + "(%rbp)"); break;
+                        default: break;
+                    }
+                }
 
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);

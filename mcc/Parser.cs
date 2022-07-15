@@ -50,19 +50,19 @@
             ExpectIdentifier(out string name);
             ExpectSymbol('(');
 
-            List<string> parameters = new List<string>();
+            List<ASTFunctionNode.Parameter> parameters = new List<ASTFunctionNode.Parameter>();
             if (PeekKeyword(Keyword.KeywordTypes.INT))
             {
                 ExpectKeyword(Keyword.KeywordTypes.INT);
                 ExpectIdentifier(out string id);
-                parameters.Add(id);
+                parameters.Add(new ASTFunctionNode.Parameter() { Name = id });
 
                 while (PeekSymbol(','))
                 {
                     ExpectSymbol(',');
                     ExpectKeyword(Keyword.KeywordTypes.INT);
                     ExpectIdentifier(out string id2);
-                    parameters.Add(id2);
+                    parameters.Add(new ASTFunctionNode.Parameter() { Name = id2 });
                 }
             }
 
