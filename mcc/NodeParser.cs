@@ -5,12 +5,19 @@
         List<Token> tokens;
         int index;
         bool failed;
+        string programName;
 
-        public NodeParser(List<Token> tokens)
+        public NodeParser(List<Token> tokens, string programName)
         {
             this.tokens = tokens;
+            this.programName = programName;
             index = 0;
             failed = false;
+        }
+
+        public ASTProgramNode ParseProgram()
+        {
+            return ParseProgram(programName);
         }
 
         public ASTProgramNode ParseProgram(string programName)

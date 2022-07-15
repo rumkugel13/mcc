@@ -13,6 +13,12 @@ namespace mcc
             this.rootNode = rootNode;
         }
 
+        public string GenerateX86()
+        {
+            Generate(rootNode);
+            return sb.ToString();
+        }
+
         public void Generate(ASTNode node)
         {
             switch (node)
@@ -361,12 +367,6 @@ namespace mcc
 
             foreach (var variable in program.UninitializedGlobalVariables)
                 GenerateUninitializedGlobalVariable(variable);
-        }
-
-        public string GenerateX86()
-        {
-            Generate(rootNode);
-            return sb.ToString();
         }
 
         public void Label(string label)

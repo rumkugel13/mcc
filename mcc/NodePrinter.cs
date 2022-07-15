@@ -4,11 +4,18 @@ namespace mcc
 {
     class NodePrinter
     {
+        ASTNode rootNode;
         StringBuilder sb = new StringBuilder();
         int indent = 0;
 
-        public override string ToString()
+        public NodePrinter(ASTNode node)
         {
+            rootNode = node;
+        }
+
+        public string Print()
+        {
+            Print(rootNode);
             return sb.ToString();
         }
 
