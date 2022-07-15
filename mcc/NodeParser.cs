@@ -15,14 +15,26 @@
 
         public ASTProgramNode ParseProgram(string programName)
         {
-            List<ASTFunctionNode> functions = new List<ASTFunctionNode>();
+            List<ASTTopLevelItemNode> topLevelItems = new List<ASTTopLevelItemNode>();
             while(HasMoreTokens())
             {
-                ASTFunctionNode function = ParseFunction();
-                functions.Add(function);
+                ASTTopLevelItemNode topLevelItem = ParseTopLevelItem();
+                topLevelItems.Add(topLevelItem);
             }
 
-            return new ASTProgramNode(programName, functions);
+            return new ASTProgramNode(programName, topLevelItems);
+        }
+
+        public ASTTopLevelItemNode ParseTopLevelItem()
+        {
+            if (Peek(2) is Symbol symbol && symbol.Value == '(')
+            {
+                return ParseFunction();
+            }
+            else
+            {
+                return ParseDeclaration();
+            }
         }
 
         public ASTFunctionNode ParseFunction()

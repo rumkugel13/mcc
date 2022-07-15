@@ -1,10 +1,12 @@
 ﻿
 namespace mcc
 {
-    class ASTDeclarationNode : ASTBlockItemNode
+    class ASTDeclarationNode : ASTTopLevelItemNode
     {
         public string Name;
         public ASTAbstractExpressionNode Initializer;
+        public bool IsGlobal;
+        public int GlobalValue;
 
         public ASTDeclarationNode(string id)
         {

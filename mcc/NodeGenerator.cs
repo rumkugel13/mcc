@@ -175,17 +175,37 @@ namespace mcc
 
         private void GenerateVariable(ASTVariableNode variable)
         {
-            Instruction("movl " + variable.Offset + "(%rbp), %eax");
+            if (variable.IsGlobal)
+            {
+                Instruction("movl " + variable.Name + "(%rip), %eax");
+            }
+            else
+            {
+                Instruction("movl " + variable.Offset + "(%rbp), %eax");
+            }
         }
 
         private void GenerateAssign(ASTAssignNode assign)
         {
             Generate(assign.Expression);
-            Instruction("movl %eax, " + assign.Offset + "(%rbp)");
+            if (assign.IsGlobal)
+            {
+                Instruction("movl %eax, " + assign.Name + "(%rip)");
+            }
+            else
+            {
+                Instruction("movl %eax, " + assign.Offset + "(%rbp)");
+            }
         }
 
         private void GenerateDeclaration(ASTDeclarationNode dec)
         {
+            if (dec.IsGlobal)
+            {
+                GenerateGlobalDeclaration(dec);
+                return;
+            }
+
             if (dec.Initializer is not ASTNoExpressionNode)
             {
                 Generate(dec.Initializer);
@@ -196,6 +216,28 @@ namespace mcc
             }
 
             Instruction("push %rax"); // push current value of variable to stack
+        }
+
+        private void GenerateGlobalDeclaration(ASTDeclarationNode dec)
+        {
+            if (dec.Initializer is not ASTNoExpressionNode)
+            {
+                Instruction(".globl " + dec.Name);
+                Instruction(".data");
+                Instruction(".align 4");
+                Label(dec.Name);
+                Instruction(".long " + dec.GlobalValue);
+            }
+        }
+
+        private void GenerateUninitializedGlobalVariable(string name)
+        {
+            // not defined, add to bss
+            Instruction(".globl " + name);
+            Instruction(".bss");
+            Instruction(".align 4");
+            Label(name);
+            Instruction(".zero 4");
         }
 
         private void GenerateConstant(ASTConstantNode constant)
@@ -299,6 +341,7 @@ namespace mcc
         private void FunctionPrologue(string name)
         {
             Instruction(".globl " + name);
+            Instruction(".text");
             Label(name);
             Instruction("pushq %rbp");
             Instruction("movq %rsp, %rbp");
@@ -313,8 +356,11 @@ namespace mcc
 
         private void GenerateProgram(ASTProgramNode program)
         {
-            foreach (var function in program.Functions)
-                GenerateFunction(function);
+            foreach (var topLevelItem in program.TopLevelItems)
+                Generate(topLevelItem);
+
+            foreach (var variable in program.UninitializedGlobalVariables)
+                GenerateUninitializedGlobalVariable(variable);
         }
 
         public string GenerateX86()
@@ -356,12 +402,6 @@ namespace mcc
 
         public void IntegerConstant(int value)
         {
-            //if (varMaps.Count == 0)
-            //{
-            //    DefineGlobalVariable(value);
-            //    return;
-            //}
-
             Instruction("movl $" + value + ", %eax");
         }
 

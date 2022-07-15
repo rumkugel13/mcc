@@ -5,6 +5,7 @@ namespace mcc
     {
         public string Name;
         public int Offset;
+        public bool IsGlobal;
 
         public ASTVariableNode(string id)
         {

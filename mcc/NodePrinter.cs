@@ -30,8 +30,8 @@ namespace mcc
         {
             PrintLine("PROGRAM " + program.Name + ":");
             indent++;
-            foreach (var function in program.Functions)
-                Print(function);
+            foreach (var topLevelItem in program.TopLevelItems)
+                Print(topLevelItem);
             indent--;
         }
 

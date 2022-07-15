@@ -1,7 +1,7 @@
 ﻿
 namespace mcc
 {
-    class ASTFunctionNode : ASTNode
+    class ASTFunctionNode : ASTTopLevelItemNode
     {
         public string Name;
         public List<string> Parameters;

@@ -25,9 +25,16 @@ namespace mcc
         const int paramOffset = 2 * varSize;
         int paramCount = 0;
 
+        Dictionary<string, bool> globalVarMap = new Dictionary<string, bool>();
+
         public NodeValidator(ASTNode rootNode)
         {
             this.rootNode = rootNode;
+        }
+
+        public void ValidateX86()
+        {
+            Validate(rootNode);
         }
 
         public void Validate(ASTNode node)
@@ -201,6 +208,10 @@ namespace mcc
             {
                 variable.Offset = offset;
             }
+            else if (globalVarMap.ContainsKey(variable.Name))
+            {
+                variable.IsGlobal = true;
+            }
             else
             {
                 throw new ASTVariableException("Fail: Trying to reference a non existing Variable: " + variable.Name);
@@ -214,6 +225,11 @@ namespace mcc
                 Validate(assign.Expression);
                 assign.Offset = offset;
             }
+            else if (globalVarMap.ContainsKey(assign.Name))
+            {
+                Validate(assign.Expression);
+                assign.IsGlobal = true;
+            }
             else
             {
                 throw new ASTVariableException("Fail: Trying to assign to non existing Variable: " + assign.Name);
@@ -222,6 +238,12 @@ namespace mcc
 
         private void ValidateDeclaration(ASTDeclarationNode dec)
         {
+            if (varScopes.Count == 0)
+            {
+                ValidateGlobalDeclaration(dec);
+                return;
+            }
+
             if (varScopes.Peek().Contains(dec.Name))
             {
                 throw new ASTVariableException("Fail: Trying to declare existing Variable: " + dec.Name);
@@ -235,6 +257,39 @@ namespace mcc
             varMaps.Peek()[dec.Name] = varOffset;
             varScopes.Peek().Add(dec.Name);
             varOffset -= varSize;
+        }
+
+        private void ValidateGlobalDeclaration(ASTDeclarationNode dec)
+        {
+            if (globalVarMap.TryGetValue(dec.Name, out bool defined))
+            {
+                if (defined)
+                    throw new ASTVariableException("Fail: Trying to declare existing Global Variable: " + dec.Name);
+            }
+
+            if (funcMap.ContainsKey(dec.Name))
+            {
+                throw new ASTVariableException("Fail: Trying to declare Variable as existing Function: " + dec.Name);
+            }
+
+            dec.IsGlobal = true;
+            if (dec.Initializer is not ASTNoExpressionNode)
+            {
+                if (dec.Initializer is not ASTConstantNode)
+                {
+                    throw new ASTVariableException("Fail: Trying to define non constant to Global Variable: " + dec.Name);
+                }
+                else
+                {
+                    Validate(dec.Initializer);
+                    dec.GlobalValue = ((ASTConstantNode)dec.Initializer).Value;
+                    globalVarMap[dec.Name] = true;
+                }
+            }
+            else
+            {
+                globalVarMap[dec.Name] = false;
+            }
         }
 
         private void ValidateExpression(ASTExpressionNode exp)
@@ -268,7 +323,11 @@ namespace mcc
             if (!function.IsDefinition)
             {
                 // declaration
-                if (funcMap.TryGetValue(function.Name, out Function fun))
+                if (globalVarMap.ContainsKey(function.Name))
+                {
+                    throw new ASTFunctionException("Fail: Trying to declare Function as existing Global Variable: " + function.Name);
+                }
+                else if (funcMap.TryGetValue(function.Name, out Function fun))
                 {
                     if (fun.ParameterCount != function.Parameters.Count)
                         throw new ASTFunctionException("Fail: Trying to declare already existing function: " + function.Name);
@@ -281,7 +340,11 @@ namespace mcc
             else
             {
                 // definition
-                if (funcMap.TryGetValue(function.Name, out Function fun))
+                if (globalVarMap.ContainsKey(function.Name))
+                {
+                    throw new ASTFunctionException("Fail: Trying to define Function as existing Global Variable: " + function.Name);
+                }
+                else if (funcMap.TryGetValue(function.Name, out Function fun))
                 {
                     if (fun.Defined)
                         throw new ASTFunctionException("Fail: Trying to define already existing function: " + function.Name);
@@ -290,7 +353,9 @@ namespace mcc
                     else funcMap[function.Name] = new Function() { Defined = true, ParameterCount = function.Parameters.Count };
                 }
                 else
+                {
                     funcMap.Add(function.Name, new Function() { Defined = true, ParameterCount = function.Parameters.Count });
+                }
             }
 
             paramCount = 0;
@@ -321,8 +386,16 @@ namespace mcc
 
         private void ValidateProgram(ASTProgramNode program)
         {
-            foreach (var function in program.Functions)
-                ValidateFunction(function);
+            foreach (var topLevelItem in program.TopLevelItems)
+                Validate(topLevelItem);
+
+            foreach (var variable in globalVarMap)
+            {
+                if (!variable.Value)
+                {
+                    program.UninitializedGlobalVariables.Add(variable.Key);
+                }
+            }
         }
     }
 }

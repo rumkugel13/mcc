@@ -322,7 +322,7 @@ namespace mcc
         static void ValidateASTNode(ASTNode program)
         {
             NodeValidator validator = new NodeValidator(program);
-            validator.Validate(program);
+            validator.ValidateX86();
         }
     }
 }
