@@ -8,8 +8,9 @@ namespace mcc
         Stack<Dictionary<string, int>> varMaps = new Stack<Dictionary<string, int>>();
         Stack<HashSet<string>> varScopes = new Stack<HashSet<string>>();
 
-        const int varSize = 8; // 32bit = 4, 64bit = 8
-        int varOffset = -varSize;
+        const int pointerSize = 8; // 32bit = 4, 64bit = 8
+        const int intSize = 4;
+        int varOffset = -pointerSize;   // at rsp+0 is rbp, start at pointer offset
 
         int loopLabelCounter = 0;
         Stack<int> loops = new Stack<int>();
@@ -22,7 +23,7 @@ namespace mcc
 
         Dictionary<string, Function> funcMap = new Dictionary<string, Function>();
 
-        const int paramOffset = 2 * varSize;
+        const int paramOffset = 2 * pointerSize;    // 1 for return pointer, 2 for old base pointer
         int paramCount = 0;
 
         Dictionary<string, bool> globalVarMap = new Dictionary<string, bool>();
@@ -81,7 +82,7 @@ namespace mcc
 
             foreach (var arg in funCall.Arguments)
                 Validate(arg);
-            funCall.BytesToDeallocate = funCall.Arguments.Count * varSize;
+            funCall.BytesToDeallocate = funCall.Arguments.Count * pointerSize;
         }
 
         private void ValidateContinue(ASTContinueNode con)
@@ -167,8 +168,8 @@ namespace mcc
             int newVarCount = varScopes.Peek().Count;
             varMaps.Pop();
             varScopes.Pop();
-            varOffset += newVarCount * varSize;
-            return newVarCount * varSize;
+            varOffset += newVarCount * pointerSize;
+            return newVarCount * pointerSize;
         }
 
         private void ValidateCompound(ASTCompundNode comp)
@@ -256,7 +257,7 @@ namespace mcc
 
             varMaps.Peek()[dec.Name] = varOffset;
             varScopes.Peek().Add(dec.Name);
-            varOffset -= varSize;
+            varOffset -= pointerSize;
         }
 
         private void ValidateGlobalDeclaration(ASTDeclarationNode dec)
@@ -359,14 +360,14 @@ namespace mcc
             }
 
             paramCount = 0;
-            varOffset = -varSize;
+            varOffset = -pointerSize;
             varMaps.Push(new Dictionary<string, int>());
             varScopes.Push(new HashSet<string>());
             bool containsReturn = false;
 
             foreach (var parameter in function.Parameters)
             {
-                varMaps.Peek()[parameter] = paramOffset + paramCount * varSize;
+                varMaps.Peek()[parameter] = paramOffset + paramCount * pointerSize;
                 varScopes.Peek().Add(parameter);
                 paramCount++;
             }
