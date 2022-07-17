@@ -87,8 +87,18 @@ namespace mcc
             foreach (string validFile in validFiles)
             {
                 if (Compile(validFile))
-                    validCount++;
+                {
+                    if (!silent) Console.Write("Running gcc ... ");
+                    GccCompile(validFile);
+                    if (!silent) Console.WriteLine("OK");
+                    int expected = GetExitCode(validFile.Replace(".c", ".out"));
+                    int got = GetExitCode(validFile.Replace(".c", ".exe"));
+                    Console.WriteLine($"{validFile} Expected: {expected}, Got: {got}");
+                    if (expected == got)
+                        validCount++;
+                }
                 File.Delete(validFile.Replace(".c", ".exe"));
+                File.Delete(validFile.Replace(".c", ".out"));
             }
 
             int invalidCount = 0;
@@ -100,6 +110,50 @@ namespace mcc
             }
 
             Console.WriteLine($"Valid: {validCount}/{validFiles.Count()}, Invalid: {invalidCount}/{invalidFiles.Count()}");
+        }
+
+        static int GetExitCode(string file)
+        {
+            int exitCode = 0;
+            using (Process? process = Process.Start(file))
+            {
+                process.WaitForExit();
+
+                exitCode = process.ExitCode;
+            };
+
+            return exitCode;
+        }
+
+        static bool GccCompile(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("Unknown file: " + filePath);
+                return false;
+            }
+
+            string gccPath = GetFullPath("gcc.exe");
+            if (string.IsNullOrEmpty(gccPath))
+            {
+                Console.WriteLine("Fail: Couldn't find gcc.exe");
+                return false;
+            }
+
+            bool finished = false;
+            string command = $"-m64 {filePath} -o {filePath.Replace(".c", ".out")}";
+            ProcessStartInfo start = new ProcessStartInfo(gccPath, command);
+            using (Process? process = Process.Start(start))
+            {
+                process.WaitForExit();
+
+                if (process.ExitCode == 0)
+                {
+                    finished = true;
+                }
+            };
+
+            return finished;
         }
 
         static bool Compile(string filePath)
@@ -148,19 +202,18 @@ namespace mcc
 
                 //assembler
                 if (!silent) Console.Write("Running Assembler ... ");
-                string path = GetFullPath("gcc.exe");
-                if (string.IsNullOrEmpty(path))
+                string gccPath = GetFullPath("gcc.exe");
+                if (string.IsNullOrEmpty(gccPath))
                 {
                     Console.WriteLine("Fail: Couldn't find gcc.exe");
                     return false;
                 }
 
                 string command = $"-m64 {Path.GetFullPath(assemblyFile)} -o {Path.Combine(Path.GetDirectoryName(Path.GetFullPath(assemblyFile)), fileName)}";
-                ProcessStartInfo start = new ProcessStartInfo(path, command);
-                //start.WorkingDirectory = Path.GetFullPath(path).Replace("gcc.exe", "");
-                using (Process? process = System.Diagnostics.Process.Start(start))
+                ProcessStartInfo start = new ProcessStartInfo(gccPath, command);
+                using (Process? process = Process.Start(start))
                 {
-                    while (!process.HasExited) ;
+                    process.WaitForExit();
 
                     if (process.ExitCode == 0)
                     {
