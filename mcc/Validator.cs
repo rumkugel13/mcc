@@ -73,15 +73,22 @@ namespace mcc
             if (funcMap.TryGetValue(funCall.Name, out Function value))
             {
                 if (value.ParameterCount != funCall.Arguments.Count)
-                    throw new ASTFunctionException("Fail: Trying to call function with too " + 
+                {
+                    throw new ASTFunctionException($"Fail: Trying to call function {funCall.Name} with too " + 
                         (value.ParameterCount < funCall.Arguments.Count ? "many" : "little") + " parameters: Expected " + 
-                         value.ParameterCount + ", Actual " + funCall.Arguments.Count);
+                         value.ParameterCount + ", Actual " + funCall.Arguments.Count + " at Line: " + funCall.LineNumber + ", Column: " + funCall.LineCharacter);
+                }
             }
             else
-                throw new ASTFunctionException("Fail: Trying to call non existing function: " + funCall.Name);
+            {
+                FailFunction("Trying to call non existing function", funCall.Name, funCall);
+            }
 
             foreach (var arg in funCall.Arguments)
+            {
                 Validate(arg);
+            }
+
             funCall.BytesToDeallocate = funCall.Arguments.Count * pointerSize;
         }
 
@@ -89,7 +96,7 @@ namespace mcc
         {
             if (loops.Count == 0)
             {
-                throw new ASTLoopScopeException("Fail: Can't continue in non existing loop scope");
+                FailLoopScope("Can't continue in non existing loop scope", con);
             }
             else
             {
@@ -101,7 +108,7 @@ namespace mcc
         {
             if (loops.Count == 0)
             {
-                throw new ASTLoopScopeException("Fail: Can't break out of non existing loop scope");
+                FailLoopScope("Can't break out of non existing loop scope", br);
             }
             else
             {
@@ -196,14 +203,16 @@ namespace mcc
             Validate(cond.Condition);
             Validate(cond.IfBranch);
             if (cond.ElseBranch is not ASTNoStatementNode)
+            {
                 Validate(cond.ElseBranch);
+            }
         }
 
         private void ValidateVariable(ASTVariableNode variable)
         {
             if (varMaps.Count == 0)
             {
-                throw new ASTVariableException("Fail: Trying to reference a non Constant Variable: " + variable.Name);
+                FailVariable("Trying to reference a non Constant Variable", variable.Name, variable);
             }
             else if (varMaps.Peek().TryGetValue(variable.Name, out int offset))
             {
@@ -215,7 +224,7 @@ namespace mcc
             }
             else
             {
-                throw new ASTVariableException("Fail: Trying to reference a non existing Variable: " + variable.Name);
+                FailVariable("Trying to reference a non existing Variable", variable.Name, variable);
             }
         }
 
@@ -233,7 +242,7 @@ namespace mcc
             }
             else
             {
-                throw new ASTVariableException("Fail: Trying to assign to non existing Variable: " + assign.Name);
+                FailVariable("Trying to assign to non existing Variable", assign.Name, assign);
             }
         }
 
@@ -247,7 +256,7 @@ namespace mcc
 
             if (varScopes.Peek().Contains(dec.Name))
             {
-                throw new ASTVariableException("Fail: Trying to declare existing Variable: " + dec.Name);
+                FailVariable("Trying to declare existing Variable", dec.Name, dec);
             }
 
             if (dec.Initializer is not ASTNoExpressionNode)
@@ -265,12 +274,14 @@ namespace mcc
             if (globalVarMap.TryGetValue(dec.Name, out bool defined))
             {
                 if (defined)
-                    throw new ASTVariableException("Fail: Trying to declare existing Global Variable: " + dec.Name);
+                {
+                    FailVariable("Trying to declare existing Global Variable", dec.Name, dec);
+                }
             }
 
             if (funcMap.ContainsKey(dec.Name))
             {
-                throw new ASTVariableException("Fail: Trying to declare Variable as existing Function: " + dec.Name);
+                FailVariable("Trying to declare Variable as existing Function", dec.Name, dec);
             }
 
             dec.IsGlobal = true;
@@ -278,7 +289,7 @@ namespace mcc
             {
                 if (dec.Initializer is not ASTConstantNode)
                 {
-                    throw new ASTVariableException("Fail: Trying to define non constant to Global Variable: " + dec.Name);
+                    FailVariable("Trying to assign non constant value to Global Variable", dec.Name, dec);
                 }
                 else
                 {
@@ -326,12 +337,14 @@ namespace mcc
                 // declaration
                 if (globalVarMap.ContainsKey(function.Name))
                 {
-                    throw new ASTFunctionException("Fail: Trying to declare Function as existing Global Variable: " + function.Name);
+                    FailFunction("Trying to declare Function as existing Global Variable", function.Name, function);
                 }
                 else if (funcMap.TryGetValue(function.Name, out Function fun))
                 {
                     if (fun.ParameterCount != function.Parameters.Count)
-                        throw new ASTFunctionException("Fail: Trying to declare already existing function: " + function.Name);
+                    {
+                        FailFunction("Trying to declare already existing function", function.Name, function);
+                    }
                 }
                 else
                 {
@@ -343,15 +356,22 @@ namespace mcc
                 // definition
                 if (globalVarMap.ContainsKey(function.Name))
                 {
-                    throw new ASTFunctionException("Fail: Trying to define Function as existing Global Variable: " + function.Name);
+                    FailFunction("Trying to define Function as existing Global Variable", function.Name, function);
                 }
                 else if (funcMap.TryGetValue(function.Name, out Function fun))
                 {
                     if (fun.Defined)
-                        throw new ASTFunctionException("Fail: Trying to define already existing function: " + function.Name);
+                    {
+                        FailFunction("Trying to define already defined function", function.Name, function);
+                    }
                     else if (fun.ParameterCount != function.Parameters.Count)
-                        throw new ASTFunctionException("Fail: Trying to define declared function with wrong parameter count: " + function.Name);
-                    else funcMap[function.Name] = new Function() { Defined = true, ParameterCount = function.Parameters.Count };
+                    {
+                        FailFunction("Trying to define declared function with wrong parameter count", function.Name, function);
+                    }
+                    else
+                    {
+                        funcMap[function.Name] = new Function() { Defined = true, ParameterCount = function.Parameters.Count };
+                    }
                 }
                 else
                 {
@@ -376,7 +396,9 @@ namespace mcc
             {
                 Validate(blockItem);
                 if (blockItem is ASTReturnNode)
+                {
                     containsReturn = true;
+                }
             }
 
             function.ContainsReturn = containsReturn;
@@ -388,7 +410,9 @@ namespace mcc
         private void ValidateProgram(ASTProgramNode program)
         {
             foreach (var topLevelItem in program.TopLevelItems)
+            {
                 Validate(topLevelItem);
+            }
 
             foreach (var variable in globalVarMap)
             {
@@ -397,6 +421,21 @@ namespace mcc
                     program.UninitializedGlobalVariables.Add(variable.Key);
                 }
             }
+        }
+
+        private void FailVariable(string msg, string name, ASTNode node)
+        {
+            throw new ASTVariableException($"Fail: {msg}: {name} at Line: {node.LineNumber}, Column: {node.LineCharacter}");
+        }
+
+        private void FailFunction(string msg, string name, ASTNode node)
+        {
+            throw new ASTFunctionException($"Fail: {msg}: {name} at Line: {node.LineNumber}, Column: {node.LineCharacter}");
+        }
+
+        private void FailLoopScope(string msg, ASTNode node)
+        {
+            throw new ASTLoopScopeException($"Fail: {msg} at Line: {node.LineNumber}, Column: {node.LineCharacter}");
         }
     }
 }

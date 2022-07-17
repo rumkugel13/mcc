@@ -6,6 +6,7 @@
         int index;
         bool failed;
         string programName;
+        int currLine, currColumn;
 
         public Parser(List<Token> tokens, string programName)
         {
@@ -47,7 +48,7 @@
         public ASTFunctionNode ParseFunction()
         {
             ExpectKeyword(Keyword.KeywordTypes.INT);
-            ExpectIdentifier(out string name);
+            ExpectIdentifier(out string name, out int line, out int column);
             ExpectSymbol('(');
 
             List<string> parameters = new List<string>();
@@ -77,12 +78,12 @@
                     blockItems.Add(ParseBlockItem());
                 }
                 ExpectSymbol('}');
-                return new ASTFunctionNode(name, parameters, blockItems);
+                return new ASTFunctionNode(name, parameters, blockItems) { LineNumber = line, LineCharacter = column};
             }
             else
             {
                 ExpectSymbol(';');
-                return new ASTFunctionNode(name, parameters);
+                return new ASTFunctionNode(name, parameters) { LineNumber = line, LineCharacter = column};
             }
         }
 
@@ -135,16 +136,16 @@
 
         public ASTBreakNode ParseBreak()
         {
-            ExpectKeyword(Keyword.KeywordTypes.BREAK);
+            ExpectKeyword(Keyword.KeywordTypes.BREAK, out int line, out int column);
             ExpectSymbol(';');
-            return new ASTBreakNode();
+            return new ASTBreakNode() { LineNumber = line, LineCharacter = column };
         }
 
         public ASTContinueNode ParseContinue()
         {
-            ExpectKeyword(Keyword.KeywordTypes.CONTINUE);
+            ExpectKeyword(Keyword.KeywordTypes.CONTINUE, out int line, out int column);
             ExpectSymbol(';');
-            return new ASTContinueNode();
+            return new ASTContinueNode() { LineNumber = line, LineCharacter = column };
         }
 
         public ASTForNode ParseFor()
@@ -155,7 +156,10 @@
             ExpectSymbol(';');
             ASTAbstractExpressionNode condition = ParseOptionalExpression();
             if (condition is ASTNoExpressionNode)
-                condition = new ASTConstantNode(1);
+            {
+                condition = new ASTConstantNode(1); // insert a true condition
+            }
+
             ExpectSymbol(';');
             ASTAbstractExpressionNode post = ParseOptionalExpression();
             ExpectSymbol(')');
@@ -170,7 +174,10 @@
             ASTDeclarationNode decl = ParseDeclaration(); // includes ;
             ASTAbstractExpressionNode condition = ParseOptionalExpression();
             if (condition is ASTNoExpressionNode)
-                condition = new ASTConstantNode(1);
+            {
+                condition = new ASTConstantNode(1); // insert a true condition
+            }
+
             ExpectSymbol(';');
             ASTAbstractExpressionNode post = ParseOptionalExpression();
             ExpectSymbol(')');
@@ -261,34 +268,34 @@
         public ASTDeclarationNode ParseDeclaration()
         {
             ExpectKeyword(Keyword.KeywordTypes.INT);
-            ExpectIdentifier(out string id);
+            ExpectIdentifier(out string id, out int line, out int column);
 
             if (PeekSymbol('='))
             {
                 ExpectSymbol('=');
                 ASTAbstractExpressionNode exp = ParseExpression();
                 ExpectSymbol(';');
-                return new ASTDeclarationNode(id, exp);
+                return new ASTDeclarationNode(id, exp) { LineNumber = line, LineCharacter = column };
             }
             else
             {
                 ExpectSymbol(';');
-                return new ASTDeclarationNode(id);
+                return new ASTDeclarationNode(id) { LineNumber = line, LineCharacter = column };
             }
         }
 
         public ASTReturnNode ParseReturn()
         {
-            ExpectKeyword(Keyword.KeywordTypes.RETURN);
+            ExpectKeyword(Keyword.KeywordTypes.RETURN, out int line, out int column);
             ASTAbstractExpressionNode exp = ParseExpression();
             ExpectSymbol(';');
-            return new ASTReturnNode(exp);
+            return new ASTReturnNode(exp) { LineNumber = line, LineCharacter = column };
         }
 
         public ASTConstantNode ParseConstant()
         {
             ExpectInteger(out int value);
-            return new ASTConstantNode(value);
+            return new ASTConstantNode(value) { LineNumber = currLine, LineCharacter = currColumn };
         }
 
         public ASTUnaryOpNode ParseUnaryOp()
@@ -300,7 +307,7 @@
 
         public ASTFunctionCallNode ParseFunctionCall()
         {
-            ExpectIdentifier(out string id);
+            ExpectIdentifier(out string id, out int line, out int column);
             ExpectSymbol('(');
 
             List<ASTAbstractExpressionNode> arguments = new List<ASTAbstractExpressionNode>();
@@ -315,7 +322,7 @@
             }
 
             ExpectSymbol(')');
-            return new ASTFunctionCallNode(id, arguments);
+            return new ASTFunctionCallNode(id, arguments) { LineNumber = line, LineCharacter = column };
         }
 
         public ASTAbstractExpressionNode ParseFactor()
@@ -343,8 +350,8 @@
                 }
                 else
                 {
-                    ExpectIdentifier(out string id);
-                    return new ASTVariableNode(id);
+                    ExpectIdentifier(out string id, out int line, out int column);
+                    return new ASTVariableNode(id) { LineNumber = line, LineCharacter = column };
                 }
             }
             else
@@ -506,10 +513,10 @@
 
         public ASTAssignNode ParseAssignment()
         {
-            ExpectIdentifier(out string id);
+            ExpectIdentifier(out string id, out int line, out int column);
             ExpectSymbol('=');
             ASTAbstractExpressionNode expression = ParseExpression();
-            return new ASTAssignNode(id, expression);
+            return new ASTAssignNode(id, expression) { LineNumber = line, LineCharacter = column };
         }
 
         private void ExpectBinarySymbol(out string value)
@@ -556,6 +563,9 @@
                 Fail("Fail: Missing Tokens");
             }
 
+            currLine = tokens[index].Line;
+            currColumn = tokens[index].Column;
+
             return tokens[index++];
         }
 
@@ -572,7 +582,9 @@
         public Token Peek(int forward)
         {
             if (!(index + forward < tokens.Count))
+            {
                 Fail("Fail: Missing Tokens");
+            }
 
             return tokens[index + forward];
         }
@@ -580,9 +592,13 @@
         public void ExpectSymbol(char value)
         {
             if (PeekSymbol(value))
+            {
                 Next();
+            }
             else
+            {
                 Fail(Token.TokenType.SYMBOL, value.ToString());
+            }
         }
 
         public bool PeekSymbol(char value)
@@ -598,9 +614,13 @@
         public void ExpectSymbol2(string value)
         {
             if (PeekSymbol2(value))
+            {
                 Next();
+            }
             else
+            {
                 Fail(Token.TokenType.SYMBOL2, value);
+            }
         }
 
         public bool PeekSymbol2(string value)
@@ -611,9 +631,28 @@
         public void ExpectKeyword(Keyword.KeywordTypes type)
         {
             if (PeekKeyword(type))
+            {
                 Next();
+            }
             else
+            {
                 Fail(Token.TokenType.KEYWORD, type.ToString());
+            }
+        }
+
+        public void ExpectKeyword(Keyword.KeywordTypes type, out int line, out int column)
+        {
+            line = column = 0;
+            if (PeekKeyword(type))
+            {
+                Next();
+                line = currLine;
+                column = currColumn;
+            }
+            else
+            {
+                Fail(Token.TokenType.KEYWORD, type.ToString());
+            }
         }
 
         public bool PeekKeyword(Keyword.KeywordTypes type)
@@ -625,27 +664,55 @@
         {
             id = string.Empty;
             if (Peek() is Identifier)
+            {
                 id = ((Identifier)Next()).Value;
+            }
             else
+            {
                 Fail(Token.TokenType.IDENTIFIER);
+            }
+        }
+
+        public void ExpectIdentifier(out string id, out int line, out int column)
+        {
+            id = string.Empty;
+            line = column = 0;
+            if (Peek() is Identifier)
+            {
+                id = ((Identifier)Next()).Value;
+                line = currLine;
+                column = currColumn;
+            }
+            else
+            {
+                Fail(Token.TokenType.IDENTIFIER);
+            }
         }
 
         public void ExpectInteger(out int value)
         {
             value = 0;
             if (Peek() is Integer)
+            {
                 value = ((Integer)Next()).Value;
+            }
             else
+            {
                 Fail(Token.TokenType.INTEGER);
+            }
         }
 
         public void ExpectUnarySymbol(out char symbol)
         {
             symbol = char.MinValue;
             if (PeekUnarySymbol())
+            {
                 symbol = ((Symbol)Next()).Value;
+            }
             else
+            {
                 Fail(Token.TokenType.SYMBOL, "'-' or '~' or '!' or '+'");
+            }
         }
 
         public void Fail(string message)
