@@ -8,9 +8,17 @@ namespace mcc
         static bool silent = true;
         static bool debug = false;
         static string VersionString = "mcc v0.11";
+        static string Exe = ".exe";
+        static char Sep = ';';
 
         static void Main(string[] args)
         {
+            if (OperatingSystem.IsLinux())
+            {
+                Exe = "";
+                Sep = ':';
+            }
+
             switch (args.Length)
             {
                 case 0:
@@ -92,12 +100,12 @@ namespace mcc
                     GccCompile(validFile);
                     if (!silent) Console.WriteLine("OK");
                     int expected = GetExitCode(validFile.Replace(".c", ".out"));
-                    int got = GetExitCode(validFile.Replace(".c", ".exe"));
+                    int got = GetExitCode(validFile.Replace(".c", Exe));
                     Console.WriteLine($"{validFile} Expected: {expected}, Got: {got}");
                     if (expected == got)
                         validCount++;
                 }
-                File.Delete(validFile.Replace(".c", ".exe"));
+                File.Delete(validFile.Replace(".c", Exe));
                 File.Delete(validFile.Replace(".c", ".out"));
             }
 
@@ -106,7 +114,7 @@ namespace mcc
             {
                 if (!Compile(invalidFile))
                     invalidCount++;
-                File.Delete(invalidFile.Replace(".c", ".exe"));
+                File.Delete(invalidFile.Replace(".c", Exe));
             }
 
             Console.WriteLine($"Valid: {validCount}/{validFiles.Count()}, Invalid: {invalidCount}/{invalidFiles.Count()}");
@@ -133,10 +141,10 @@ namespace mcc
                 return false;
             }
 
-            string gccPath = GetFullPath("gcc.exe");
+            string gccPath = GetFullPath("gcc" + Exe);
             if (string.IsNullOrEmpty(gccPath))
             {
-                Console.WriteLine("Fail: Couldn't find gcc.exe");
+                Console.WriteLine("Fail: Couldn't find gcc");
                 return false;
             }
 
@@ -202,10 +210,10 @@ namespace mcc
 
                 //assembler
                 if (!silent) Console.Write("Running Assembler ... ");
-                string gccPath = GetFullPath("gcc.exe");
+                string gccPath = GetFullPath("gcc" + Exe);
                 if (string.IsNullOrEmpty(gccPath))
                 {
-                    Console.WriteLine("Fail: Couldn't find gcc.exe");
+                    Console.WriteLine("Fail: Couldn't find gcc");
                     return false;
                 }
 
@@ -272,10 +280,10 @@ namespace mcc
 
         static string GetFullPath(string executable)
         {
-            string? temp = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
+            string? temp = Environment.GetEnvironmentVariable("PATH");
             if (!string.IsNullOrEmpty(temp))
             {
-                foreach (string folder in temp.Split(';'))
+                foreach (string folder in temp.Split(Sep))
                 {
                     string result = Path.Combine(folder, executable);
                     if (File.Exists(result))

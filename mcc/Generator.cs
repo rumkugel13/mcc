@@ -59,8 +59,15 @@ namespace mcc
                 Instruction("push %rax");
             }
 
-            // HACK: workaround for hello_world, expects parameter to be in rcx (MS x64 calling convention)
-            Instruction("movl %eax, %ecx");
+            // HACK: workaround for hello_world, expects first parameter to be in another register
+            if (OperatingSystem.IsLinux())
+            {
+                Instruction("movl %eax, %edi"); // rdi (System V AMD64 ABI)
+            }
+            else
+            {
+                Instruction("movl %eax, %ecx"); // rcx (MS x64 calling convention)
+            }
 
             Instruction("call " + funCall.Name);
             Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
