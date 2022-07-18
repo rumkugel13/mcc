@@ -7,7 +7,7 @@ namespace mcc
     {
         static bool silent = true;
         static bool debug = false;
-        static string VersionString = "mcc v0.11";
+        static string VersionString = "mcc v0.12";
         static string Exe = ".exe";
         static char Sep = ';';
 
@@ -101,7 +101,7 @@ namespace mcc
                     if (!silent) Console.WriteLine("OK");
                     int expected = GetExitCode(validFile.Replace(".c", ".out"));
                     int got = GetExitCode(validFile.Replace(".c", Exe));
-                    Console.WriteLine($"{validFile} Expected: {expected}, Got: {got}");
+                    Console.WriteLine($"Comparing Results ... Expected: {expected}, Got: {got} " + (expected == got ? "OK" : "Fail"));
                     if (expected == got)
                         validCount++;
                 }
@@ -117,7 +117,7 @@ namespace mcc
                 File.Delete(invalidFile.Replace(".c", Exe));
             }
 
-            Console.WriteLine($"Valid: {validCount}/{validFiles.Count()}, Invalid: {invalidCount}/{invalidFiles.Count()}");
+            Console.WriteLine($"Valid: {validCount}/{validFiles.Length}, Invalid: {invalidCount}/{invalidFiles.Length}");
         }
 
         static int GetExitCode(string file)
@@ -148,20 +148,20 @@ namespace mcc
                 return false;
             }
 
-            bool finished = false;
-            string command = $"-m64 {filePath} -o {filePath.Replace(".c", ".out")}";
-            ProcessStartInfo start = new ProcessStartInfo(gccPath, command);
-            using (Process? process = Process.Start(start))
+            bool sourceFile = filePath.EndsWith(".c");
+            bool success = false;
+            string command = $"-m64 {filePath} -o {filePath.Replace(sourceFile ? ".c" : ".s", sourceFile ? ".out" : Exe)}";
+            using (Process? process = Process.Start(gccPath, command))
             {
                 process.WaitForExit();
 
                 if (process.ExitCode == 0)
                 {
-                    finished = true;
+                    success = true;
                 }
             };
 
-            return finished;
+            return success;
         }
 
         static bool Compile(string filePath)
@@ -173,8 +173,7 @@ namespace mcc
             }
 
             bool finished = true;
-            string fileName = Path.GetFileNameWithoutExtension(filePath);
-            string assemblyFile = Path.Combine(Path.GetDirectoryName(filePath), fileName + ".s");
+            string assemblyFile = filePath.Replace(".c", ".s");
             if (!silent) Console.WriteLine("Input: " + filePath);
             if (!silent && debug) Console.WriteLine(File.ReadAllText(filePath));
 
@@ -188,7 +187,7 @@ namespace mcc
 
                 //nodeparser
                 if (!silent) Console.Write("Parsing Tokens ... ");
-                ASTProgramNode program = ParseProgramNode(fileName, tokens);
+                ASTProgramNode program = ParseProgramNode(Path.GetFileNameWithoutExtension(filePath), tokens);
                 if (!silent) Console.WriteLine("OK");
                 if (!silent && debug) PrintFromASTNode(program);
 
@@ -210,29 +209,9 @@ namespace mcc
 
                 //assembler
                 if (!silent) Console.Write("Running Assembler ... ");
-                string gccPath = GetFullPath("gcc" + Exe);
-                if (string.IsNullOrEmpty(gccPath))
-                {
-                    Console.WriteLine("Fail: Couldn't find gcc");
-                    return false;
-                }
-
-                string command = $"-m64 {Path.GetFullPath(assemblyFile)} -o {Path.Combine(Path.GetDirectoryName(Path.GetFullPath(assemblyFile)), fileName)}";
-                ProcessStartInfo start = new ProcessStartInfo(gccPath, command);
-                using (Process? process = Process.Start(start))
-                {
-                    process.WaitForExit();
-
-                    if (process.ExitCode == 0)
-                    {
-                        if (!silent) Console.WriteLine("OK");
-                    }
-                    else
-                    {
-                        if (!silent) Console.WriteLine("FAIL");
-                        finished = false;
-                    }
-                };
+                bool success = GccCompile(assemblyFile);
+                if (!silent) Console.WriteLine(success ? "OK" : "FAIL");
+                if (!success) finished = false;
             }
             catch (NotImplementedException exception)
             {
