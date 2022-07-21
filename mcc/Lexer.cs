@@ -23,27 +23,9 @@ namespace mcc
                 return new EndToken();
             }
 
-            char currentChar = stream[streamIndex];
+            SkipWhiteSpace();
 
-            // skip empty space
-            while (streamIndex < stream.Length - 1)
-            {
-                if (currentChar == '\n')
-                {
-                    streamIndex++;
-                    currentLine++;
-                    currentColumn = 1;
-                    currentChar = stream[streamIndex];
-                }
-                else if (char.IsWhiteSpace(currentChar))
-                {
-                    streamIndex++;
-                    currentColumn++;
-                    currentChar = stream[streamIndex];
-                }
-                else
-                    break;
-            }
+            char currentChar = stream[streamIndex];
 
             int line = currentLine;
             int column = currentColumn;
@@ -80,32 +62,28 @@ namespace mcc
                 // integer
                 int start = streamIndex;
 
-                while (char.IsDigit(currentChar) && streamIndex < stream.Length)
+                do
                 {
                     streamIndex++;
                     currentColumn++;
-                    if (!(streamIndex == stream.Length))
-                        currentChar = stream[streamIndex];
                 }
+                while (streamIndex < stream.Length && char.IsDigit(stream[streamIndex]));
 
-                return new Integer(int.Parse(stream.Substring(start, streamIndex - start))) { Line = line, Column = column };
+                int temp = int.Parse(stream.Substring(start, streamIndex - start));
+
+                return new Integer(temp) { Line = line, Column = column };
             }
             else if (char.IsLetterOrDigit(currentChar))
             {
                 // keyword or identifier
                 int start = streamIndex;
-                string value = stream[streamIndex].ToString();
 
-                while ((char.IsLetterOrDigit(currentChar) || currentChar.Equals('_')) && streamIndex < stream.Length)
+                do
                 {
                     streamIndex++;
                     currentColumn++;
-                    if (!(streamIndex == stream.Length))
-                    {
-                        currentChar = stream[streamIndex];
-                        value += stream[streamIndex];
-                    }
                 }
+                while (streamIndex < stream.Length && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')));
 
                 string temp = stream.Substring(start, streamIndex - start);
 
@@ -117,6 +95,26 @@ namespace mcc
             else
             {
                 throw new UnknownTokenException("Fail: Unkown Character or Symbol: " + currentChar);
+            }
+        }
+
+        private void SkipWhiteSpace()
+        {
+            while (streamIndex < stream.Length - 1)
+            {
+                if (stream[streamIndex] == '\n')
+                {
+                    streamIndex++;
+                    currentLine++;
+                    currentColumn = 1;
+                }
+                else if (char.IsWhiteSpace(stream[streamIndex]))
+                {
+                    streamIndex++;
+                    currentColumn++;
+                }
+                else
+                    break;
             }
         }
     }
