@@ -26,48 +26,28 @@ namespace mcc
             SkipWhiteSpace();
 
             char currentChar = stream[streamIndex];
-
             int line = currentLine;
             int column = currentColumn;
+            int start = streamIndex;
+
+            Advance();
 
             if (Symbol.Symbols.Contains(currentChar))
             {
                 // symbol
-                streamIndex++;
-                currentColumn++;
-
-                if (streamIndex < stream.Length && Symbol.Symbols.Contains(stream[streamIndex]))
+                if (HasMoreTokens() && Symbol.Symbols.Contains(stream[streamIndex]) && Symbol2.Dual.Contains(stream.Substring(start, 2)))
                 {
-                    // dual symbol
-                    string temp = stream.Substring(streamIndex - 1, 2);
-
-                    if (Symbol2.Dual.Contains(temp))
-                    {
-                        streamIndex++;
-                        currentColumn++;
-                        return new Symbol2(temp) { Line = line, Column = column };
-                    }
-                    else
-                    {
-                        return new Symbol(currentChar) { Line = line, Column = column };
-                    }
+                    Advance();
+                    return new Symbol2(stream.Substring(start, 2)) { Line = line, Column = column };
                 }
                 else
-                {
                     return new Symbol(currentChar) { Line = line, Column = column };
-                }
             }
             else if (char.IsDigit(currentChar))
             {
                 // integer
-                int start = streamIndex;
-
-                do
-                {
-                    streamIndex++;
-                    currentColumn++;
-                }
-                while (streamIndex < stream.Length && char.IsDigit(stream[streamIndex]));
+                while (HasMoreTokens() && char.IsDigit(stream[streamIndex]))
+                    Advance();
 
                 int temp = int.Parse(stream.Substring(start, streamIndex - start));
 
@@ -76,14 +56,8 @@ namespace mcc
             else if (char.IsLetterOrDigit(currentChar))
             {
                 // keyword or identifier
-                int start = streamIndex;
-
-                do
-                {
-                    streamIndex++;
-                    currentColumn++;
-                }
-                while (streamIndex < stream.Length && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')));
+                while (HasMoreTokens() && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')))
+                    Advance();
 
                 string temp = stream.Substring(start, streamIndex - start);
 
@@ -110,12 +84,17 @@ namespace mcc
                 }
                 else if (char.IsWhiteSpace(stream[streamIndex]))
                 {
-                    streamIndex++;
-                    currentColumn++;
+                    Advance();
                 }
                 else
                     break;
             }
+        }
+
+        private void Advance()
+        {
+            streamIndex++;
+            currentColumn++;
         }
     }
 }
