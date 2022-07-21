@@ -560,7 +560,7 @@
         {
             if (!HasMoreTokens())
             {
-                Fail("Fail: Missing Tokens");
+                Fail("Missing Tokens");
             }
 
             currLine = tokens[index].Line;
@@ -573,7 +573,7 @@
         {
             if (!HasMoreTokens())
             {
-                Fail("Fail: Missing Tokens");
+                Fail("Missing Tokens");
             }
 
             return tokens[index];
@@ -583,7 +583,7 @@
         {
             if (!(index + forward < tokens.Count))
             {
-                Fail("Fail: Missing Tokens");
+                Fail("Missing Tokens");
             }
 
             return tokens[index + forward];
@@ -719,17 +719,17 @@
         {
             failed = true;
             if (index == tokens.Count) index--;
-            throw new UnexpectedValueException(message + " at Line: " + tokens[index].Line + ", Column: " + tokens[index].Column);
+            throw new UnexpectedValueException("Fail: " + message + " at Line: " + tokens[index].Line + ", Column: " + tokens[index].Column);
         }
 
         public void Fail(Token.TokenType expected)
         {
-            Fail("Fail: Expected " + expected);
+            Fail("Expected " + expected);
         }
 
         public void Fail(Token.TokenType expected, string value)
         {
-            Fail("Fail: Expected " + expected + " with Value '" + value + "'");
+            Fail("Expected " + expected + " with Value '" + value + "'");
         }
 
         public bool Failed()
