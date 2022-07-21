@@ -300,7 +300,7 @@ namespace mcc
 
         private void GenerateBinaryOp(ASTBinaryOpNode binOp)
         {
-            if (Symbol2.ShortCircuit.Contains(binOp.Value))
+            if (binOp.NeedsShortCircuit)
             {
                 GenerateShortCircuit(binOp);
                 return;
@@ -312,7 +312,7 @@ namespace mcc
             Instruction("movl %eax, %ecx"); // need to switch src and dest for - and /
             Instruction("pop %rax");
 
-            if (Symbol2.Comparison.Contains(binOp.Value))
+            if (binOp.IsComparison)
             {
                 ComparisonOperation(binOp.Value);
             }

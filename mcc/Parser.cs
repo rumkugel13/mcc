@@ -405,7 +405,7 @@
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseShiftExpression();
-                exp = new ASTBinaryOpNode(binOp, exp, second);
+                exp = new ASTBinaryOpNode(binOp, exp, second) { IsComparison = true };
             }
             return exp;
         }
@@ -417,7 +417,7 @@
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseRelationalExpression();
-                exp = new ASTBinaryOpNode(binOp, exp, second);
+                exp = new ASTBinaryOpNode(binOp, exp, second) { IsComparison = true };
             }
             return exp;
         }
@@ -465,7 +465,7 @@
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseBitwiseOrExpression();
-                exp = new ASTBinaryOpNode(binOp, exp, second);
+                exp = new ASTBinaryOpNode(binOp, exp, second) { NeedsShortCircuit = true };
             }
             return exp;
         }
@@ -477,7 +477,7 @@
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseLogicalAndExpression();
-                exp = new ASTBinaryOpNode(binOp, exp, second);
+                exp = new ASTBinaryOpNode(binOp, exp, second) { NeedsShortCircuit = true };
             }
             return exp;
         }
