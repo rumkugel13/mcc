@@ -19,7 +19,7 @@ namespace mcc
             return sb.ToString();
         }
 
-        public void Generate(ASTNode node)
+        private void Generate(ASTNode node)
         {
             switch (node)
             {
@@ -376,43 +376,43 @@ namespace mcc
                 GenerateUninitializedGlobalVariable(variable);
         }
 
-        public void Label(string label)
+        private void Label(string label)
         {
             sb.AppendLine(label + ":");
         }
 
-        public void CompareZero()
+        private void CompareZero()
         {
             Instruction("cmpl $0, %eax");
         }
 
-        public string Jump()
+        private string Jump()
         {
             string jmpLabel = "_jmp" + varLabelCounter++;
             Instruction("jmp " + jmpLabel);
             return jmpLabel;
         }
 
-        public string JumpEqual()
+        private string JumpEqual()
         {
             string jmpLabel = "_je" + varLabelCounter++;
             Instruction("je " + jmpLabel);
             return jmpLabel;
         }
 
-        public string JumpNotEqual()
+        private string JumpNotEqual()
         {
             string jmpLabel = "_jne" + varLabelCounter++;
             Instruction("jne " + jmpLabel);
             return jmpLabel;
         }
 
-        public void IntegerConstant(int value)
+        private void IntegerConstant(int value)
         {
             Instruction("movl $" + value + ", %eax");
         }
 
-        public void ComparisonOperation(string op)
+        private void ComparisonOperation(string op)
         {
             Instruction("cmpl %ecx, %eax");
             IntegerConstant(0);
@@ -428,7 +428,7 @@ namespace mcc
             }
         }
 
-        public void BinaryOperation(string op)
+        private void BinaryOperation(string op)
         {
             switch (op)
             {
@@ -452,7 +452,7 @@ namespace mcc
             }
         }
 
-        public void Instruction(string instruction)
+        private void Instruction(string instruction)
         {
             sb.AppendLine("\t" + instruction);
         }

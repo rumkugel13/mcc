@@ -21,7 +21,7 @@
             return ParseProgram(programName);
         }
 
-        public ASTProgramNode ParseProgram(string programName)
+        private ASTProgramNode ParseProgram(string programName)
         {
             List<ASTTopLevelItemNode> topLevelItems = new List<ASTTopLevelItemNode>();
             while(HasMoreTokens())
@@ -33,7 +33,7 @@
             return new ASTProgramNode(programName, topLevelItems);
         }
 
-        public ASTTopLevelItemNode ParseTopLevelItem()
+        private ASTTopLevelItemNode ParseTopLevelItem()
         {
             if (Peek(2) is Symbol symbol && symbol.Value == '(')
             {
@@ -45,7 +45,7 @@
             }
         }
 
-        public ASTFunctionNode ParseFunction()
+        private ASTFunctionNode ParseFunction()
         {
             ExpectKeyword(Keyword.KeywordTypes.INT);
             ExpectIdentifier(out string name, out int line, out int column);
@@ -87,7 +87,7 @@
             }
         }
 
-        public ASTBlockItemNode ParseBlockItem()
+        private ASTBlockItemNode ParseBlockItem()
         {
             if (PeekKeyword(Keyword.KeywordTypes.INT))
             {
@@ -99,7 +99,7 @@
             }
         }
 
-        public ASTCompundNode ParseCompound()
+        private ASTCompundNode ParseCompound()
         {
             ExpectSymbol('{');
 
@@ -112,7 +112,7 @@
             return new ASTCompundNode(blockItems);
         }
 
-        public ASTWhileNode ParseWhile()
+        private ASTWhileNode ParseWhile()
         {
             ExpectKeyword(Keyword.KeywordTypes.WHILE);
             ExpectSymbol('(');
@@ -122,7 +122,7 @@
             return new ASTWhileNode(exp, statement);
         }
 
-        public ASTDoWhileNode ParseDoWhile()
+        private ASTDoWhileNode ParseDoWhile()
         {
             ExpectKeyword(Keyword.KeywordTypes.DO);
             ASTStatementNode statement = ParseStatement();
@@ -134,21 +134,21 @@
             return new ASTDoWhileNode(statement, exp);
         }
 
-        public ASTBreakNode ParseBreak()
+        private ASTBreakNode ParseBreak()
         {
             ExpectKeyword(Keyword.KeywordTypes.BREAK, out int line, out int column);
             ExpectSymbol(';');
             return new ASTBreakNode() { LineNumber = line, LineCharacter = column };
         }
 
-        public ASTContinueNode ParseContinue()
+        private ASTContinueNode ParseContinue()
         {
             ExpectKeyword(Keyword.KeywordTypes.CONTINUE, out int line, out int column);
             ExpectSymbol(';');
             return new ASTContinueNode() { LineNumber = line, LineCharacter = column };
         }
 
-        public ASTForNode ParseFor()
+        private ASTForNode ParseFor()
         {
             ExpectKeyword(Keyword.KeywordTypes.FOR);
             ExpectSymbol('(');
@@ -167,7 +167,7 @@
             return new ASTForNode(statement, init, condition, post);
         }
 
-        public ASTForDeclarationNode ParseForDeclaration()
+        private ASTForDeclarationNode ParseForDeclaration()
         {
             ExpectKeyword(Keyword.KeywordTypes.FOR);
             ExpectSymbol('(');
@@ -185,7 +185,7 @@
             return new ASTForDeclarationNode(statement, decl, condition, post);
         }
 
-        public ASTAbstractExpressionNode ParseOptionalExpression()
+        private ASTAbstractExpressionNode ParseOptionalExpression()
         {
             if (!PeekSymbol(';') && !PeekSymbol(')'))
             {
@@ -197,7 +197,7 @@
             }
         }
 
-        public ASTStatementNode ParseStatement()
+        private ASTStatementNode ParseStatement()
         {
             if (PeekKeyword(Keyword.KeywordTypes.RETURN))
             {
@@ -246,7 +246,7 @@
             }
         }
 
-        public ASTConditionNode ParseCondition()
+        private ASTConditionNode ParseCondition()
         {
             ExpectKeyword(Keyword.KeywordTypes.IF);
             ExpectSymbol('(');
@@ -265,7 +265,7 @@
             }
         }
 
-        public ASTDeclarationNode ParseDeclaration()
+        private ASTDeclarationNode ParseDeclaration()
         {
             ExpectKeyword(Keyword.KeywordTypes.INT);
             ExpectIdentifier(out string id, out int line, out int column);
@@ -284,7 +284,7 @@
             }
         }
 
-        public ASTReturnNode ParseReturn()
+        private ASTReturnNode ParseReturn()
         {
             ExpectKeyword(Keyword.KeywordTypes.RETURN, out int line, out int column);
             ASTAbstractExpressionNode exp = ParseExpression();
@@ -292,20 +292,20 @@
             return new ASTReturnNode(exp) { LineNumber = line, LineCharacter = column };
         }
 
-        public ASTConstantNode ParseConstant()
+        private ASTConstantNode ParseConstant()
         {
             ExpectInteger(out int value);
             return new ASTConstantNode(value) { LineNumber = currLine, LineCharacter = currColumn };
         }
 
-        public ASTUnaryOpNode ParseUnaryOp()
+        private ASTUnaryOpNode ParseUnaryOp()
         {
             ExpectUnarySymbol(out char symbol);
             ASTAbstractExpressionNode exp = ParseFactor();
             return new ASTUnaryOpNode(symbol, exp);
         }
 
-        public ASTFunctionCallNode ParseFunctionCall()
+        private ASTFunctionCallNode ParseFunctionCall()
         {
             ExpectIdentifier(out string id, out int line, out int column);
             ExpectSymbol('(');
@@ -325,7 +325,7 @@
             return new ASTFunctionCallNode(id, arguments) { LineNumber = line, LineCharacter = column };
         }
 
-        public ASTAbstractExpressionNode ParseFactor()
+        private ASTAbstractExpressionNode ParseFactor()
         {
             if (PeekUnarySymbol())
             {
@@ -361,7 +361,7 @@
             }
         }
 
-        public ASTAbstractExpressionNode ParseTerm()
+        private ASTAbstractExpressionNode ParseTerm()
         {
             ASTAbstractExpressionNode exp = ParseFactor();
             while (PeekSymbol('*') || PeekSymbol('/') || PeekSymbol('%'))
@@ -373,7 +373,7 @@
             return exp;
         }
 
-        public ASTAbstractExpressionNode ParseAdditiveExpression()
+        private ASTAbstractExpressionNode ParseAdditiveExpression()
         {
             ASTAbstractExpressionNode exp = ParseTerm();
             while (PeekSymbol('+') || PeekSymbol('-'))
@@ -385,7 +385,7 @@
             return exp;
         }
 
-        public ASTAbstractExpressionNode ParseShiftExpression()
+        private ASTAbstractExpressionNode ParseShiftExpression()
         {
             ASTAbstractExpressionNode exp = ParseAdditiveExpression();
             while (PeekSymbol2("<<") || PeekSymbol2(">>"))
@@ -397,7 +397,7 @@
             return exp;
         }
 
-        public ASTAbstractExpressionNode ParseRelationalExpression()
+        private ASTAbstractExpressionNode ParseRelationalExpression()
         {
             ASTAbstractExpressionNode exp = ParseShiftExpression();
             while (PeekSymbol('<') || PeekSymbol('>') ||
@@ -410,7 +410,7 @@
             return exp;
         }
 
-        public ASTAbstractExpressionNode ParseEqualityExpression()
+        private ASTAbstractExpressionNode ParseEqualityExpression()
         {
             ASTAbstractExpressionNode exp = ParseRelationalExpression();
             while (PeekSymbol2("!=") || PeekSymbol2("=="))
@@ -422,7 +422,7 @@
             return exp;
         }
 
-        public ASTAbstractExpressionNode ParseBitwiseAndExpression()
+        private ASTAbstractExpressionNode ParseBitwiseAndExpression()
         {
             ASTAbstractExpressionNode exp = ParseEqualityExpression();
             while (PeekSymbol('&'))
@@ -434,7 +434,7 @@
             return exp;
         }
 
-        public ASTAbstractExpressionNode ParseBitwiseXorExpression()
+        private ASTAbstractExpressionNode ParseBitwiseXorExpression()
         {
             ASTAbstractExpressionNode exp = ParseBitwiseAndExpression();
             while (PeekSymbol('^'))
@@ -446,7 +446,7 @@
             return exp;
         }
 
-        public ASTAbstractExpressionNode ParseBitwiseOrExpression()
+        private ASTAbstractExpressionNode ParseBitwiseOrExpression()
         {
             ASTAbstractExpressionNode exp = ParseBitwiseXorExpression();
             while (PeekSymbol('|'))
@@ -458,7 +458,7 @@
             return exp;
         }
 
-        public ASTAbstractExpressionNode ParseLogicalAndExpression()
+        private ASTAbstractExpressionNode ParseLogicalAndExpression()
         {
             ASTAbstractExpressionNode exp = ParseBitwiseOrExpression();
             while (PeekSymbol2("&&"))
@@ -470,7 +470,7 @@
             return exp;
         }
 
-        public ASTAbstractExpressionNode ParseLogicalOrExpression()
+        private ASTAbstractExpressionNode ParseLogicalOrExpression()
         {
             ASTAbstractExpressionNode exp = ParseLogicalAndExpression();
             while (PeekSymbol2("||"))
@@ -482,7 +482,7 @@
             return exp;
         }
 
-        public ASTAbstractExpressionNode ParseConditionalExpression()
+        private ASTAbstractExpressionNode ParseConditionalExpression()
         {
             ASTAbstractExpressionNode exp = ParseLogicalOrExpression();
             if (PeekSymbol('?'))
@@ -499,7 +499,7 @@
             }
         }
 
-        public ASTAbstractExpressionNode ParseExpression()
+        private ASTAbstractExpressionNode ParseExpression()
         {
             if (Peek() is Identifier && Peek(1) is Symbol symbol && symbol.Value == '=')
             {
@@ -511,7 +511,7 @@
             }
         }
 
-        public ASTAssignNode ParseAssignment()
+        private ASTAssignNode ParseAssignment()
         {
             ExpectIdentifier(out string id, out int line, out int column);
             ExpectSymbol('=');
@@ -551,12 +551,12 @@
             }
         }
 
-        public bool HasMoreTokens()
+        private bool HasMoreTokens()
         {
             return index < tokens.Count;
         }
 
-        public Token Next()
+        private Token Next()
         {
             if (!HasMoreTokens())
             {
@@ -569,7 +569,7 @@
             return tokens[index++];
         }
 
-        public Token Peek()
+        private Token Peek()
         {
             if (!HasMoreTokens())
             {
@@ -579,7 +579,7 @@
             return tokens[index];
         }
 
-        public Token Peek(int forward)
+        private Token Peek(int forward)
         {
             if (!(index + forward < tokens.Count))
             {
@@ -589,7 +589,7 @@
             return tokens[index + forward];
         }
 
-        public void ExpectSymbol(char value)
+        private void ExpectSymbol(char value)
         {
             if (PeekSymbol(value))
             {
@@ -601,17 +601,17 @@
             }
         }
 
-        public bool PeekSymbol(char value)
+        private bool PeekSymbol(char value)
         {
             return Peek() is Symbol symbol && symbol.Value == value;
         }
 
-        public bool PeekUnarySymbol()
+        private bool PeekUnarySymbol()
         {
             return Peek() is Symbol symbol && Symbol.Unary.Contains(symbol.Value);
         }
 
-        public void ExpectSymbol2(string value)
+        private void ExpectSymbol2(string value)
         {
             if (PeekSymbol2(value))
             {
@@ -623,12 +623,12 @@
             }
         }
 
-        public bool PeekSymbol2(string value)
+        private bool PeekSymbol2(string value)
         {
             return Peek() is Symbol2 symbol2 && symbol2.Value == value;
         }
 
-        public void ExpectKeyword(Keyword.KeywordTypes type)
+        private void ExpectKeyword(Keyword.KeywordTypes type)
         {
             if (PeekKeyword(type))
             {
@@ -640,7 +640,7 @@
             }
         }
 
-        public void ExpectKeyword(Keyword.KeywordTypes type, out int line, out int column)
+        private void ExpectKeyword(Keyword.KeywordTypes type, out int line, out int column)
         {
             line = column = 0;
             if (PeekKeyword(type))
@@ -655,12 +655,12 @@
             }
         }
 
-        public bool PeekKeyword(Keyword.KeywordTypes type)
+        private bool PeekKeyword(Keyword.KeywordTypes type)
         {
             return Peek() is Keyword keyword && keyword.KeywordType == type;
         }
 
-        public void ExpectIdentifier(out string id)
+        private void ExpectIdentifier(out string id)
         {
             id = string.Empty;
             if (Peek() is Identifier)
@@ -673,7 +673,7 @@
             }
         }
 
-        public void ExpectIdentifier(out string id, out int line, out int column)
+        private void ExpectIdentifier(out string id, out int line, out int column)
         {
             id = string.Empty;
             line = column = 0;
@@ -689,7 +689,7 @@
             }
         }
 
-        public void ExpectInteger(out int value)
+        private void ExpectInteger(out int value)
         {
             value = 0;
             if (Peek() is Integer)
@@ -702,7 +702,7 @@
             }
         }
 
-        public void ExpectUnarySymbol(out char symbol)
+        private void ExpectUnarySymbol(out char symbol)
         {
             symbol = char.MinValue;
             if (PeekUnarySymbol())
@@ -715,24 +715,24 @@
             }
         }
 
-        public void Fail(string message)
+        private void Fail(string message)
         {
             failed = true;
             if (index == tokens.Count) index--;
             throw new UnexpectedValueException("Fail: " + message + " at Line: " + tokens[index].Line + ", Column: " + tokens[index].Column);
         }
 
-        public void Fail(Token.TokenType expected)
+        private void Fail(Token.TokenType expected)
         {
             Fail("Expected " + expected);
         }
 
-        public void Fail(Token.TokenType expected, string value)
+        private void Fail(Token.TokenType expected, string value)
         {
             Fail("Expected " + expected + " with Value '" + value + "'");
         }
 
-        public bool Failed()
+        private bool Failed()
         {
             return failed;
         }

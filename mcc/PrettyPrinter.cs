@@ -19,7 +19,7 @@ namespace mcc
             return sb.ToString();
         }
 
-        public void Print(ASTNode node) 
+        private void Print(ASTNode node) 
         { 
             switch (node)
             {

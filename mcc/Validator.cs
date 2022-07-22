@@ -38,7 +38,7 @@ namespace mcc
             Validate(rootNode);
         }
 
-        public void Validate(ASTNode node)
+        private void Validate(ASTNode node)
         {
             switch (node)
             {
