@@ -264,12 +264,12 @@ namespace mcc
             switch (unaryOp.Value)
             {
                 case '+': break;    // just for completeness
-                case '-': Instruction("negl %eax"); break;
-                case '~': Instruction("notl %eax"); break;
+                case '-': ArmInstruction("neg w0, w0"); break;
+                case '~': ArmInstruction("mvn w0, w0"); break;
                 case '!':
-                    Instruction("cmpl $0, %eax");
-                    Instruction("movl $0, %eax");
-                    Instruction("sete %al");
+                    ArmInstruction("cmp w0, #0");
+                    ArmInstruction("moveq w0, #1");
+                    ArmInstruction("movne w0, #0");
                     break;
             }
         }
