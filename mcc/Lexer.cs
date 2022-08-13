@@ -78,7 +78,8 @@ namespace mcc
             }
             else
             {
-                throw new UnknownTokenException("Fail: Unkown Character or Symbol: " + currentChar);
+                Fail("Fail: Unkown Character or Symbol: " + currentChar);
+                return new UnknownToken();
             }
         }
 
@@ -105,6 +106,12 @@ namespace mcc
         {
             streamIndex++;
             currentColumn++;
+        }
+
+        private void Fail(string message)
+        {
+            Console.Error.WriteLine(message);
+            throw new UnknownTokenException(message);
         }
     }
 }

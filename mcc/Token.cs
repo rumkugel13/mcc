@@ -191,6 +191,14 @@
         }
     }
 
+    class UnknownToken : Token
+    {
+        public UnknownToken()
+        {
+            Type = TokenType.UNKNOWN;
+        }
+    }
+
     abstract class Token
     {
         public TokenType Type;
@@ -203,6 +211,7 @@
             SYMBOL2,
             IDENTIFIER,
             INTEGER,
+            UNKNOWN,
             END
         }
 
