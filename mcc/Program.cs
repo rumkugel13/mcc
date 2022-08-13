@@ -306,8 +306,16 @@ namespace mcc
 
         static string GenerateFromASTNode(ASTNode program)
         {
-            Generator generator = new Generator(program);
-            return generator.GenerateX86();
+            if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+            {
+                ArmGenerator generator = new ArmGenerator(program);
+                return generator.GenerateARM();
+            }
+            else
+            {
+                Generator generator = new Generator(program);
+                return generator.GenerateX86();
+            }
         }
 
         static void PrintFromASTNode(ASTNode program)
