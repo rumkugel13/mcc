@@ -355,7 +355,7 @@ namespace mcc
         {
             ArmInstruction(".globl " + name);
             ArmInstruction(".text");
-            ArmInstruction(name);
+            Label(name);
             //Instruction("pushq %rbp");
             //Instruction("movq %rsp, %rbp");
         }
