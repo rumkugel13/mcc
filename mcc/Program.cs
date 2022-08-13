@@ -32,7 +32,7 @@ namespace mcc
                     }
                     else if (args[0].Equals("-v"))
                     {
-                        Console.WriteLine(VersionString);
+                        PrintVersion();
                     }
                     break;
                 case 2:
@@ -64,6 +64,11 @@ namespace mcc
 
                     break;
             }
+        }
+
+        static void PrintVersion()
+        {
+            Console.WriteLine(VersionString);
         }
 
         static void PrintUsage()
@@ -150,7 +155,7 @@ namespace mcc
 
             bool sourceFile = filePath.EndsWith(".c");
             bool success = false;
-            string command = $"-m64 {filePath} -o {filePath.Replace(sourceFile ? ".c" : ".s", sourceFile ? ".out" : Exe)}";
+            string command = $"{filePath} -o {filePath.Replace(sourceFile ? ".c" : ".s", sourceFile ? ".out" : Exe)}";
             using (Process? process = Process.Start(gccPath, command))
             {
                 process.WaitForExit();
