@@ -268,8 +268,7 @@ namespace mcc
                 case '~': ArmInstruction("mvn w0, w0"); break;
                 case '!':
                     ArmInstruction("cmp w0, #0");
-                    ArmInstruction("moveq w0, #1");
-                    ArmInstruction("movne w0, #0");
+                    ArmInstruction("cset w0, eq");
                     break;
             }
         }
