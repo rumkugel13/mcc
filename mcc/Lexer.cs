@@ -11,12 +11,22 @@ namespace mcc
             this.stream = stream;
         }
 
-        public bool HasMoreTokens()
+        public IReadOnlyList<Token> GetAllTokens()
+        {
+            List<Token> tokens = new();
+            while (HasMoreTokens())
+            {
+                tokens.Add(GetNextToken());
+            }
+            return tokens;
+        }
+
+        private bool HasMoreTokens()
         {
             return streamIndex < stream.Length;
         }
 
-        public Token GetNextToken()
+        private Token GetNextToken()
         {
             if (!HasMoreTokens())
             {

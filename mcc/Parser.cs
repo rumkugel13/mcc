@@ -2,13 +2,13 @@
 {
     class Parser
     {
-        List<Token> tokens;
+        readonly IReadOnlyList<Token> tokens;
         int index;
         bool failed;
         string programName;
         int currLine, currColumn;
 
-        public Parser(List<Token> tokens, string programName)
+        public Parser(IReadOnlyList<Token> tokens, string programName)
         {
             this.tokens = tokens;
             this.programName = programName;

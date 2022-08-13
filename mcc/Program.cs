@@ -278,7 +278,7 @@ namespace mcc
             Console.WriteLine(assembly);
         }
 
-        static void PrintTokenList(List<Token> tokens)
+        static void PrintTokenList(IReadOnlyList<Token> tokens)
         {
             foreach (Token token in tokens)
             {
@@ -286,22 +286,14 @@ namespace mcc
             }
         }
 
-        static List<Token> Lex(string file)
+        static IReadOnlyList<Token> Lex(string file)
         {
-            List<Token> tokens = new();
-
             string content = string.Join("\n", File.ReadAllLines(file)).TrimEnd();
             Lexer lexer = new Lexer(content);
-
-            while (lexer.HasMoreTokens())
-            {
-                tokens.Add(lexer.GetNextToken());
-            }
-
-            return tokens;
+            return lexer.GetAllTokens();
         }
 
-        static ASTProgramNode ParseProgramNode(string programName, List<Token> tokens)
+        static ASTProgramNode ParseProgramNode(string programName, IReadOnlyList<Token> tokens)
         {
             Parser parser = new Parser(tokens, programName);
             return parser.ParseProgram();
@@ -309,7 +301,8 @@ namespace mcc
 
         static string GenerateFromASTNode(ASTNode program)
         {
-            return new Generator(program).GenerateX86();
+            Generator generator = new Generator(program);
+            return generator.GenerateX86();
         }
 
         static void PrintFromASTNode(ASTNode program)
