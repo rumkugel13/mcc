@@ -306,9 +306,9 @@ namespace mcc
             }
 
             Generate(binOp.ExpressionLeft);
-            ArmInstruction("str w0, [sp, #-8]!");   // push 8 bytes
+            ArmInstruction("str w0, [sp, #-16]!");   // push 16 bytes, needs to be 16 byte aligned
             Generate(binOp.ExpressionRight);
-            ArmInstruction("ldr w1, [sp], #8");     // pop 8 bytes
+            ArmInstruction("ldr w1, [sp], #16");     // pop 16 bytes
 
             if (binOp.IsComparison)
             {
@@ -443,12 +443,12 @@ namespace mcc
                 case "^": Instruction("xorl %ecx, %eax"); break;
                 case "/":
                     Instruction("cdq");
-                    Instruction("idivl %ecx");
+                    ArmInstruction("sdiv w0, w1, w0");
                     break;
                 case "%":
                     Instruction("cdq");
-                    Instruction("idivl %ecx");
-                    Instruction("movl %edx, %eax");
+                    ArmInstruction("sdiv w2, w1, w0");
+                    ArmInstruction("msub w0, w2, w1, w0");
                     break;
             }
         }
