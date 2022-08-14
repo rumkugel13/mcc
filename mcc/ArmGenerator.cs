@@ -292,8 +292,8 @@ namespace mcc
             Label(jumpEqualOrNotLabel);
             Generate(binOp.ExpressionRight);
             CompareZero();
-            IntegerConstant(0);
-            Instruction("setne %al");
+            //IntegerConstant(0);
+            ArmInstruction("cset w0, ne");
             Label(endLabel);
         }
 
@@ -376,27 +376,27 @@ namespace mcc
 
         private void CompareZero()
         {
-            Instruction("cmpl $0, %eax");
+            ArmInstruction("cmp w0, #0");
         }
 
         private string Jump()
         {
-            string jmpLabel = "_jmp" + varLabelCounter++;
-            Instruction("jmp " + jmpLabel);
+            string jmpLabel = "_b" + varLabelCounter++;
+            ArmInstruction("b " + jmpLabel);
             return jmpLabel;
         }
 
         private string JumpEqual()
         {
-            string jmpLabel = "_je" + varLabelCounter++;
-            Instruction("je " + jmpLabel);
+            string jmpLabel = "_b.eq" + varLabelCounter++;
+            ArmInstruction("b.eq " + jmpLabel);
             return jmpLabel;
         }
 
         private string JumpNotEqual()
         {
-            string jmpLabel = "_jne" + varLabelCounter++;
-            Instruction("jne " + jmpLabel);
+            string jmpLabel = "_b.ne" + varLabelCounter++;
+            ArmInstruction("b.ne " + jmpLabel);
             return jmpLabel;
         }
 
