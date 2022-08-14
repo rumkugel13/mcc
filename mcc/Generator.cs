@@ -150,7 +150,7 @@ namespace mcc
 
         private void Deallocate(int bytes)
         {
-            Instruction($"addq ${bytes}, %rsp"); // pop off variables from current scope
+            //Instruction($"addq ${bytes}, %rsp"); // pop off variables from current scope
         }
 
         private void GenerateConditionalExpression(ASTConditionalExpressionNode condEx)
@@ -228,7 +228,8 @@ namespace mcc
                 IntegerConstant(0); // no value given, assign 0
             }
 
-            Instruction("push %rax"); // push current value of variable to stack
+            Instruction("movl %eax, " + dec.Offset + "(%rbp)");
+            //Instruction("push %rax"); // push current value of variable to stack
         }
 
         private void GenerateGlobalDeclaration(ASTDeclarationNode dec)
@@ -338,6 +339,7 @@ namespace mcc
             if (function.IsDefinition)
             {
                 FunctionPrologue(function.Name);
+                Instruction("subq $" + function.BytesToAllocate + ", %rsp");
 
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);

@@ -8,6 +8,7 @@ namespace mcc
         public List<ASTBlockItemNode> BlockItems;
         public bool IsDefinition;
         public bool ContainsReturn;
+        public int BytesToAllocate;
 
         public ASTFunctionNode(string name, List<string> parameters, List<ASTBlockItemNode> blockItems)
         {

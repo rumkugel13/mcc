@@ -10,7 +10,8 @@ namespace mcc
 
         const int pointerSize = 8; // 32bit = 4, 64bit = 8
         const int intSize = 4;
-        int varOffset = -pointerSize;   // at rsp+0 is rbp, start at pointer offset
+        int varOffset = 0;
+        int declarationCount = 0;
 
         int loopLabelCounter = 0;
         Stack<int> loops = new Stack<int>();
@@ -24,7 +25,6 @@ namespace mcc
         Dictionary<string, Function> funcMap = new Dictionary<string, Function>();
 
         const int paramOffset = 2 * pointerSize;    // 1 for return pointer, 2 for old base pointer
-        int paramCount = 0;
 
         Dictionary<string, bool> globalVarMap = new Dictionary<string, bool>();
 
@@ -175,7 +175,9 @@ namespace mcc
             int newVarCount = varScopes.Peek().Count;
             varMaps.Pop();
             varScopes.Pop();
-            varOffset += newVarCount * pointerSize;
+            // update varoffset so that scope variables in stack can be overriden, could leave it for now
+            // todo: would need to calculate max simultaneous declared variables first to save on memory
+            //varOffset += newVarCount * intSize;
             return newVarCount * pointerSize;
         }
 
@@ -264,9 +266,12 @@ namespace mcc
                 Validate(dec.Initializer);
             }
 
+            // subtract bytes needed from varOffset
+            varOffset -= intSize;
+            dec.Offset = varOffset;
             varMaps.Peek()[dec.Name] = varOffset;
             varScopes.Peek().Add(dec.Name);
-            varOffset -= pointerSize;
+            declarationCount++;
         }
 
         private void ValidateGlobalDeclaration(ASTDeclarationNode dec)
@@ -379,19 +384,19 @@ namespace mcc
                 }
             }
 
-            paramCount = 0;
-            varOffset = -pointerSize;
+            varOffset = 0;
+            declarationCount = 0;
             varMaps.Push(new Dictionary<string, int>());
             varScopes.Push(new HashSet<string>());
-            bool containsReturn = false;
 
-            foreach (var parameter in function.Parameters)
+            for (int i = 0; i < function.Parameters.Count; i++)
             {
-                varMaps.Peek()[parameter] = paramOffset + paramCount * pointerSize;
+                string? parameter = function.Parameters[i];
+                varMaps.Peek()[parameter] = paramOffset + i * pointerSize;
                 varScopes.Peek().Add(parameter);
-                paramCount++;
             }
 
+            bool containsReturn = false;
             foreach (var blockItem in function.BlockItems)
             {
                 Validate(blockItem);
@@ -402,6 +407,10 @@ namespace mcc
             }
 
             function.ContainsReturn = containsReturn;
+
+            // 16 byte aligned
+            // todo: calculate max simultaneous declared variables to save on memory
+            function.BytesToAllocate = 16 * ((declarationCount * intSize + 15) / 16);
 
             varMaps.Pop();
             varScopes.Pop();
