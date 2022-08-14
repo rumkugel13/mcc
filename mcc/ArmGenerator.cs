@@ -409,7 +409,7 @@ namespace mcc
             }
             else
             {
-                ArmInstruction("mov w0, #" + ((value << 16) >> 16));        // lower 16 bits
+                ArmInstruction("mov w0, #" + (value & 0xFFFF));        // lower 16 bits
                 ArmInstruction("movk w0, #" + (value >> 16) + ", lsl 16");  // upper 16 bits, shifted by 16 bits without modifying register bits
             }
         }
