@@ -56,22 +56,13 @@ namespace mcc
             list.Reverse();
             foreach (var exp in list)
             {
-                Generate(exp);
-                Instruction("push %rax");
+                Generate(exp);                
             }
+            // todo: move arguments into the specific registers
+            //       for now, the first argument is stored in w0, which is correct
 
-            // HACK: workaround for hello_world, expects first parameter to be in another register
-            if (OperatingSystem.IsLinux())
-            {
-                Instruction("movl %eax, %edi"); // rdi (System V AMD64 ABI)
-            }
-            else
-            {
-                Instruction("movl %eax, %ecx"); // rcx (MS x64 calling convention)
-            }
-
-            Instruction("call " + funCall.Name);
-            Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
+            ArmInstruction("bl " + funCall.Name);
+            //Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
         }
 
         private void GenerateContinue(ASTContinueNode con)
