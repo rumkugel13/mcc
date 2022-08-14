@@ -306,9 +306,9 @@ namespace mcc
             }
 
             Generate(binOp.ExpressionLeft);
-            ArmInstruction("str w0, [sp, #-4]!");   // push 4 bytes
+            ArmInstruction("str w0, [sp, #-8]!");   // push 8 bytes
             Generate(binOp.ExpressionRight);
-            ArmInstruction("ldr w1, [sp], #4");        // pop 4 bytes
+            ArmInstruction("ldr w1, [sp], #8");     // pop 8 bytes
 
             if (binOp.IsComparison)
             {
@@ -434,7 +434,7 @@ namespace mcc
             switch (op)
             {
                 case "+": ArmInstruction("add w0, w1, w0"); break;
-                case "*": Instruction("imull %ecx, %eax"); break;
+                case "*": ArmInstruction("mul w0, w1, w0"); break;
                 case "-": ArmInstruction("sub w0, w1, w0"); break;
                 case "<<": Instruction("sall %ecx, %eax"); break;
                 case ">>": Instruction("sarl %ecx, %eax"); break;
