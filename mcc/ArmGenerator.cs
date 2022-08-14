@@ -194,7 +194,7 @@ namespace mcc
             }
             else
             {
-                Instruction("movl " + variable.Offset + "(%rbp), %eax");
+                ArmInstruction("ldr w0, [x29, #" + variable.Offset * 2 + "]");
             }
         }
 
@@ -207,7 +207,7 @@ namespace mcc
             }
             else
             {
-                Instruction("movl %eax, " + assign.Offset + "(%rbp)");
+                ArmInstruction("str w0, [x29, #" + assign.Offset * 2 + "]");    // offset is 8 byte aligned for now, so multiply by 2
             }
         }
 
@@ -228,7 +228,7 @@ namespace mcc
                 IntegerConstant(0); // no value given, assign 0
             }
 
-            Instruction("push %rax"); // push current value of variable to stack
+            ArmInstruction("str w0, [sp, #-16]!"); // push current value of variable to stack
         }
 
         private void GenerateGlobalDeclaration(ASTDeclarationNode dec)
