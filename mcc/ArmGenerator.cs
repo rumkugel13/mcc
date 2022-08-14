@@ -150,7 +150,7 @@ namespace mcc
 
         private void Deallocate(int bytes)
         {
-            Instruction($"addq ${bytes}, %rsp"); // pop off variables from current scope
+            //Instruction($"addq ${bytes}, %rsp"); // pop off variables from current scope
         }
 
         private void GenerateConditionalExpression(ASTConditionalExpressionNode condEx)
@@ -194,7 +194,7 @@ namespace mcc
             }
             else
             {
-                ArmInstruction("ldr w0, [x29, #" + variable.Offset * 2 + "]");
+                ArmInstruction("ldr w0, [x29, #" + variable.Offset + "]");
             }
         }
 
@@ -207,7 +207,7 @@ namespace mcc
             }
             else
             {
-                ArmInstruction("str w0, [x29, #" + assign.Offset * 2 + "]");    // offset is 8 byte aligned for now, so multiply by 2
+                ArmInstruction("str w0, [x29, #" + assign.Offset + "]");
             }
         }
 
@@ -228,7 +228,7 @@ namespace mcc
                 IntegerConstant(0); // no value given, assign 0
             }
 
-            ArmInstruction("str w0, [sp, #-16]!"); // push current value of variable to stack
+            ArmInstruction("str w0, [x29, #" + dec.Offset + "]");
         }
 
         private void GenerateGlobalDeclaration(ASTDeclarationNode dec)
@@ -336,6 +336,7 @@ namespace mcc
             if (function.IsDefinition)
             {
                 FunctionPrologue(function.Name);
+                Instruction("sub sp, sp, #" + function.BytesToAllocate);
 
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);
