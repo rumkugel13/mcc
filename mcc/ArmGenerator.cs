@@ -354,14 +354,13 @@ namespace mcc
             ArmInstruction(".globl " + name);
             ArmInstruction(".text");
             Label(name);
-            //Instruction("pushq %rbp");
-            //Instruction("movq %rsp, %rbp");
+            ArmInstruction("stp x29, x30, [sp, #-16]!");    // x29 = frame pointer, x30 = return adress
+            ArmInstruction("mov x29, sp");
         }
 
         private void FunctionEpilogue()
         {
-            //Instruction("movq %rbp, %rsp");
-            //Instruction("popq %rbp");
+            ArmInstruction("ldp x29, x30, [sp], #16");
             ArmInstruction("ret");
         }
 
