@@ -338,7 +338,7 @@ namespace mcc
                 for (int i = 0; i < function.Parameters.Count; i++)
                 {
                     // move arguments from registers to reserved stack position
-                    ArmInstruction($"str w{i}, [x29, #" + (i * 4) + "]");
+                    ArmInstruction($"str w{i}, [x29, #" + (-(i + 1) * 4) + "]");
                 }
 
                 foreach (var blockItem in function.BlockItems)
