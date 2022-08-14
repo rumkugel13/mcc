@@ -56,10 +56,15 @@ namespace mcc
             list.Reverse();
             foreach (var exp in list)
             {
-                Generate(exp);                
+                Generate(exp);
+                ArmInstruction("str w0, [sp, #-16]!");   // push 16 bytes, needs to be 16 byte aligned
             }
-            // todo: move arguments into the specific registers
-            //       for now, the first argument is stored in w0, which is correct
+
+            for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
+            {
+                ArmInstruction($"ldr w{i}, [sp], #16");     // pop 16 bytes into correct register
+            }
+            // note: only works for first 8 arguments, afterwards unexpected behaviour
 
             ArmInstruction("bl " + funCall.Name);
             //Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
@@ -329,6 +334,12 @@ namespace mcc
             {
                 bytesAllocated = function.BytesToAllocate;
                 FunctionPrologue(function.Name);
+
+                for (int i = 0; i < function.Parameters.Count; i++)
+                {
+                    // move arguments from registers to reserved stack position
+                    ArmInstruction($"str w{i}, [x29, #" + (i * 4) + "]");
+                }
 
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);

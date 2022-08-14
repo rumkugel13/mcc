@@ -391,9 +391,12 @@ namespace mcc
 
             for (int i = 0; i < function.Parameters.Count; i++)
             {
+                varOffset -= intSize;
                 string? parameter = function.Parameters[i];
-                varMaps.Peek()[parameter] = paramOffset + i * pointerSize;
+                varMaps.Peek()[parameter] = varOffset;//paramOffset + i * pointerSize;
                 varScopes.Peek().Add(parameter);
+
+                declarationCount++; // count function parameters as declaration
             }
 
             bool containsReturn = false;
