@@ -75,12 +75,12 @@ namespace mcc
 
         private void GenerateContinue(ASTContinueNode con)
         {
-            Instruction("jmp loop_continue_" + con.LoopCount);
+            ArmInstruction("b loop_continue_" + con.LoopCount);
         }
 
         private void GenerateBreak(ASTBreakNode br)
         {
-            Instruction("jmp loop_end_" + br.LoopCount);
+            ArmInstruction("b loop_end_" + br.LoopCount);
         }
 
         private void GenerateForDeclaration(ASTForDeclarationNode forDecl)
@@ -89,12 +89,12 @@ namespace mcc
             Label("loop_begin_" + forDecl.LoopCount);
             Generate(forDecl.Condition);
             CompareZero();
-            Instruction("je loop_end_" + forDecl.LoopCount);
+            ArmInstruction("b.eq loop_end_" + forDecl.LoopCount);
             Generate(forDecl.Statement);
             Label("loop_continue_" + forDecl.LoopCount);
             Deallocate(forDecl.BytesToDeallocate);
             Generate(forDecl.Post);
-            Instruction("jmp loop_begin_" + forDecl.LoopCount);
+            ArmInstruction("b loop_begin_" + forDecl.LoopCount);
             Label("loop_end_" + forDecl.LoopCount);
             Deallocate(forDecl.BytesToDeallocateInit);
         }
@@ -105,12 +105,12 @@ namespace mcc
             Label("loop_begin_" + fo.LoopCount);
             Generate(fo.Condition);
             CompareZero();
-            Instruction("je loop_end_" + fo.LoopCount);
+            ArmInstruction("b.eq loop_end_" + fo.LoopCount);
             Generate(fo.Statement);
             Label("loop_continue_" + fo.LoopCount);
             Deallocate(fo.BytesToDeallocate);
             Generate(fo.Post);
-            Instruction("jmp loop_begin_" + fo.LoopCount);
+            ArmInstruction("b loop_begin_" + fo.LoopCount);
             Label("loop_end_" + fo.LoopCount);
             Deallocate(fo.BytesToDeallocateInit);
         }
@@ -123,7 +123,7 @@ namespace mcc
             Deallocate(doWhil.BytesToDeallocate);
             Generate(doWhil.Expression);
             CompareZero();
-            Instruction("jne loop_begin_" + doWhil.LoopCount);
+            ArmInstruction("b.ne loop_begin_" + doWhil.LoopCount);
             Label("loop_end_" + doWhil.LoopCount);
         }
 
@@ -132,11 +132,11 @@ namespace mcc
             Label("loop_begin_" + whil.LoopCount);
             Generate(whil.Expression);
             CompareZero();
-            Instruction("je loop_end_" + whil.LoopCount);
+            ArmInstruction("b.eq loop_end_" + whil.LoopCount);
             Generate(whil.Statement);
             Label("loop_continue_" + whil.LoopCount);
             Deallocate(whil.BytesToDeallocate);
-            Instruction("jmp loop_begin_" + whil.LoopCount);
+            ArmInstruction("b loop_begin_" + whil.LoopCount);
             Label("loop_end_" + whil.LoopCount);
         }
 
@@ -336,7 +336,7 @@ namespace mcc
             if (function.IsDefinition)
             {
                 FunctionPrologue(function.Name);
-                Instruction("sub sp, sp, #" + function.BytesToAllocate);
+                ArmInstruction("sub sp, sp, #" + function.BytesToAllocate);
 
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);
