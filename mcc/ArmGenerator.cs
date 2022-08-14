@@ -437,11 +437,11 @@ namespace mcc
                 case "+": ArmInstruction("add w0, w1, w0"); break;
                 case "*": ArmInstruction("mul w0, w1, w0"); break;
                 case "-": ArmInstruction("sub w0, w1, w0"); break;
-                case "<<": Instruction("sall %ecx, %eax"); break;
-                case ">>": Instruction("sarl %ecx, %eax"); break;
-                case "&": Instruction("andl %ecx, %eax"); break;
-                case "|": Instruction("orl %ecx, %eax"); break;
-                case "^": Instruction("xorl %ecx, %eax"); break;
+                case "<<": ArmInstruction("lsl w0, w1, w0"); break;
+                case ">>": ArmInstruction("asr w0, w1, w0"); break;
+                case "&": ArmInstruction("and w0, w1, w0"); break;
+                case "|": ArmInstruction("orr w0, w1, w0"); break;
+                case "^": ArmInstruction("eor w0, w1, w0"); break;
                 case "/":
                     ArmInstruction("sdiv w0, w1, w0");
                     break;
