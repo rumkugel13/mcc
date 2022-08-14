@@ -7,6 +7,7 @@ namespace mcc
         ASTNode rootNode;
         StringBuilder sb = new StringBuilder();
         int varLabelCounter = 0;
+        int bytesAllocated = 0;
 
         public ArmGenerator(ASTNode rootNode)
         {
@@ -335,8 +336,8 @@ namespace mcc
         {
             if (function.IsDefinition)
             {
+                bytesAllocated = function.BytesToAllocate;
                 FunctionPrologue(function.Name);
-                ArmInstruction("sub sp, sp, #" + function.BytesToAllocate);
 
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);
@@ -355,13 +356,13 @@ namespace mcc
             ArmInstruction(".globl " + name);
             ArmInstruction(".text");
             Label(name);
-            ArmInstruction("stp x29, x30, [sp, #-16]!");    // x29 = frame pointer, x30 = return adress
+            ArmInstruction($"stp x29, x30, [sp, #-{16 + bytesAllocated}]!");    // x29 = frame pointer, x30 = return adress
             ArmInstruction("mov x29, sp");
         }
 
         private void FunctionEpilogue()
         {
-            ArmInstruction("ldp x29, x30, [sp], #16");
+            ArmInstruction($"ldp x29, x30, [sp], #{16 + bytesAllocated}");
             ArmInstruction("ret");
         }
 
