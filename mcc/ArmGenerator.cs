@@ -415,17 +415,18 @@ namespace mcc
 
         private void ComparisonOperation(string op)
         {
-            Instruction("cmpl %ecx, %eax");
-            IntegerConstant(0);
+            //Instruction("cmpl %ecx, %eax");
+            //IntegerConstant(0);
+            ArmInstruction("cmp w1, w0");
 
             switch (op)
             {
-                case "==": Instruction("sete %al"); break;
-                case "!=": Instruction("setne %al"); break;
-                case ">=": Instruction("setge %al"); break;
-                case ">": Instruction("setg %al"); break;
-                case "<=": Instruction("setle %al"); break;
-                case "<": Instruction("setl %al"); break;
+                case "==": ArmInstruction("cset w0, eq"); break;
+                case "!=": ArmInstruction("cset w0, ne"); break;
+                case ">=": ArmInstruction("cset w0, ge"); break;
+                case ">":  ArmInstruction("cset w0, gt"); break;
+                case "<=": ArmInstruction("cset w0, le"); break;
+                case "<":  ArmInstruction("cset w0, lt"); break;
             }
         }
 
@@ -442,11 +443,9 @@ namespace mcc
                 case "|": Instruction("orl %ecx, %eax"); break;
                 case "^": Instruction("xorl %ecx, %eax"); break;
                 case "/":
-                    Instruction("cdq");
                     ArmInstruction("sdiv w0, w1, w0");
                     break;
                 case "%":
-                    Instruction("cdq");
                     ArmInstruction("sdiv w2, w1, w0");
                     ArmInstruction("msub w0, w2, w0, w1");
                     break;
