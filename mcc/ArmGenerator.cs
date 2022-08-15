@@ -381,11 +381,11 @@ namespace mcc
             foreach (var topLevelItem in program.TopLevelItems)
                 Generate(topLevelItem);
 
-            foreach (var variable in program.UninitializedGlobalVariables)
-                GenerateUninitializedGlobalVariable(variable);
-
             foreach (var variable in program.GlobalVariables)
                 GenerateGlobalVariableAddress(variable);
+
+            foreach (var variable in program.UninitializedGlobalVariables)
+                GenerateUninitializedGlobalVariable(variable);
         }
 
         private void CompareZero()
