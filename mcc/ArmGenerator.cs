@@ -251,11 +251,12 @@ namespace mcc
         private void GenerateUninitializedGlobalVariable(string name)
         {
             // not defined, add to bss
-            Instruction(".globl " + name);
-            Instruction(".bss");
-            Instruction(".align 4");
+            ArmInstruction(".globl " + name);
+            ArmInstruction(".bss");
+            ArmInstruction(".balign 4");
+            ArmInstruction(".byte 1");
             Label(name);
-            Instruction(".zero 4");
+            ArmInstruction(".zero 4");
         }
 
         private void GenerateConstant(ASTConstantNode constant)
