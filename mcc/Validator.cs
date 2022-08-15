@@ -433,6 +433,7 @@ namespace mcc
                 {
                     program.UninitializedGlobalVariables.Add(variable.Key);
                 }
+                program.GlobalVariables.Add(variable.Key);
             }
         }
 

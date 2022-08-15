@@ -187,7 +187,8 @@ namespace mcc
         {
             if (variable.IsGlobal)
             {
-                Instruction("movl " + variable.Name + "(%rip), %eax");
+                ArmInstruction("ldr x0, addr_for_" + variable.Name);
+                ArmInstruction("ldr w0, [x0]");
             }
             else
             {
@@ -200,7 +201,8 @@ namespace mcc
             Generate(assign.Expression);
             if (assign.IsGlobal)
             {
-                Instruction("movl %eax, " + assign.Name + "(%rip)");
+                ArmInstruction("ldr x0, addr_for_" + assign.Name);
+                ArmInstruction("str w0, [x0]");
             }
             else
             {
@@ -232,12 +234,18 @@ namespace mcc
         {
             if (dec.Initializer is not ASTNoExpressionNode)
             {
-                Instruction(".globl " + dec.Name);
-                Instruction(".data");
-                Instruction(".align 4");
+                ArmInstruction(".globl " + dec.Name);
+                ArmInstruction(".data");
+                ArmInstruction(".balign 4");
+                ArmInstruction(".byte 1");
                 Label(dec.Name);
-                Instruction(".long " + dec.GlobalValue);
+                ArmInstruction(".word " + dec.GlobalValue);
             }
+        }
+
+        private void GenerateGlobalVariableAddress(string name)
+        {
+            ArmInstruction("addr_for_" + name + ": .dword " + name);
         }
 
         private void GenerateUninitializedGlobalVariable(string name)
@@ -372,6 +380,9 @@ namespace mcc
         {
             foreach (var topLevelItem in program.TopLevelItems)
                 Generate(topLevelItem);
+
+            foreach (var variable in program.GlobalVariables)
+                GenerateGlobalVariableAddress(variable);
 
             foreach (var variable in program.UninitializedGlobalVariables)
                 GenerateUninitializedGlobalVariable(variable);
