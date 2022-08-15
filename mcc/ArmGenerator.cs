@@ -221,13 +221,12 @@ namespace mcc
             if (dec.Initializer is not ASTNoExpressionNode)
             {
                 Generate(dec.Initializer);
+                ArmInstruction("str w0, [x29, #" + dec.Offset + "]");
             }
             else
             {
-                IntegerConstant(0); // no value given, assign 0
+                ArmInstruction("str wzr, [x29, #" + dec.Offset + "]");
             }
-
-            ArmInstruction("str w0, [x29, #" + dec.Offset + "]");
         }
 
         private void GenerateGlobalDeclaration(ASTDeclarationNode dec)
@@ -297,7 +296,6 @@ namespace mcc
             Label(jumpEqualOrNotLabel);
             Generate(binOp.ExpressionRight);
             CompareZero();
-            //IntegerConstant(0);
             ArmInstruction("cset w0, ne");
             Label(endLabel);
         }
@@ -429,8 +427,6 @@ namespace mcc
 
         private void ComparisonOperation(string op)
         {
-            //Instruction("cmpl %ecx, %eax");
-            //IntegerConstant(0);
             ArmInstruction("cmp w1, w0");
 
             switch (op)
@@ -469,12 +465,6 @@ namespace mcc
         private void Label(string label)
         {
             sb.AppendLine(label + ":");
-        }
-
-        private void Instruction(string instruction)
-        {
-            // do not print x86 instructions
-            //sb.AppendLine("\t" + instruction);
         }
 
         private void ArmInstruction(string instruction)
