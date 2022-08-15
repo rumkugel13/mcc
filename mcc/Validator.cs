@@ -393,6 +393,7 @@ namespace mcc
             {
                 varOffset -= intSize;
                 string? parameter = function.Parameters[i];
+                // todo: use paramoffset for parameters on stack
                 varMaps.Peek()[parameter] = varOffset;//paramOffset + i * pointerSize;
                 varScopes.Peek().Add(parameter);
 

@@ -60,7 +60,7 @@ namespace mcc
                 ArmInstruction("str w0, [sp, #-16]!");   // push 16 bytes, needs to be 16 byte aligned
             }
 
-            for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
+            for (int i = 0; i < funCall.Arguments.Count; i++)
             {
                 ArmInstruction($"ldr w{i}, [sp], #16");     // pop 16 bytes into correct register
             }
