@@ -245,7 +245,8 @@ namespace mcc
 
         private void GenerateGlobalVariableAddress(string name)
         {
-            ArmInstruction("addr_for_" + name + ": .dword " + name);
+            Label("addr_for_" + name);
+            ArmInstruction(".dword " + name);
         }
 
         private void GenerateUninitializedGlobalVariable(string name)
@@ -254,7 +255,6 @@ namespace mcc
             ArmInstruction(".globl " + name);
             ArmInstruction(".bss");
             ArmInstruction(".balign 4");
-            ArmInstruction(".byte 1");
             Label(name);
             ArmInstruction(".zero 4");
         }
