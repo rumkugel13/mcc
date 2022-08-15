@@ -237,7 +237,6 @@ namespace mcc
                 ArmInstruction(".globl " + dec.Name);
                 ArmInstruction(".data");
                 ArmInstruction(".balign 4");
-                ArmInstruction(".byte 1");
                 Label(dec.Name);
                 ArmInstruction(".word " + dec.GlobalValue);
             }
