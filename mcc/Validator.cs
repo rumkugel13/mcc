@@ -391,13 +391,22 @@ namespace mcc
 
             for (int i = 0; i < function.Parameters.Count; i++)
             {
-                varOffset -= intSize;
+                int offset;
+                if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+                {
+                    varOffset -= intSize; 
+                    declarationCount++; // count function parameters as declaration
+                    // todo: use paramoffset for parameters on stack
+                    offset = varOffset;
+                }
+                else
+                {
+                    offset = paramOffset + i * pointerSize;
+                }
+                
                 string? parameter = function.Parameters[i];
-                // todo: use paramoffset for parameters on stack
-                varMaps.Peek()[parameter] = varOffset;//paramOffset + i * pointerSize;
+                varMaps.Peek()[parameter] = offset;
                 varScopes.Peek().Add(parameter);
-
-                declarationCount++; // count function parameters as declaration
             }
 
             bool containsReturn = false;
