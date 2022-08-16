@@ -188,8 +188,8 @@ namespace mcc
         {
             if (variable.IsGlobal)
             {
-                ArmInstruction("ldr x0, addr_for_" + variable.Name);
-                ArmInstruction("ldr w0, [x0]");
+                ArmInstruction("ldr x1, addr_for_" + variable.Name);
+                ArmInstruction("ldr w0, [x1]");
             }
             else
             {
@@ -202,8 +202,8 @@ namespace mcc
             Generate(assign.Expression);
             if (assign.IsGlobal)
             {
-                ArmInstruction("ldr x0, addr_for_" + assign.Name);
-                ArmInstruction("str w0, [x0]");
+                ArmInstruction("ldr x1, addr_for_" + assign.Name);
+                ArmInstruction("str w0, [x1]");
             }
             else
             {
