@@ -7,7 +7,6 @@ namespace mcc
         ASTNode rootNode;
         StringBuilder sb = new StringBuilder();
         int varLabelCounter = 0;
-        int bytesAllocated = 0;
 
         public ArmGenerator(ASTNode rootNode)
         {
@@ -340,8 +339,8 @@ namespace mcc
         {
             if (function.IsDefinition)
             {
-                bytesAllocated = function.BytesToAllocate;
                 FunctionPrologue(function.Name);
+                ArmInstruction("sub sp, sp, #" + function.BytesToAllocate);
 
                 for (int i = 0; i < function.Parameters.Count; i++)
                 {
@@ -368,12 +367,11 @@ namespace mcc
             Label(name);
             ArmInstruction($"stp x29, x30, [sp, #-16]!");    // x29 = frame pointer, x30 = return adress
             ArmInstruction("mov x29, sp");
-            ArmInstruction("sub sp, sp, #" + bytesAllocated);
         }
 
         private void FunctionEpilogue()
         {
-            ArmInstruction("add sp, sp, #" + bytesAllocated);
+            ArmInstruction("mov sp, x29");
             ArmInstruction($"ldp x29, x30, [sp], #16");
             ArmInstruction("ret");
         }
