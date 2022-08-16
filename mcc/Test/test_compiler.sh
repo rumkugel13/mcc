@@ -57,7 +57,7 @@ test_stage () {
     echo "===================Valid Programs==================="
     for prog in `find . -type f -name "*.c" -path "./stage_$1/valid/*" -not -path "*/valid_multifile/*" 2>/dev/null`; do
 
-        gcc -m64 -w $prog -o a.out
+        gcc -w $prog -o a.out
         run_correct_program
 
         base="${prog%.*}" #name of executable (filename w/out extension)
