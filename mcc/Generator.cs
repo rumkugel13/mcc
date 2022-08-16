@@ -86,15 +86,16 @@ namespace mcc
         private void GenerateForDeclaration(ASTForDeclarationNode forDecl)
         {
             Generate(forDecl.Declaration);
+            Instruction("jmp loop_post_" + forDecl.LoopCount);
             Label("loop_begin_" + forDecl.LoopCount);
-            Generate(forDecl.Condition);
-            CompareZero();
-            Instruction("je loop_end_" + forDecl.LoopCount);
             Generate(forDecl.Statement);
             Label("loop_continue_" + forDecl.LoopCount);
             Deallocate(forDecl.BytesToDeallocate);
             Generate(forDecl.Post);
-            Instruction("jmp loop_begin_" + forDecl.LoopCount);
+            Label("loop_post_" + forDecl.LoopCount);
+            Generate(forDecl.Condition);
+            CompareZero();
+            Instruction("jne loop_begin_" + forDecl.LoopCount);
             Label("loop_end_" + forDecl.LoopCount);
             Deallocate(forDecl.BytesToDeallocateInit);
         }
@@ -102,15 +103,16 @@ namespace mcc
         private void GenerateFor(ASTForNode fo)
         {
             Generate(fo.Init);
+            Instruction("jmp loop_post_" + fo.LoopCount);
             Label("loop_begin_" + fo.LoopCount);
-            Generate(fo.Condition);
-            CompareZero();
-            Instruction("je loop_end_" + fo.LoopCount);
             Generate(fo.Statement);
             Label("loop_continue_" + fo.LoopCount);
             Deallocate(fo.BytesToDeallocate);
             Generate(fo.Post);
-            Instruction("jmp loop_begin_" + fo.LoopCount);
+            Label("loop_post_" + fo.LoopCount);
+            Generate(fo.Condition);
+            CompareZero();
+            Instruction("jne loop_begin_" + fo.LoopCount);
             Label("loop_end_" + fo.LoopCount);
             Deallocate(fo.BytesToDeallocateInit);
         }
