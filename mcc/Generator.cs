@@ -129,14 +129,14 @@ namespace mcc
 
         private void GenerateWhile(ASTWhileNode whil)
         {
+            Instruction("jmp loop_continue_" + whil.LoopCount);
             Label("loop_begin_" + whil.LoopCount);
-            Generate(whil.Expression);
-            CompareZero();
-            Instruction("je loop_end_" + whil.LoopCount);
             Generate(whil.Statement);
             Label("loop_continue_" + whil.LoopCount);
             Deallocate(whil.BytesToDeallocate);
-            Instruction("jmp loop_begin_" + whil.LoopCount);
+            Generate(whil.Expression);
+            CompareZero();
+            Instruction("jne loop_begin_" + whil.LoopCount);
             Label("loop_end_" + whil.LoopCount);
         }
 
