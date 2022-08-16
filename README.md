@@ -37,3 +37,7 @@ Correct usage of [Calling Conventions for x86_64](https://en.wikipedia.org/wiki/
 
 \* There is a workaround for the following test: stage_9/valid/hello_world.c\
   The external int putchar(int); function uses different calling convention (see above), which we don't support (yet).
+
+\*\* There are two test cases which compile on Arm64, but don't produce correct results:
+- stage_8/valid/for_variable_shadow.c
+- stage_10/valid/global_not_initialized.c
