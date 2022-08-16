@@ -366,13 +366,15 @@ namespace mcc
             ArmInstruction(".globl " + name);
             ArmInstruction(".text");
             Label(name);
-            ArmInstruction($"stp x29, x30, [sp, #-{16 + bytesAllocated}]!");    // x29 = frame pointer, x30 = return adress
+            ArmInstruction($"stp x29, x30, [sp, #-16]!");    // x29 = frame pointer, x30 = return adress
             ArmInstruction("mov x29, sp");
+            ArmInstruction("sub sp, sp, #" + bytesAllocated);
         }
 
         private void FunctionEpilogue()
         {
-            ArmInstruction($"ldp x29, x30, [sp], #{16 + bytesAllocated}");
+            ArmInstruction("add sp, sp, #" + bytesAllocated);
+            ArmInstruction($"ldp x29, x30, [sp], #16");
             ArmInstruction("ret");
         }
 
