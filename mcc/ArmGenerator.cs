@@ -279,16 +279,7 @@ namespace mcc
         private void GenerateUnaryOp(ASTUnaryOpNode unaryOp)
         {
             Generate(unaryOp.Expression);
-            switch (unaryOp.Value)
-            {
-                case '+': break;    // just for completeness
-                case '-': ArmInstruction("neg w0, w0"); break;
-                case '~': ArmInstruction("mvn w0, w0"); break;
-                case '!':
-                    ArmInstruction("cmp w0, #0");
-                    ArmInstruction("cset w0, eq");
-                    break;
-            }
+            UnaryOperation(unaryOp.Value);
         }
 
         private void GenerateShortCircuit(ASTBinaryOpNode binOp)
@@ -488,6 +479,20 @@ namespace mcc
                 case "%":
                     ArmInstruction("sdiv w2, w1, w0");
                     ArmInstruction("msub w0, w2, w0, w1");
+                    break;
+            }
+        }
+
+        private void UnaryOperation(char op)
+        {
+            switch (op)
+            {
+                case '+': break;    // just for completeness
+                case '-': ArmInstruction("neg w0, w0"); break;
+                case '~': ArmInstruction("mvn w0, w0"); break;
+                case '!':
+                    ArmInstruction("cmp w0, #0");
+                    ArmInstruction("cset w0, eq");
                     break;
             }
         }

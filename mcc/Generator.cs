@@ -276,17 +276,7 @@ namespace mcc
         private void GenerateUnaryOp(ASTUnaryOpNode unaryOp)
         {
             Generate(unaryOp.Expression);
-            switch (unaryOp.Value)
-            {
-                case '+': break;    // just for completeness
-                case '-': Instruction("negl %eax"); break;
-                case '~': Instruction("notl %eax"); break;
-                case '!':
-                    Instruction("cmpl $0, %eax");
-                    Instruction("movl $0, %eax");
-                    Instruction("sete %al");
-                    break;
-            }
+            UnaryOperation(unaryOp.Value);
         }
 
         private void GenerateShortCircuit(ASTBinaryOpNode binOp)
@@ -479,6 +469,21 @@ namespace mcc
                     Instruction("cdq");
                     Instruction("idivl %ecx");
                     Instruction("movl %edx, %eax");
+                    break;
+            }
+        }
+
+        private void UnaryOperation(char op)
+        {
+            switch (op)
+            {
+                case '+': break;    // just for completeness
+                case '-': Instruction("negl %eax"); break;
+                case '~': Instruction("notl %eax"); break;
+                case '!':
+                    Instruction("cmpl $0, %eax");
+                    Instruction("movl $0, %eax");
+                    Instruction("sete %al");
                     break;
             }
         }
