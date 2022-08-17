@@ -319,7 +319,7 @@ namespace mcc
             if (function.IsDefinition)
             {
                 FunctionPrologue(function.Name);
-                ArmInstruction("sub sp, sp, #" + function.BytesToAllocate);
+                AllocateMemoryForVariables(function.BytesToAllocate);
 
                 for (int i = 0; i < function.Parameters.Count; i++)
                 {
@@ -390,6 +390,11 @@ namespace mcc
             ArmInstruction("mov sp, x29");
             ArmInstruction($"ldp x29, x30, [sp], #16");
             ArmInstruction("ret");
+        }
+
+        private void AllocateMemoryForVariables(int bytesToAllocate)
+        {
+            ArmInstruction("sub sp, sp, #" + bytesToAllocate);
         }
 
         private void CompareZero()

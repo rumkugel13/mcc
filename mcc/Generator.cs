@@ -324,7 +324,7 @@ namespace mcc
             if (function.IsDefinition)
             {
                 FunctionPrologue(function.Name);
-                Instruction("subq $" + function.BytesToAllocate + ", %rsp");
+                AllocateMemoryForVariables(function.BytesToAllocate);
 
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);
@@ -380,6 +380,11 @@ namespace mcc
             Instruction("movq %rbp, %rsp");
             Instruction("popq %rbp");
             Instruction("ret");
+        }
+
+        private void AllocateMemoryForVariables(int bytesToAllocate)
+        {
+            Instruction("subq $" + bytesToAllocate + ", %rsp");
         }
 
         private void Label(string label)
