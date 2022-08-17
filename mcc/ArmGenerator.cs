@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Xml.Linq;
 
 namespace mcc
 {
@@ -234,12 +235,17 @@ namespace mcc
         {
             if (dec.Initializer is not ASTNoExpressionNode)
             {
-                ArmInstruction(".globl " + dec.Name);
-                ArmInstruction(".data");
-                ArmInstruction(".balign 4");
-                Label(dec.Name);
-                ArmInstruction(".word " + dec.GlobalValue);
+                GenerateGlobalVariable(dec.Name, dec.GlobalValue);
             }
+        }
+
+        private void GenerateGlobalVariable(string name, int value)
+        {
+            ArmInstruction(".globl " + name);
+            ArmInstruction(".data");
+            ArmInstruction(".balign 4");
+            Label(name);
+            ArmInstruction(".word " + value);
         }
 
         private void GenerateGlobalVariableAddress(string name)

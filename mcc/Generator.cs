@@ -238,12 +238,17 @@ namespace mcc
         {
             if (dec.Initializer is not ASTNoExpressionNode)
             {
-                Instruction(".globl " + dec.Name);
-                Instruction(".data");
-                Instruction(".align 4");
-                Label(dec.Name);
-                Instruction(".long " + dec.GlobalValue);
+                GenerateGlobalVariable(dec.Name, dec.GlobalValue);
             }
+        }
+
+        private void GenerateGlobalVariable(string name, int value)
+        {
+            Instruction(".globl " + name);
+            Instruction(".data");
+            Instruction(".align 4");
+            Label(name);
+            Instruction(".long " + value);
         }
 
         private void GenerateUninitializedGlobalVariable(string name)
