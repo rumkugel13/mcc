@@ -251,7 +251,7 @@ namespace mcc
 
         private void GenerateConstant(ASTConstantNode constant)
         {
-            Instruction("movl $" + constant.Value + ", %eax");
+            IntegerConstant(constant.Value);
         }
 
         private void GenerateUnaryOp(ASTUnaryOpNode unaryOp)
