@@ -15,6 +15,7 @@ namespace mcc
         const string lbBranch = ".b";
         const string lbBranchEqual = ".be";
         const string lbBranchNotEqual = ".bne";
+        const string lbVarAddress = ".addr_";
 
         public ArmGenerator(ASTNode rootNode)
         {
@@ -196,7 +197,7 @@ namespace mcc
         {
             if (variable.IsGlobal)
             {
-                ArmInstruction("ldr x2, addr_for_" + variable.Name);
+                ArmInstruction("ldr x2, " + lbVarAddress + variable.Name);
                 ArmInstruction("ldr w0, [x2]");
             }
             else
@@ -210,7 +211,7 @@ namespace mcc
             Generate(assign.Expression);
             if (assign.IsGlobal)
             {
-                ArmInstruction("ldr x2, addr_for_" + assign.Name);
+                ArmInstruction("ldr x2, " + lbVarAddress + assign.Name);
                 ArmInstruction("str w0, [x2]");
             }
             else
@@ -362,7 +363,7 @@ namespace mcc
 
         private void GenerateGlobalVariableAddress(string name)
         {
-            Label("addr_for_" + name);
+            Label(lbVarAddress + name);
             ArmInstruction(".dword " + name);
         }
 
