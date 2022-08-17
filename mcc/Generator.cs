@@ -82,18 +82,18 @@ namespace mcc
 
         private void GenerateContinue(ASTContinueNode con)
         {
-            Instruction("jmp " + lbLoopContinue + con.LoopCount);
+            Jump(lbLoopContinue + con.LoopCount);
         }
 
         private void GenerateBreak(ASTBreakNode br)
         {
-            Instruction("jmp " + lbLoopEnd + br.LoopCount);
+            Jump(lbLoopEnd + br.LoopCount);
         }
 
         private void GenerateForDeclaration(ASTForDeclarationNode forDecl)
         {
             Generate(forDecl.Declaration);
-            Instruction("jmp " + lbLoopPost + forDecl.LoopCount);
+            Jump(lbLoopPost + forDecl.LoopCount);
             Label(lbLoopBegin + forDecl.LoopCount);
             Generate(forDecl.Statement);
             Label(lbLoopContinue + forDecl.LoopCount);
@@ -102,7 +102,7 @@ namespace mcc
             Label(lbLoopPost + forDecl.LoopCount);
             Generate(forDecl.Condition);
             CompareZero();
-            Instruction("jne " + lbLoopBegin + forDecl.LoopCount);
+            JumpNotEqual(lbLoopBegin + forDecl.LoopCount);
             Label(lbLoopEnd + forDecl.LoopCount);
             Deallocate(forDecl.BytesToDeallocateInit);
         }
@@ -110,7 +110,7 @@ namespace mcc
         private void GenerateFor(ASTForNode fo)
         {
             Generate(fo.Init);
-            Instruction("jmp " + lbLoopPost + fo.LoopCount);
+            Jump(lbLoopPost + fo.LoopCount);
             Label(lbLoopBegin + fo.LoopCount);
             Generate(fo.Statement);
             Label(lbLoopContinue + fo.LoopCount);
@@ -119,7 +119,7 @@ namespace mcc
             Label(lbLoopPost + fo.LoopCount);
             Generate(fo.Condition);
             CompareZero();
-            Instruction("jne " + lbLoopBegin + fo.LoopCount);
+            JumpNotEqual(lbLoopBegin + fo.LoopCount);
             Label(lbLoopEnd + fo.LoopCount);
             Deallocate(fo.BytesToDeallocateInit);
         }
@@ -132,20 +132,20 @@ namespace mcc
             Deallocate(doWhil.BytesToDeallocate);
             Generate(doWhil.Expression);
             CompareZero();
-            Instruction("jne " + lbLoopBegin + doWhil.LoopCount);
+            JumpNotEqual(lbLoopBegin + doWhil.LoopCount);
             Label(lbLoopEnd + doWhil.LoopCount);
         }
 
         private void GenerateWhile(ASTWhileNode whil)
         {
-            Instruction("jmp " + lbLoopContinue + whil.LoopCount);
+            Jump(lbLoopContinue + whil.LoopCount);
             Label(lbLoopBegin + whil.LoopCount);
             Generate(whil.Statement);
             Label(lbLoopContinue + whil.LoopCount);
             Deallocate(whil.BytesToDeallocate);
             Generate(whil.Expression);
             CompareZero();
-            Instruction("jne " + lbLoopBegin + whil.LoopCount);
+            JumpNotEqual(lbLoopBegin + whil.LoopCount);
             Label(lbLoopEnd + whil.LoopCount);
         }
 
@@ -409,6 +409,11 @@ namespace mcc
             return jmpLabel;
         }
 
+        private void Jump(string label)
+        {
+            Instruction("jmp " + label);
+        }
+
         private string JumpEqual()
         {
             string jmpLabel = lbJumpEqual + varLabelCounter++;
@@ -416,11 +421,21 @@ namespace mcc
             return jmpLabel;
         }
 
+        private void JumpEqual(string label)
+        {
+            Instruction("je " + label);
+        }
+
         private string JumpNotEqual()
         {
             string jmpLabel = lbJumpNotEqual + varLabelCounter++;
             Instruction("jne " + jmpLabel);
             return jmpLabel;
+        }
+
+        private void JumpNotEqual(string label)
+        {
+            Instruction("jne " + label);
         }
 
         private void IntegerConstant(int value)
