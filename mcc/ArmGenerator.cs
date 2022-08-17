@@ -246,31 +246,6 @@ namespace mcc
             }
         }
 
-        private void GenerateGlobalVariable(string name, int value)
-        {
-            ArmInstruction(".globl " + name);
-            ArmInstruction(".data");
-            ArmInstruction(".balign 4");
-            Label(name);
-            ArmInstruction(".word " + value);
-        }
-
-        private void GenerateGlobalVariableAddress(string name)
-        {
-            Label("addr_for_" + name);
-            ArmInstruction(".dword " + name);
-        }
-
-        private void GenerateUninitializedGlobalVariable(string name)
-        {
-            // not defined, add to bss
-            ArmInstruction(".globl " + name);
-            ArmInstruction(".bss");
-            ArmInstruction(".balign 4");
-            Label(name);
-            ArmInstruction(".zero 4");
-        }
-
         private void GenerateConstant(ASTConstantNode constant)
         {
             IntegerConstant(constant.Value);
@@ -364,6 +339,43 @@ namespace mcc
             }
         }
 
+        private void GenerateProgram(ASTProgramNode program)
+        {
+            foreach (var topLevelItem in program.TopLevelItems)
+                Generate(topLevelItem);
+
+            foreach (var variable in program.GlobalVariables)
+                GenerateGlobalVariableAddress(variable);
+
+            foreach (var variable in program.UninitializedGlobalVariables)
+                GenerateUninitializedGlobalVariable(variable);
+        }
+
+        private void GenerateGlobalVariable(string name, int value)
+        {
+            ArmInstruction(".globl " + name);
+            ArmInstruction(".data");
+            ArmInstruction(".balign 4");
+            Label(name);
+            ArmInstruction(".word " + value);
+        }
+
+        private void GenerateGlobalVariableAddress(string name)
+        {
+            Label("addr_for_" + name);
+            ArmInstruction(".dword " + name);
+        }
+
+        private void GenerateUninitializedGlobalVariable(string name)
+        {
+            // not defined, add to bss
+            ArmInstruction(".globl " + name);
+            ArmInstruction(".bss");
+            ArmInstruction(".balign 4");
+            Label(name);
+            ArmInstruction(".zero 4");
+        }
+
         private void FunctionPrologue(string name)
         {
             ArmInstruction(".globl " + name);
@@ -378,18 +390,6 @@ namespace mcc
             ArmInstruction("mov sp, x29");
             ArmInstruction($"ldp x29, x30, [sp], #16");
             ArmInstruction("ret");
-        }
-
-        private void GenerateProgram(ASTProgramNode program)
-        {
-            foreach (var topLevelItem in program.TopLevelItems)
-                Generate(topLevelItem);
-
-            foreach (var variable in program.GlobalVariables)
-                GenerateGlobalVariableAddress(variable);
-
-            foreach (var variable in program.UninitializedGlobalVariables)
-                GenerateUninitializedGlobalVariable(variable);
         }
 
         private void CompareZero()

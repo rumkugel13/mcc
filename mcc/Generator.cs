@@ -249,25 +249,6 @@ namespace mcc
             }
         }
 
-        private void GenerateGlobalVariable(string name, int value)
-        {
-            Instruction(".globl " + name);
-            Instruction(".data");
-            Instruction(".align 4");
-            Label(name);
-            Instruction(".long " + value);
-        }
-
-        private void GenerateUninitializedGlobalVariable(string name)
-        {
-            // not defined, add to bss
-            Instruction(".globl " + name);
-            Instruction(".bss");
-            Instruction(".align 4");
-            Label(name);
-            Instruction(".zero 4");
-        }
-
         private void GenerateConstant(ASTConstantNode constant)
         {
             Instruction("movl $" + constant.Value + ", %eax");
@@ -357,6 +338,34 @@ namespace mcc
             }
         }
 
+        private void GenerateProgram(ASTProgramNode program)
+        {
+            foreach (var topLevelItem in program.TopLevelItems)
+                Generate(topLevelItem);
+
+            foreach (var variable in program.UninitializedGlobalVariables)
+                GenerateUninitializedGlobalVariable(variable);
+        }
+
+        private void GenerateGlobalVariable(string name, int value)
+        {
+            Instruction(".globl " + name);
+            Instruction(".data");
+            Instruction(".align 4");
+            Label(name);
+            Instruction(".long " + value);
+        }
+
+        private void GenerateUninitializedGlobalVariable(string name)
+        {
+            // not defined, add to bss
+            Instruction(".globl " + name);
+            Instruction(".bss");
+            Instruction(".align 4");
+            Label(name);
+            Instruction(".zero 4");
+        }
+
         private void FunctionPrologue(string name)
         {
             Instruction(".globl " + name);
@@ -371,15 +380,6 @@ namespace mcc
             Instruction("movq %rbp, %rsp");
             Instruction("popq %rbp");
             Instruction("ret");
-        }
-
-        private void GenerateProgram(ASTProgramNode program)
-        {
-            foreach (var topLevelItem in program.TopLevelItems)
-                Generate(topLevelItem);
-
-            foreach (var variable in program.UninitializedGlobalVariables)
-                GenerateUninitializedGlobalVariable(variable);
         }
 
         private void Label(string label)
