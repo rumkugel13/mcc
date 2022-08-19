@@ -39,14 +39,28 @@ namespace mcc
                     if (args[0].Equals("-t"))
                     {
                         silent = false;
-                        string stage = args[1];
-                        if (!Directory.Exists(stage))
-                        {
-                            Console.WriteLine("Unknown folder.");
-                            return;
-                        }
 
-                        TestAll(stage);
+                        string path = args[1];
+                        if (path.EndsWith(".c"))
+                        {
+                            if (!File.Exists(path))
+                            {
+                                Console.WriteLine("Unknown file: " + path);
+                                return;
+                            }
+
+                            TestOne(path);
+                        }
+                        else
+                        {
+                            if (!Directory.Exists(path))
+                            {
+                                Console.WriteLine("Unknown folder: " + path);
+                                return;
+                            }
+
+                            TestAll(path);
+                        }
                     }
                     else if (args[0].Equals("-p"))
                     {
@@ -77,13 +91,14 @@ namespace mcc
             builder.AppendLine("Usage:");
             builder.AppendLine("   mcc [-p | -d] <c-file>");
             builder.AppendLine("   mcc -v");
-            builder.AppendLine("   mcc -t <stage_folder>");
+            builder.AppendLine("   mcc -t [<stage_folder> | <c-file>]");
             builder.AppendLine("Options:");
             builder.AppendLine("   <c-file>             Compile c-file silently");
             builder.AppendLine("   -p <c-file>          Compile c-file with Verbose output");
             builder.AppendLine("   -d <c-file>          Compile c-file with Debug output");
             builder.AppendLine("   -v                   Print Version");
             builder.AppendLine("   -t <stage_folder>    Test c-files in stage folder");
+            builder.AppendLine("   -t <c-file>          Test single c-file");
             Console.Write(builder.ToString());
         }
 
@@ -99,19 +114,7 @@ namespace mcc
             int validCount = 0;
             foreach (string validFile in validFiles)
             {
-                if (Compile(validFile))
-                {
-                    if (!silent) Console.Write("Running gcc ... ");
-                    GccCompile(validFile);
-                    if (!silent) Console.WriteLine("OK");
-                    int expected = GetExitCode(validFile.Replace(".c", ".out"));
-                    int got = GetExitCode(validFile.Replace(".c", Exe));
-                    Console.WriteLine($"Comparing Results ... Expected: {expected}, Got: {got} " + (expected == got ? "OK" : "Fail"));
-                    if (expected == got)
-                        validCount++;
-                }
-                File.Delete(validFile.Replace(".c", Exe));
-                File.Delete(validFile.Replace(".c", ".out"));
+                validCount += TestOne(validFile) ? 1 : 0;
             }
 
             int invalidCount = 0;
@@ -123,6 +126,25 @@ namespace mcc
             }
 
             Console.WriteLine($"Valid: {validCount}/{validFiles.Length}, Invalid: {invalidCount}/{invalidFiles.Length}");
+        }
+
+        static bool TestOne(string sourceFile)
+        {
+            bool valid = false;
+            if (Compile(sourceFile))
+            {
+                if (!silent) Console.Write("Running gcc ... ");
+                GccCompile(sourceFile);
+                if (!silent) Console.WriteLine("OK");
+                int expected = GetExitCode(sourceFile.Replace(".c", ".out"));
+                int got = GetExitCode(sourceFile.Replace(".c", Exe));
+                Console.WriteLine($"Comparing Results ... Expected: {expected}, Got: {got} " + (expected == got ? "OK" : "Fail"));
+                if (expected == got)
+                    valid = true;
+            }
+            File.Delete(sourceFile.Replace(".c", Exe));
+            File.Delete(sourceFile.Replace(".c", ".out"));
+            return valid;
         }
 
         static int GetExitCode(string file)

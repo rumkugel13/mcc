@@ -4,9 +4,14 @@
       "commandName": "Project",
       "commandLineArgs": "-d return_2.c"
     },
-    "single": {
+    "debug": {
       "commandName": "Project",
       "commandLineArgs": "-d stage_8\\valid\\for_variable_shadow.c",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
+    "test": {
+      "commandName": "Project",
+      "commandLineArgs": "-t stage_8\\valid\\for_variable_shadow.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {
