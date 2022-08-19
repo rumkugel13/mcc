@@ -163,9 +163,11 @@ namespace mcc
         {
             Generate(condEx.Condition);
             CompareZero();
-            string label = JumpEqual();
+            string label = CreateJumpLabel(lbBranchEqual);
+            JumpEqual(label);
             Generate(condEx.IfBranch);
-            string end = Jump();
+            string end = CreateJumpLabel(lbBranch);
+            Jump(end);
             Label(label);
             Generate(condEx.ElseBranch);
             Label(end);
@@ -175,12 +177,14 @@ namespace mcc
         {
             Generate(cond.Condition);
             CompareZero();
-            string label = JumpEqual();
+            string label = CreateJumpLabel(lbBranchEqual);
+            JumpEqual(label);
 
             if (cond.ElseBranch is not ASTNoStatementNode)
             {
                 Generate(cond.IfBranch);
-                string end = Jump();
+                string end = CreateJumpLabel(lbBranch);
+                Jump(end);
                 Label(label);
                 Generate(cond.ElseBranch);
                 Label(end);
@@ -262,15 +266,18 @@ namespace mcc
             string jumpEqualOrNotLabel = "";
             if (binOp.Value == "||")
             {
-                jumpEqualOrNotLabel = JumpEqual();
+                jumpEqualOrNotLabel = CreateJumpLabel(lbBranchEqual);
+                JumpEqual(jumpEqualOrNotLabel);
                 IntegerConstant(1);
             }
             else if (binOp.Value == "&&")
             {
-                jumpEqualOrNotLabel = JumpNotEqual();
+                jumpEqualOrNotLabel = CreateJumpLabel(lbBranchNotEqual);
+                JumpNotEqual(jumpEqualOrNotLabel);
             }
 
-            string endLabel = Jump();
+            string endLabel = CreateJumpLabel(lbBranch);
+            Jump(endLabel);
             Label(jumpEqualOrNotLabel);
             Generate(binOp.ExpressionRight);
             CompareZero();
@@ -442,11 +449,9 @@ namespace mcc
             ArmInstruction("cset w0, ne");
         }
 
-        private string Jump()
+        private string CreateJumpLabel(string name)
         {
-            string jmpLabel = lbBranch + varLabelCounter++;
-            ArmInstruction("b " + jmpLabel);
-            return jmpLabel;
+            return name + varLabelCounter++;
         }
 
         private void Jump(string label)
@@ -454,23 +459,9 @@ namespace mcc
             ArmInstruction("b " + label);
         }
 
-        private string JumpEqual()
-        {
-            string jmpLabel = lbBranchEqual + varLabelCounter++;
-            ArmInstruction("b.eq " + jmpLabel);
-            return jmpLabel;
-        }
-
         private void JumpEqual(string label)
         {
             ArmInstruction("b.eq " + label);
-        }
-
-        private string JumpNotEqual()
-        {
-            string jmpLabel = lbBranchNotEqual + varLabelCounter++;
-            ArmInstruction("b.ne " + jmpLabel);
-            return jmpLabel;
         }
 
         private void JumpNotEqual(string label)
