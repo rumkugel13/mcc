@@ -14,6 +14,8 @@ namespace mcc
         const string lbJump = ".j";
         const string lbJumpEqual = ".je";
         const string lbJumpNotEqual = ".jne";
+        readonly string[] argRegister = new string[6] { "rdi", "rsi", "rdx", "rcx", "r8x", "r9x", };
+        readonly string[] argRegisterWin = new string[4] { "rcx", "rdx", "r8x", "r9x", };
 
         public Generator(ASTNode rootNode)
         {
@@ -66,18 +68,24 @@ namespace mcc
                 Instruction("push %rax");
             }
 
-            // HACK: workaround for hello_world, expects first parameter to be in another register
+            // note: more than 4/6 parameters currently not supported (needs stack position calculations)
             if (OperatingSystem.IsLinux())
             {
-                Instruction("movl %eax, %edi"); // rdi (System V AMD64 ABI)
+                for (int i = 0; i < funCall.Arguments.Count; i++)
+                {
+                    Instruction("popq %" + argRegister[i]);
+                }
             }
             else
             {
-                Instruction("movl %eax, %ecx"); // rcx (MS x64 calling convention)
+                for (int i = 0; i < funCall.Arguments.Count; i++)
+                {
+                    Instruction("popq %" + argRegisterWin[i]);
+                }
             }
 
             Instruction("call " + funCall.Name);
-            Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
+            //Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -328,6 +336,22 @@ namespace mcc
             {
                 FunctionPrologue(function.Name);
                 AllocateMemoryForVariables(function.BytesToAllocate);
+
+                // note: more than 4/6 parameters currently not supported (needs stack position calculations)
+                if (OperatingSystem.IsLinux())
+                {
+                    for (int i = 0; i < function.Parameters.Count; i++)
+                    {
+                        Instruction("movq %" + argRegister[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < function.Parameters.Count; i++)
+                    {
+                        Instruction("movq %" + argRegisterWin[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
+                    }
+                }
 
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);
