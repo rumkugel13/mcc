@@ -61,11 +61,9 @@ namespace mcc
 
         private void GenerateFunctionCall(ASTFunctionCallNode funCall)
         {
-            var list = new List<ASTAbstractExpressionNode>(funCall.Arguments);
-            list.Reverse();
-            foreach (var exp in list)
+            for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
             {
-                Generate(exp);
+                Generate(funCall.Arguments[i]);
                 ArmInstruction("str w0, [sp, #-16]!");   // push 16 bytes, needs to be 16 byte aligned
             }
 
