@@ -199,11 +199,11 @@ namespace mcc
         {
             if (variable.IsGlobal)
             {
-                Instruction("movl " + variable.Name + "(%rip), %eax");
+                LoadGlobalVariable(variable.Name);
             }
             else
             {
-                Instruction("movl " + variable.Offset + "(%rbp), %eax");
+                LoadLocalVariable(variable.Offset);
             }
         }
 
@@ -212,11 +212,11 @@ namespace mcc
             Generate(assign.Expression);
             if (assign.IsGlobal)
             {
-                Instruction("movl %eax, " + assign.Name + "(%rip)");
+                StoreGlobalVariable(assign.Name);
             }
             else
             {
-                Instruction("movl %eax, " + assign.Offset + "(%rbp)");
+                StoreLocalVariable(assign.Offset);
             }
         }
 
@@ -231,14 +231,12 @@ namespace mcc
             if (dec.Initializer is not ASTNoExpressionNode)
             {
                 Generate(dec.Initializer);
+                StoreLocalVariable(dec.Offset);
             }
             else
             {
-                IntegerConstant(0); // no value given, assign 0
+                InitializeLocalVariable(dec.Offset);
             }
-
-            Instruction("movl %eax, " + dec.Offset + "(%rbp)");
-            //Instruction("push %rax"); // push current value of variable to stack
         }
 
         private void GenerateGlobalDeclaration(ASTDeclarationNode dec)
@@ -378,6 +376,32 @@ namespace mcc
             Instruction("movq %rbp, %rsp");
             Instruction("popq %rbp");
             Instruction("ret");
+        }
+
+        private void StoreGlobalVariable(string name)
+        {
+            Instruction("movl %eax, " + name + "(%rip)");
+        }
+
+        private void LoadGlobalVariable(string name)
+        {
+            Instruction("movl " + name + "(%rip), %eax");
+        }
+
+        private void StoreLocalVariable(int byteOffset)
+        {
+            Instruction("movl %eax, " + byteOffset + "(%rbp)");
+        }
+
+        private void LoadLocalVariable(int byteOffset)
+        {
+            Instruction("movl " + byteOffset + "(%rbp), %eax");
+        }
+
+        private void InitializeLocalVariable(int byteOffset)
+        {
+            IntegerConstant(0); // no value given, assign 0
+            StoreLocalVariable(byteOffset);
         }
 
         private void AllocateMemoryForVariables(int bytesToAllocate)

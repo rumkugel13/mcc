@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Xml.Linq;
 
 namespace mcc
 {
@@ -197,12 +196,11 @@ namespace mcc
         {
             if (variable.IsGlobal)
             {
-                ArmInstruction("ldr x2, " + lbVarAddress + variable.Name);
-                ArmInstruction("ldr w0, [x2]");
+                LoadGlobalVariable(variable.Name);
             }
             else
             {
-                ArmInstruction("ldr w0, [x29, #" + variable.Offset + "]");
+                LoadLocalVariable(variable.Offset);
             }
         }
 
@@ -211,12 +209,11 @@ namespace mcc
             Generate(assign.Expression);
             if (assign.IsGlobal)
             {
-                ArmInstruction("ldr x2, " + lbVarAddress + assign.Name);
-                ArmInstruction("str w0, [x2]");
+                StoreGlobalVariable(assign.Name);
             }
             else
             {
-                ArmInstruction("str w0, [x29, #" + assign.Offset + "]");
+                StoreLocalVariable(assign.Offset);
             }
         }
 
@@ -231,11 +228,11 @@ namespace mcc
             if (dec.Initializer is not ASTNoExpressionNode)
             {
                 Generate(dec.Initializer);
-                ArmInstruction("str w0, [x29, #" + dec.Offset + "]");
+                StoreLocalVariable(dec.Offset);
             }
             else
             {
-                ArmInstruction("str wzr, [x29, #" + dec.Offset + "]");
+                InitializeLocalVariable(dec.Offset);
             }
         }
 
@@ -391,6 +388,33 @@ namespace mcc
             ArmInstruction("mov sp, x29");
             ArmInstruction($"ldp x29, x30, [sp], #16");
             ArmInstruction("ret");
+        }
+
+        private void StoreGlobalVariable(string name)
+        {
+            ArmInstruction("ldr x2, " + lbVarAddress + name);
+            ArmInstruction("str w0, [x2]");
+        }
+
+        private void LoadGlobalVariable(string name)
+        {
+            ArmInstruction("ldr x2, " + lbVarAddress + name);
+            ArmInstruction("ldr w0, [x2]");
+        }
+
+        private void StoreLocalVariable(int byteOffset)
+        {
+            ArmInstruction("str w0, [x29, #" + byteOffset + "]");
+        }
+
+        private void LoadLocalVariable(int byteOffset)
+        {
+            ArmInstruction("ldr w0, [x29, #" + byteOffset + "]");
+        }
+
+        private void InitializeLocalVariable(int byteOffset)
+        {
+            ArmInstruction("str wzr, [x29, #" + byteOffset + "]");
         }
 
         private void AllocateMemoryForVariables(int bytesToAllocate)
