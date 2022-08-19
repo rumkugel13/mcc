@@ -15,6 +15,8 @@ namespace mcc
         const string lbBranchEqual = ".be";
         const string lbBranchNotEqual = ".bne";
         const string lbVarAddress = ".addr_";
+        readonly string[] argRegister4B = new string[8] { "w0","w1", "w2", "w3", "w4", "w5", "w6", "w7", };
+        readonly string[] argRegister8B = new string[8] { "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", };
 
         public ArmGenerator(ASTNode rootNode)
         {
@@ -69,7 +71,7 @@ namespace mcc
 
             for (int i = 0; i < funCall.Arguments.Count; i++)
             {
-                ArmInstruction($"ldr w{i}, [sp], #16");     // pop 16 bytes into correct register
+                ArmInstruction($"ldr {argRegister4B[i]}, [sp], #16");     // pop 16 bytes into correct register
             }
             // note: only works for first 8 arguments, afterwards unexpected behaviour
 
@@ -326,10 +328,11 @@ namespace mcc
                 FunctionPrologue(function.Name);
                 AllocateMemoryForVariables(function.BytesToAllocate);
 
+                // todo: limit to reg count
                 for (int i = 0; i < function.Parameters.Count; i++)
                 {
                     // move arguments from registers to reserved stack position
-                    ArmInstruction($"str w{i}, [x29, #" + (-(i + 1) * 4) + "]");
+                    ArmInstruction($"str {argRegister4B[i]}, [x29, #" + (-(i + 1) * 4) + "]");
                 }
 
                 foreach (var blockItem in function.BlockItems)

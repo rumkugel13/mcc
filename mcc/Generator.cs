@@ -14,8 +14,10 @@ namespace mcc
         const string lbJump = ".j";
         const string lbJumpEqual = ".je";
         const string lbJumpNotEqual = ".jne";
-        readonly string[] argRegister = new string[6] { "rdi", "rsi", "rdx", "rcx", "r8x", "r9x", };
-        readonly string[] argRegisterWin = new string[4] { "rcx", "rdx", "r8x", "r9x", };
+        readonly string[] argRegister4B = new string[6] { "edi", "esi", "edx", "ecx", "r8d", "r9d", };
+        readonly string[] argRegister8B = new string[6] { "rdi", "rsi", "rdx", "rcx", "r8", "r9", };
+        readonly string[] argRegisterWin4B = new string[4] { "ecx", "edx", "r8d", "r9d", };
+        readonly string[] argRegisterWin8B = new string[4] { "rcx", "rdx", "r8", "r9", };
 
         public Generator(ASTNode rootNode)
         {
@@ -65,7 +67,7 @@ namespace mcc
             foreach (var exp in list)
             {
                 Generate(exp);
-                Instruction("push %rax");
+                Instruction("pushq %rax");
             }
 
             // note: more than 4/6 parameters currently not supported (needs stack position calculations)
@@ -73,14 +75,14 @@ namespace mcc
             {
                 for (int i = 0; i < funCall.Arguments.Count; i++)
                 {
-                    Instruction("popq %" + argRegister[i]);
+                    Instruction("popq %" + argRegister8B[i]);
                 }
             }
             else
             {
                 for (int i = 0; i < funCall.Arguments.Count; i++)
                 {
-                    Instruction("popq %" + argRegisterWin[i]);
+                    Instruction("popq %" + argRegisterWin8B[i]);
                 }
             }
 
@@ -340,16 +342,18 @@ namespace mcc
                 // note: more than 4/6 parameters currently not supported (needs stack position calculations)
                 if (OperatingSystem.IsLinux())
                 {
+                    // todo: limit to reg count
                     for (int i = 0; i < function.Parameters.Count; i++)
                     {
-                        Instruction("movq %" + argRegister[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
+                        Instruction("movl %" + argRegister4B[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
                     }
                 }
                 else
                 {
+                    // todo: limit to reg count
                     for (int i = 0; i < function.Parameters.Count; i++)
                     {
-                        Instruction("movq %" + argRegisterWin[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
+                        Instruction("movl %" + argRegisterWin4B[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
                     }
                 }
 

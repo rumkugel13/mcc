@@ -11,7 +11,7 @@
     },
     "test": {
       "commandName": "Project",
-      "commandLineArgs": "-t stage_8\\valid\\for_variable_shadow.c",
+      "commandLineArgs": "-t stage_9\\valid\\multi_arg.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {
