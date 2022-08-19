@@ -14,6 +14,10 @@ namespace mcc
         const string lbJump = ".j";
         const string lbJumpEqual = ".je";
         const string lbJumpNotEqual = ".jne";
+        readonly string[] argRegister4B = new string[6] { "edi", "esi", "edx", "ecx", "r8d", "r9d", };
+        readonly string[] argRegister8B = new string[6] { "rdi", "rsi", "rdx", "rcx", "r8", "r9", };
+        readonly string[] argRegisterWin4B = new string[4] { "ecx", "edx", "r8d", "r9d", };
+        readonly string[] argRegisterWin8B = new string[4] { "rcx", "rdx", "r8", "r9", };
 
         public Generator(ASTNode rootNode)
         {
@@ -63,21 +67,27 @@ namespace mcc
             foreach (var exp in list)
             {
                 Generate(exp);
-                Instruction("push %rax");
+                Instruction("pushq %rax");
             }
 
-            // HACK: workaround for hello_world, expects first parameter to be in another register
+            // todo: parameters beyond 4/6 are on the stack (need stack position calculations)
             if (OperatingSystem.IsLinux())
             {
-                Instruction("movl %eax, %edi"); // rdi (System V AMD64 ABI)
+                for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegister8B.Length); i++)
+                {
+                    Instruction("popq %" + argRegister8B[i]);
+                }
             }
             else
             {
-                Instruction("movl %eax, %ecx"); // rcx (MS x64 calling convention)
+                for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegisterWin8B.Length); i++)
+                {
+                    Instruction("popq %" + argRegisterWin8B[i]);
+                }
             }
 
-            Instruction("call " + funCall.Name);
-            Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
+            CallFunction(funCall.Name);
+            //DeallocateMemory(funCall.BytesToDeallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -329,6 +339,22 @@ namespace mcc
                 FunctionPrologue(function.Name);
                 AllocateMemoryForVariables(function.BytesToAllocate);
 
+                // todo: parameters beyond 4/6 are on the stack (need stack position calculations)
+                if (OperatingSystem.IsLinux())
+                {
+                    for (int i = 0; i < Math.Min(function.Parameters.Count, argRegister4B.Length); i++)
+                    {
+                        Instruction("movl %" + argRegister4B[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < Math.Min(function.Parameters.Count, argRegisterWin4B.Length); i++)
+                    {
+                        Instruction("movl %" + argRegisterWin4B[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
+                    }
+                }
+
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);
 
@@ -414,6 +440,16 @@ namespace mcc
         private void AllocateMemoryForVariables(int bytesToAllocate)
         {
             Instruction("subq $" + bytesToAllocate + ", %rsp");
+        }
+
+        private void DeallocateMemory(int bytesToDeallocate)
+        {
+            Instruction("addq $" + bytesToDeallocate + ", %rsp");
+        }
+
+        private void CallFunction(string name)
+        {
+            Instruction("call " + name);
         }
 
         private void PushLeftOperand()
