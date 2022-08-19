@@ -86,8 +86,8 @@ namespace mcc
                 }
             }
 
-            Instruction("call " + funCall.Name);
-            //Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
+            CallFunction(funCall.Name);
+            //DeallocateMemory(funCall.BytesToDeallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -440,6 +440,16 @@ namespace mcc
         private void AllocateMemoryForVariables(int bytesToAllocate)
         {
             Instruction("subq $" + bytesToAllocate + ", %rsp");
+        }
+
+        private void DeallocateMemory(int bytesToDeallocate)
+        {
+            Instruction("addq $" + bytesToDeallocate + ", %rsp");
+        }
+
+        private void CallFunction(string name)
+        {
+            Instruction("call " + name);
         }
 
         private void PushLeftOperand()

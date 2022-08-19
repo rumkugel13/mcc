@@ -75,8 +75,8 @@ namespace mcc
                 ArmInstruction($"ldr {argRegister4B[i]}, [sp], #16");     // pop 16 bytes into correct register
             }
 
-            ArmInstruction("bl " + funCall.Name);
-            //Instruction("add $" + funCall.BytesToDeallocate + ", %rsp");
+            CallFunction(funCall.Name);
+            //DeallocateMemory(funCall.BytesToDeallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -430,6 +430,16 @@ namespace mcc
         private void AllocateMemoryForVariables(int bytesToAllocate)
         {
             ArmInstruction("sub sp, sp, #" + bytesToAllocate);
+        }
+
+        private void DeallocateMemory(int bytesToDeallocate)
+        {
+            ArmInstruction("add sp, sp, #" + bytesToDeallocate);
+        }
+
+        private void CallFunction(string name)
+        {
+            ArmInstruction("bl " + name);
         }
 
         private void PushLeftOperand()
