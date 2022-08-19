@@ -89,6 +89,7 @@ namespace mcc
                 Validate(arg);
             }
 
+            // todo: calculate correct bytes based on how many where passed in registers
             funCall.BytesToDeallocate = funCall.Arguments.Count * pointerSize;
         }
 

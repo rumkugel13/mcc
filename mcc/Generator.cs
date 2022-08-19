@@ -70,17 +70,17 @@ namespace mcc
                 Instruction("pushq %rax");
             }
 
-            // note: more than 4/6 parameters currently not supported (needs stack position calculations)
+            // todo: parameters beyond 4/6 are on the stack (need stack position calculations)
             if (OperatingSystem.IsLinux())
             {
-                for (int i = 0; i < funCall.Arguments.Count; i++)
+                for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegister8B.Length); i++)
                 {
                     Instruction("popq %" + argRegister8B[i]);
                 }
             }
             else
             {
-                for (int i = 0; i < funCall.Arguments.Count; i++)
+                for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegisterWin8B.Length); i++)
                 {
                     Instruction("popq %" + argRegisterWin8B[i]);
                 }
@@ -339,19 +339,17 @@ namespace mcc
                 FunctionPrologue(function.Name);
                 AllocateMemoryForVariables(function.BytesToAllocate);
 
-                // note: more than 4/6 parameters currently not supported (needs stack position calculations)
+                // todo: parameters beyond 4/6 are on the stack (need stack position calculations)
                 if (OperatingSystem.IsLinux())
                 {
-                    // todo: limit to reg count
-                    for (int i = 0; i < function.Parameters.Count; i++)
+                    for (int i = 0; i < Math.Min(function.Parameters.Count, argRegister4B.Length); i++)
                     {
                         Instruction("movl %" + argRegister4B[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
                     }
                 }
                 else
                 {
-                    // todo: limit to reg count
-                    for (int i = 0; i < function.Parameters.Count; i++)
+                    for (int i = 0; i < Math.Min(function.Parameters.Count, argRegisterWin4B.Length); i++)
                     {
                         Instruction("movl %" + argRegisterWin4B[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
                     }
