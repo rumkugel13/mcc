@@ -279,8 +279,7 @@ namespace mcc
             Label(jumpEqualOrNotLabel);
             Generate(binOp.ExpressionRight);
             CompareZero();
-            IntegerConstant(0);
-            Instruction("setne %al");
+            SetIfNotEqual();
             Label(endLabel);
         }
 
@@ -293,10 +292,9 @@ namespace mcc
             }
 
             Generate(binOp.ExpressionLeft);
-            Instruction("push %rax");
+            PushLeftOperand();
             Generate(binOp.ExpressionRight);
-            Instruction("movl %eax, %ecx"); // need to switch src and dest for - and /
-            Instruction("pop %rax");
+            PopLeftOperand();
 
             if (binOp.IsComparison)
             {
@@ -387,14 +385,26 @@ namespace mcc
             Instruction("subq $" + bytesToAllocate + ", %rsp");
         }
 
-        private void Label(string label)
+        private void PushLeftOperand()
         {
-            sb.AppendLine(label + ":");
+            Instruction("push %rax");
+        }
+
+        private void PopLeftOperand()
+        {
+            Instruction("movl %eax, %ecx"); // need to switch src and dest for - and /
+            Instruction("pop %rax");
         }
 
         private void CompareZero()
         {
             Instruction("cmpl $0, %eax");
+        }
+
+        private void SetIfNotEqual()
+        {
+            IntegerConstant(0); // zero out eax
+            Instruction("setne %al");
         }
 
         private string Jump()
@@ -491,6 +501,11 @@ namespace mcc
                     Instruction("sete %al");
                     break;
             }
+        }
+
+        private void Label(string label)
+        {
+            sb.AppendLine(label + ":");
         }
 
         private void Instruction(string instruction)

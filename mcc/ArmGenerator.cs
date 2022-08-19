@@ -277,7 +277,7 @@ namespace mcc
             Label(jumpEqualOrNotLabel);
             Generate(binOp.ExpressionRight);
             CompareZero();
-            ArmInstruction("cset w0, ne");
+            SetIfNotEqual();
             Label(endLabel);
         }
 
@@ -290,9 +290,9 @@ namespace mcc
             }
 
             Generate(binOp.ExpressionLeft);
-            ArmInstruction("str w0, [sp, #-16]!");   // push 16 bytes, needs to be 16 byte aligned
+            PushLeftOperand();
             Generate(binOp.ExpressionRight);
-            ArmInstruction("ldr w1, [sp], #16");     // pop 16 bytes
+            PopLeftOperand();
 
             if (binOp.IsComparison)
             {
@@ -398,9 +398,24 @@ namespace mcc
             ArmInstruction("sub sp, sp, #" + bytesToAllocate);
         }
 
+        private void PushLeftOperand()
+        {
+            ArmInstruction("str w0, [sp, #-16]!");   // push 16 bytes, needs to be 16 byte aligned
+        }
+
+        private void PopLeftOperand()
+        {
+            ArmInstruction("ldr w1, [sp], #16");     // pop 16 bytes
+        }
+
         private void CompareZero()
         {
             ArmInstruction("cmp w0, #0");
+        }
+
+        private void SetIfNotEqual()
+        {
+            ArmInstruction("cset w0, ne");
         }
 
         private string Jump()
