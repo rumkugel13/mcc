@@ -31,6 +31,7 @@ the rest are put on the stack (but reading them is not yet implemented)
 ### Other notes:
 - Compiles source into x86_64 or Arm64 assembly (depends on OS arch)
 - Generated *.s files get assembled using gcc
+- There is an option to interpret a source file (for supported subset)
 - Running Tests removes output files
 
 ## Tested on

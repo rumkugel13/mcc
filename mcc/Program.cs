@@ -7,7 +7,7 @@ namespace mcc
     {
         static bool silent = true;
         static bool debug = false;
-        static string VersionString = "mcc v0.13";
+        static string VersionString = "mcc v0.14";
         static string Exe = ".exe";
         static char Sep = ';';
 
@@ -100,6 +100,7 @@ namespace mcc
             builder.AppendLine("   mcc [-p | -d] <c-file>");
             builder.AppendLine("   mcc -v");
             builder.AppendLine("   mcc -t [<stage_folder> | <c-file>]");
+            builder.AppendLine("   mcc -i <c-file>");
             builder.AppendLine("Options:");
             builder.AppendLine("   <c-file>             Compile c-file silently");
             builder.AppendLine("   -p <c-file>          Compile c-file with Verbose output");
@@ -107,6 +108,7 @@ namespace mcc
             builder.AppendLine("   -v                   Print Version");
             builder.AppendLine("   -t <stage_folder>    Test c-files in stage folder");
             builder.AppendLine("   -t <c-file>          Test single c-file");
+            builder.AppendLine("   -i <c-file>          Interpret single c-file");
             Console.Write(builder.ToString());
         }
 
