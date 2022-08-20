@@ -75,6 +75,14 @@ namespace mcc
                         string filePath = args[1];
                         Compile(filePath);
                     }
+                    else if (args[0].Equals("-i"))
+                    {
+                        silent = true;
+                        debug = false;
+                        string filePath = args[1];
+                        Interpret(filePath, out int interpreted);
+                        Console.WriteLine(interpreted);
+                    }
 
                     break;
             }
@@ -139,6 +147,8 @@ namespace mcc
                 int expected = GetExitCode(sourceFile.Replace(".c", ".out"));
                 int got = GetExitCode(sourceFile.Replace(".c", Exe));
                 Console.WriteLine($"Comparing Results ... Expected: {expected}, Got: {got} " + (expected == got ? "OK" : "Fail"));
+                Interpret(sourceFile, out int interpreted);
+                Console.WriteLine("Interpreted value = " + (interpreted < 0 ? (interpreted + 256) : interpreted));
                 if (expected == got)
                     valid = true;
             }
@@ -350,6 +360,82 @@ namespace mcc
         {
             Validator validator = new Validator(program);
             validator.ValidateX86();
+        }
+
+        static int Interpret(ASTProgramNode program)
+        {
+            Interpreter interpreter = new Interpreter(program);
+            return interpreter.Interpret();
+        }
+
+        static bool Interpret(string filePath, out int returnValue)
+        {
+            returnValue = 0;
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("Unknown file: " + filePath);
+                return false;
+            }
+
+            // note: fib causes stack overflow
+            if (filePath.EndsWith("fib.c"))
+                return false;
+
+            bool finished = true;
+            //if (!silent) Console.WriteLine("Input: " + filePath);
+            if (!silent && debug) Console.WriteLine(File.ReadAllText(filePath));
+
+            try
+            {
+                //lexer
+                var tokens = Lex(filePath);
+
+                //nodeparser
+                ASTProgramNode program = ParseProgramNode(Path.GetFileNameWithoutExtension(filePath), tokens);
+
+                //validator
+                ValidateASTNode(program);
+
+                //interpreter
+                returnValue = Interpret(program);
+            }
+            catch (NotImplementedException exception)
+            {
+                if (!silent) Console.WriteLine(exception.Message);
+                finished = false;
+            }
+            catch (UnknownTokenException exception)
+            {
+                if (!silent) Console.WriteLine(exception.Message);
+                finished = false;
+            }
+            catch (UnexpectedValueException exception)
+            {
+                if (!silent) Console.WriteLine(exception.Message);
+                finished = false;
+            }
+            catch (ASTVariableException exception)
+            {
+                if (!silent) Console.WriteLine(exception.Message);
+                finished = false;
+            }
+            catch (ASTLoopScopeException exception)
+            {
+                if (!silent) Console.WriteLine(exception.Message);
+                finished = false;
+            }
+            catch (ASTFunctionException exception)
+            {
+                if (!silent) Console.WriteLine(exception.Message);
+                finished = false;
+            }
+            catch (StackOverflowException exception)
+            {
+                if (!silent) Console.WriteLine(exception.Message);
+                finished = false;
+            }
+
+            return finished;
         }
     }
 }

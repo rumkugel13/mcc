@@ -6,12 +6,12 @@
     },
     "debug": {
       "commandName": "Project",
-      "commandLineArgs": "-d stage_8\\valid\\for_variable_shadow.c",
+      "commandLineArgs": "-d stage_9\\valid\\fib.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "test": {
       "commandName": "Project",
-      "commandLineArgs": "-t stage_9\\valid\\multi_arg.c",
+      "commandLineArgs": "-t stage_9\\valid\\mutual_recursion.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {
@@ -62,6 +62,11 @@
     "stage10": {
       "commandName": "Project",
       "commandLineArgs": "-t stage_10",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
+    "interpret": {
+      "commandName": "Project",
+      "commandLineArgs": "-i stage_9\\valid\\fun_in_expr.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     }
   }
