@@ -33,7 +33,14 @@ namespace mcc
                 return new EndToken();
             }
 
-            SkipWhiteSpace();
+            bool skipped;
+            do
+            {
+                SkipWhiteSpace();
+                skipped = SkipComment();
+                skipped |= SkipMultiLineComment();
+            }
+            while (skipped);
 
             char currentChar = stream[streamIndex];
             int line = currentLine;
@@ -83,6 +90,58 @@ namespace mcc
             }
         }
 
+        private bool SkipMultiLineComment()
+        {
+            bool skipped = false;
+            if (stream[streamIndex] == '/' && HasMoreTokens() && stream[streamIndex + 1] == '*')
+            {
+                // multiline comment
+                while (HasMoreTokens())
+                {
+                    if (stream[streamIndex] == '\n')
+                    {
+                        streamIndex++;
+                        currentLine++;
+                        currentColumn = 1;
+                    }
+                    else if (stream[streamIndex] == '*' && HasMoreTokens())
+                    {
+                        Advance();
+                        if (stream[streamIndex] == '/')
+                        {
+                            Advance();
+                            SkipWhiteSpace();
+                            break;
+                        }
+                    }
+                    else
+                        Advance();
+                }
+                skipped = true;
+
+                if (!HasMoreTokens())
+                {
+                    Fail("Fail: Missing ending of multiline comment");
+                }
+            }
+            return skipped;
+        }
+
+        private bool SkipComment()
+        {
+            bool skipped = false;
+            if (stream[streamIndex] == '/' && HasMoreTokens() && stream[streamIndex + 1] == '/')
+            {
+                // comment
+                while (HasMoreTokens() && stream[streamIndex] != '\n')
+                    Advance();
+                SkipWhiteSpace();
+                skipped = true;
+            }
+
+            return skipped;
+        }
+
         private void SkipWhiteSpace()
         {
             while (streamIndex < stream.Length - 1)
@@ -110,7 +169,7 @@ namespace mcc
 
         private void Fail(string message)
         {
-            Console.Error.WriteLine(message);
+            //Console.Error.WriteLine(message);
             throw new UnknownTokenException(message);
         }
     }

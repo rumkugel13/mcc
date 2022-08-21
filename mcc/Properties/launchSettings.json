@@ -6,7 +6,7 @@
     },
     "debug": {
       "commandName": "Project",
-      "commandLineArgs": "-d stage_9\\valid\\fib.c",
+      "commandLineArgs": "-d comments\\invalid\\missing_ending.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "test": {
@@ -67,6 +67,11 @@
     "interpret": {
       "commandName": "Project",
       "commandLineArgs": "-i stage_9\\valid\\fun_in_expr.c",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
+    "comments": {
+      "commandName": "Project",
+      "commandLineArgs": "-t comments",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     }
   }
