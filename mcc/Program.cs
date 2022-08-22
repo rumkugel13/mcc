@@ -265,32 +265,7 @@ namespace mcc
                 if (!silent) Console.WriteLine(success ? "OK" : "FAIL");
                 if (!success) finished = false;
             }
-            catch (NotImplementedException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (UnknownTokenException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (UnexpectedValueException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (ASTVariableException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (ASTLoopScopeException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (ASTFunctionException exception)
+            catch (Exception exception)
             {
                 if (!silent) Console.WriteLine(exception.Message);
                 finished = false;
@@ -377,6 +352,39 @@ namespace mcc
             validator.ValidateX86();
         }
 
+        static bool VerifyAndGenerateAST(string filePath, out ASTProgramNode program)
+        {
+            program = new ASTProgramNode("", new List<ASTTopLevelItemNode>());
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("Unknown file: " + filePath);
+                return false;
+            }
+
+            bool finished = true;
+            if (!silent) Console.WriteLine("Input: " + filePath);
+            if (!silent && debug) Console.WriteLine(File.ReadAllText(filePath));
+
+            try
+            {
+                //lexer
+                var tokens = Lex(filePath);
+
+                //nodeparser
+                program = ParseProgramNode(Path.GetFileNameWithoutExtension(filePath), tokens);
+
+                //validator
+                ValidateASTNode(program);
+            }
+            catch (Exception exception)
+            {
+                if (!silent) Console.WriteLine(exception.Message);
+                finished = false;
+            }
+
+            return finished;
+        }
+
         static int Interpret(ASTProgramNode program)
         {
             Interpreter interpreter = new Interpreter(program);
@@ -386,67 +394,13 @@ namespace mcc
         static bool Interpret(string filePath, out int returnValue)
         {
             returnValue = 0;
-            if (!File.Exists(filePath))
+
+            if (VerifyAndGenerateAST(filePath, out ASTProgramNode program))
             {
-                Console.WriteLine("Unknown file: " + filePath);
-                return false;
-            }
-
-            bool finished = true;
-            //if (!silent) Console.WriteLine("Input: " + filePath);
-            if (!silent && debug) Console.WriteLine(File.ReadAllText(filePath));
-
-            try
-            {
-                //lexer
-                var tokens = Lex(filePath);
-
-                //nodeparser
-                ASTProgramNode program = ParseProgramNode(Path.GetFileNameWithoutExtension(filePath), tokens);
-
-                //validator
-                ValidateASTNode(program);
-
-                //interpreter
                 returnValue = Interpret(program);
+                return true;
             }
-            catch (NotImplementedException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (UnknownTokenException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (UnexpectedValueException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (ASTVariableException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (ASTLoopScopeException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (ASTFunctionException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-            catch (StackOverflowException exception)
-            {
-                if (!silent) Console.WriteLine(exception.Message);
-                finished = false;
-            }
-
-            return finished;
+            return false;
         }
     }
 }
