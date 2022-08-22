@@ -66,7 +66,7 @@
     },
     "interpret": {
       "commandName": "Project",
-      "commandLineArgs": "-i stage_9\\valid\\fun_in_expr.c",
+      "commandLineArgs": "-i stage_9\\valid\\fib.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "comments": {

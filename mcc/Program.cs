@@ -392,10 +392,6 @@ namespace mcc
                 return false;
             }
 
-            // note: fib causes stack overflow
-            if (filePath.EndsWith("fib.c"))
-                return false;
-
             bool finished = true;
             //if (!silent) Console.WriteLine("Input: " + filePath);
             if (!silent && debug) Console.WriteLine(File.ReadAllText(filePath));
