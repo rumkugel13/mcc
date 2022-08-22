@@ -92,7 +92,6 @@ namespace mcc
 
         private bool SkipMultiLineComment()
         {
-            bool skipped = false;
             if (stream[streamIndex] == '/' && HasMoreTokens() && stream[streamIndex + 1] == '*')
             {
                 // multiline comment
@@ -117,29 +116,28 @@ namespace mcc
                     else
                         Advance();
                 }
-                skipped = true;
 
                 if (!HasMoreTokens())
                 {
                     Fail("Fail: Missing ending of multiline comment");
                 }
+                return true;
             }
-            return skipped;
+            return false;
         }
 
         private bool SkipComment()
         {
-            bool skipped = false;
             if (stream[streamIndex] == '/' && HasMoreTokens() && stream[streamIndex + 1] == '/')
             {
                 // comment
                 while (HasMoreTokens() && stream[streamIndex] != '\n')
                     Advance();
                 SkipWhiteSpace();
-                skipped = true;
+                return true;
             }
 
-            return skipped;
+            return false;
         }
 
         private void SkipWhiteSpace()
