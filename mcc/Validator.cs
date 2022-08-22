@@ -129,6 +129,7 @@ namespace mcc
             forDecl.BytesToDeallocate = PopScope();
             Validate(forDecl.Post);
             forDecl.BytesToDeallocateInit = PopScope();
+            loops.Pop();
         }
 
         private void ValidateFor(ASTForNode fo)
@@ -143,6 +144,7 @@ namespace mcc
             fo.BytesToDeallocate = PopScope();
             Validate(fo.Post);
             fo.BytesToDeallocateInit = PopScope();
+            loops.Pop();
         }
 
         private void ValidateDoWhile(ASTDoWhileNode doWhil)
@@ -153,6 +155,7 @@ namespace mcc
             Validate(doWhil.Statement);
             doWhil.BytesToDeallocate = PopScope();
             Validate(doWhil.Expression);
+            loops.Pop();
         }
 
         private void ValidateWhile(ASTWhileNode whil)
@@ -163,6 +166,7 @@ namespace mcc
             PushScope();
             Validate(whil.Statement);
             whil.BytesToDeallocate = PopScope();
+            loops.Pop();
         }
 
         private void PushScope()
