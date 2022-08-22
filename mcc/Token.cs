@@ -149,16 +149,6 @@
             ">>",
         };
 
-        public static HashSet<string> Comparison = new HashSet<string>
-        {
-            "==",
-            "!=",
-            "<=",
-            ">=",
-            "<",
-            ">",
-        };
-
         public override string ToString()
         {
             return base.ToString() + " " + Value;
