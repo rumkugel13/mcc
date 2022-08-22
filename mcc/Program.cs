@@ -146,30 +146,43 @@ namespace mcc
                 if (!silent) Console.Write("Running gcc ... ");
                 GccCompile(sourceFile);
                 if (!silent) Console.WriteLine("OK");
-                int expected = GetExitCode(sourceFile.Replace(".c", ".out"));
-                int got = GetExitCode(sourceFile.Replace(".c", Exe));
-                Console.WriteLine($"Comparing Results ... Expected: {expected}, Got: {got} " + (expected == got ? "OK" : "Fail"));
-                Interpret(sourceFile, out int interpreted);
-                Console.WriteLine("Interpreted value = " + (interpreted < 0 ? (interpreted + 256) : interpreted));
-                if (expected == got)
-                    valid = true;
+                if (TryGetExitCode(sourceFile.Replace(".c", ".out"), out int expected))
+                {
+                    if (TryGetExitCode(sourceFile.Replace(".c", Exe), out int got))
+                    {
+                        Console.WriteLine($"Comparing Results ... Expected: {expected}, Got: {got} " + (expected == got ? "OK" : "Fail"));
+                        Interpret(sourceFile, out int interpreted);
+                        Console.WriteLine("Interpreted value = " + (interpreted < 0 ? (interpreted + 256) : interpreted));
+                        if (expected == got)
+                            valid = true;
+                    }
+                }
             }
             File.Delete(sourceFile.Replace(".c", Exe));
             File.Delete(sourceFile.Replace(".c", ".out"));
             return valid;
         }
 
-        static int GetExitCode(string file)
+        static bool TryGetExitCode(string file, out int exitCode)
         {
-            int exitCode = 0;
+            exitCode = 0;
             using (Process? process = Process.Start(file))
             {
-                process.WaitForExit();
-
-                exitCode = process.ExitCode;
+                if (process.WaitForExit(Convert.ToInt32(TimeSpan.FromSeconds(10).TotalMilliseconds)))
+                {
+                    exitCode = process.ExitCode;
+                }
+                else
+                {
+                    exitCode = -1;
+                    Console.WriteLine($"Fail: Process {file} failed to finish.");
+                    process.Kill();
+                    process.WaitForExit();
+                    return false;
+                }
             };
 
-            return exitCode;
+            return true;
         }
 
         static bool GccCompile(string filePath)
