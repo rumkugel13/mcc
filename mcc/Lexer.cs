@@ -49,16 +49,16 @@ namespace mcc
 
             Advance();
 
-            if (Symbol.Symbols.Contains(currentChar))
+            if (Symbol.Symbols.Contains(currentChar.ToString()))
             {
                 // symbol
-                if (HasMoreTokens() && Symbol.Symbols.Contains(stream[streamIndex]) && Symbol2.Dual.Contains(stream.Substring(start, 2)))
+                if (HasMoreTokens() && Symbol.Symbols.Contains(stream[streamIndex].ToString()) && Symbol.Symbols.Contains(stream.Substring(start, 2)))
                 {
                     Advance();
-                    return new Symbol2(stream.Substring(start, 2)) { Line = line, Column = column };
+                    return new Symbol(stream.Substring(start, 2)) { Line = line, Column = column };
                 }
                 else
-                    return new Symbol(currentChar) { Line = line, Column = column };
+                    return new Symbol(currentChar.ToString()) { Line = line, Column = column };
             }
             else if (char.IsDigit(currentChar))
             {

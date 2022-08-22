@@ -76,18 +76,69 @@
         }
     }
 
-    class Symbol2 : Token
+    class Symbol : Token
     {
         public string Value;
 
-        public Symbol2(string symbol)
+        public Symbol(string symbol)
         {
-            Type = TokenType.SYMBOL2;
+            Type = TokenType.SYMBOL;
             Value = symbol;
         }
 
-        public static HashSet<string> Dual = new HashSet<string>
+        public static HashSet<string> Symbols = new HashSet<string>
         {
+            "{",
+            "}",
+            "(",
+            ")",
+            ";",
+            "-",
+            "~",
+            "!",
+            "+",
+            "*",
+            "/",
+            "&",
+            "|",
+            "=",
+            "<",
+            ">",
+            "%",
+            "^",
+            "?",
+            ":",
+            ",",
+            "&&",
+            "||",
+            "==",
+            "!=",
+            "<=",
+            ">=",
+            "<<",
+            ">>",
+        };
+
+        public static HashSet<string> Unary = new HashSet<string>
+        {
+            "+",
+            "-",
+            "~",
+            "!",
+        };
+
+        public static HashSet<string> Binary = new HashSet<string>
+        {
+            "*",
+            "/",
+            "+",
+            "-",
+            "<",
+            ">",
+            "%",
+            "&",
+            "|",
+            "^",
             "&&",
             "||",
             "==",
@@ -106,75 +157,6 @@
             ">=",
             "<",
             ">",
-        };
-
-        public static HashSet<string> ShortCircuit = new HashSet<string>
-        {
-            "&&",
-            "||",
-        };
-
-        public override string ToString()
-        {
-            return base.ToString() + " " + Value;
-        }
-    }
-
-    class Symbol : Token
-    {
-        public char Value;
-
-        public Symbol(char symbol)
-        {
-            Type = TokenType.SYMBOL;
-            Value = symbol;
-        }
-
-        public static HashSet<char> Symbols = new HashSet<char>
-        {
-            '{',
-            '}',
-            '(',
-            ')',
-            ';',
-            '-',
-            '~',
-            '!',
-            '+',
-            '*',
-            '/',
-            '&',
-            '|',
-            '=',
-            '<',
-            '>',
-            '%',
-            '^',
-            '?',
-            ':',
-            ',',
-        };
-
-        public static HashSet<char> Unary = new HashSet<char>
-        {
-            '+',
-            '-',
-            '~',
-            '!',
-        };
-
-        public static HashSet<char> Binary = new HashSet<char>
-        {
-            '*',
-            '/',
-            '+',
-            '-',
-            '<',
-            '>',
-            '%',
-            '&',
-            '|',
-            '^',
         };
 
         public override string ToString()
@@ -208,7 +190,6 @@
         {
             KEYWORD,
             SYMBOL,
-            SYMBOL2,
             IDENTIFIER,
             INTEGER,
             UNKNOWN,
