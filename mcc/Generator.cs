@@ -106,6 +106,11 @@ namespace mcc
                 }
             }
 
+            if (OperatingSystem.IsWindows())
+            {
+                Instruction("subq $32, %rsp");  // shadow space
+            }
+
             CallFunction(funCall.Name);
             // baseoffset (shadow space on windows) + n arguments not in registers + padding (isodd)
             funCall.BytesToDeallocate = Math.Max(funCall.Arguments.Count - argsInRegisters + (isOdd ? 1 : 0), 0) * 8 + baseOffset;
@@ -477,14 +482,14 @@ namespace mcc
 
         private void PushLeftOperand()
         {
-            Instruction("push %rax");
+            Instruction("pushq %rax");
             pushCounter++;
         }
 
         private void PopLeftOperand()
         {
             Instruction("movl %eax, %ecx"); // need to switch src and dest for - and /
-            Instruction("pop %rax");
+            Instruction("popq %rax");
             pushCounter--;
         }
 

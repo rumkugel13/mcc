@@ -443,7 +443,7 @@ namespace mcc
                 else
                 {
                     // 8n+16 (16 bytes for return address and frame pointer, if normal function prologue is used)
-                    offset = baseOffset + i * pointerSize;
+                    offset = baseOffset + (i - argsInRegisters) * pointerSize;
                 }
 
                 string? parameter = function.Parameters[i];
