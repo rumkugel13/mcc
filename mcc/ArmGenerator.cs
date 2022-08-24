@@ -67,6 +67,7 @@ namespace mcc
                 ArmInstruction("str w0, [sp, #-16]!");   // push 16 bytes, needs to be 16 byte aligned
             }
 
+            // note3.5: make sure stack stays aligned by subbing 8 bytes if excess args is odd
             // todo: only works for first 8 arguments, rest is on stack (needs stack calculations)
             for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegister4B.Length); i++)
             {
@@ -74,7 +75,7 @@ namespace mcc
             }
 
             CallFunction(funCall.Name);
-            //DeallocateMemory(funCall.BytesToDeallocate);
+            DeallocateMemory(funCall.BytesToDeallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -311,6 +312,7 @@ namespace mcc
         private void GenerateReturn(ASTReturnNode ret)
         {
             Generate(ret.Expression);
+            // todo: jump to epilogue, do not generate epilogue multiple times
             FunctionEpilogue();
         }
 

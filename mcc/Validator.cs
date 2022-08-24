@@ -89,8 +89,27 @@ namespace mcc
                 Validate(arg);
             }
 
+            // note3.5: make sure stack stays aligned by subbing 8 bytes if excess args is odd
+            // todo: refactor
+            int baseOffset = 0;
+            int argsInRegisters = 4;
+            if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+            {
+                argsInRegisters = 8;
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                argsInRegisters = 6;
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                argsInRegisters = 4;
+                baseOffset += 32;  // 32 byte shadow space on windows
+            }
+
+            // todo: this is platform specific, move to generator, as it also depends on push/pop for alignment
             // todo: calculate correct bytes based on how many where passed in registers
-            funCall.BytesToDeallocate = funCall.Arguments.Count * pointerSize;
+            funCall.BytesToDeallocate = Math.Max(funCall.Arguments.Count - argsInRegisters, 0) * pointerSize + baseOffset;
         }
 
         private void ValidateContinue(ASTContinueNode con)
@@ -394,21 +413,39 @@ namespace mcc
             varMaps.Push(new Dictionary<string, int>());
             varScopes.Push(new HashSet<string>());
 
+            // todo: refactor
+            int baseOffset = paramOffset;
+            int argsInRegisters = 4;
+            if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+            {
+                argsInRegisters = 8;
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                argsInRegisters = 6;
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                argsInRegisters = 4;
+                baseOffset += 32;  // 32 byte shadow space on windows
+            }
+
             for (int i = 0; i < function.Parameters.Count; i++)
             {
                 int offset;
-                //if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+                if (i < argsInRegisters)
                 {
-                    varOffset -= intSize; 
+                    varOffset -= intSize; // reserve n bytes for datatype
                     declarationCount++; // count function parameters as declaration
-                    // todo: use paramoffset for parameters on stack
+
                     offset = varOffset;
                 }
-                //else
-                //{
-                //    offset = paramOffset + i * pointerSize;
-                //}
-                
+                else
+                {
+                    // 8n+16 (16 bytes for return address and frame pointer, if normal function prologue is used)
+                    offset = baseOffset + i * pointerSize;
+                }
+
                 string? parameter = function.Parameters[i];
                 varMaps.Peek()[parameter] = offset;
                 varScopes.Peek().Add(parameter);

@@ -18,6 +18,7 @@ namespace mcc
         readonly string[] argRegister8B = new string[6] { "rdi", "rsi", "rdx", "rcx", "r8", "r9", };
         readonly string[] argRegisterWin4B = new string[4] { "ecx", "edx", "r8d", "r9d", };
         readonly string[] argRegisterWin8B = new string[4] { "rcx", "rdx", "r8", "r9", };
+        int pushCounter = 0;
 
         public Generator(ASTNode rootNode)
         {
@@ -62,12 +63,33 @@ namespace mcc
 
         private void GenerateFunctionCall(ASTFunctionCallNode funCall)
         {
+            // note3.5: make sure stack stays aligned by subbing 8 bytes if excess args is odd
+            // todo: refactor
+            int baseOffset = 0;
+            int argsInRegisters = 4;
+            if (OperatingSystem.IsLinux())
+            {
+                argsInRegisters = 6;
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                argsInRegisters = 4;
+                baseOffset += 32;  // 32 byte shadow space on windows
+            }
+
+            bool isOdd = pushCounter % 2 != 0;
+            if (isOdd && funCall.Arguments.Count > argsInRegisters)
+            {
+                Instruction("subq $8, %rsp");    // add padding for 16 byte alignment
+            }
+
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
             {
                 Generate(funCall.Arguments[i]);
                 Instruction("pushq %rax");
             }
 
+            // note3.5: make sure stack stays aligned by subbing 8 bytes if excess args is odd
             // todo: parameters beyond 4/6 are on the stack (need stack position calculations)
             if (OperatingSystem.IsLinux())
             {
@@ -85,7 +107,9 @@ namespace mcc
             }
 
             CallFunction(funCall.Name);
-            //DeallocateMemory(funCall.BytesToDeallocate);
+            // baseoffset (shadow space on windows) + n arguments not in registers + padding (isodd)
+            funCall.BytesToDeallocate = Math.Max(funCall.Arguments.Count - argsInRegisters + (isOdd ? 1 : 0), 0) * 8 + baseOffset;
+            DeallocateMemory(funCall.BytesToDeallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -322,6 +346,7 @@ namespace mcc
         private void GenerateReturn(ASTReturnNode ret)
         {
             Generate(ret.Expression);
+            // todo: jump to epilogue, do not generate epilogue multiple times
             FunctionEpilogue();
         }
 
@@ -345,7 +370,7 @@ namespace mcc
                         Instruction("movl %" + argRegister4B[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
                     }
                 }
-                else
+                else if (OperatingSystem.IsWindows())
                 {
                     for (int i = 0; i < Math.Min(function.Parameters.Count, argRegisterWin4B.Length); i++)
                     {
@@ -453,12 +478,14 @@ namespace mcc
         private void PushLeftOperand()
         {
             Instruction("push %rax");
+            pushCounter++;
         }
 
         private void PopLeftOperand()
         {
             Instruction("movl %eax, %ecx"); // need to switch src and dest for - and /
             Instruction("pop %rax");
+            pushCounter--;
         }
 
         private void CompareZero()
