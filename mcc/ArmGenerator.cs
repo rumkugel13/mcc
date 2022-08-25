@@ -61,21 +61,35 @@ namespace mcc
 
         private void GenerateFunctionCall(ASTFunctionCallNode funCall)
         {
+            const int pointerSize = 8;
+
+            // allocate space for arguments, 16 byte aligned
+            int allocate = 16 * ((funCall.Arguments.Count * pointerSize + 15) / 16);
+            ArmInstruction("sub sp, sp, #" + allocate);
+
+            // move arguments beginning at last argument, up the stack beginning at stack pointer into temp storage
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
             {
                 Generate(funCall.Arguments[i]);
-                ArmInstruction("str w0, [sp, #-16]!");   // push 16 bytes, needs to be 16 byte aligned
+                //ArmInstruction("str w0, [sp, #-16]!");   // push 16 bytes, needs to be 16 byte aligned
+                ArmInstruction($"str w0, [sp, #{i * pointerSize}]");
             }
 
-            // note3.5: make sure stack stays aligned by subbing 8 bytes if excess args is odd
-            // todo: only works for first 8 arguments, rest is on stack (needs stack calculations)
+            // move arguments into registers
             for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegister4B.Length); i++)
             {
-                ArmInstruction($"ldr {argRegister4B[i]}, [sp], #16");     // pop 16 bytes into correct register
+                ArmInstruction($"ldr {argRegister4B[i]}, [sp, #{i * pointerSize}]");
             }
 
+            // deallocate memory for args in registers
+            ArmInstruction("add sp, sp, #" + Math.Min(funCall.Arguments.Count, argRegister4B.Length) * pointerSize);
+
             CallFunction(funCall.Name);
-            DeallocateMemory(funCall.BytesToDeallocate);
+
+            // deallocate memory for args not in registers
+            int deallocate = (funCall.Arguments.Count - Math.Min(funCall.Arguments.Count, argRegister4B.Length)) * pointerSize;
+            ArmInstruction("add sp, sp, #" + deallocate);
+            //DeallocateMemory(funCall.BytesToDeallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
