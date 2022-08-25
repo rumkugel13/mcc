@@ -87,7 +87,7 @@ namespace mcc
             CallFunction(funCall.Name);
 
             // deallocate memory for args not in registers
-            int deallocate = (funCall.Arguments.Count - Math.Min(funCall.Arguments.Count, argRegister4B.Length)) * pointerSize;
+            int deallocate = allocate - Math.Min(funCall.Arguments.Count, argRegister4B.Length) * pointerSize;
             ArmInstruction("add sp, sp, #" + deallocate);
             //DeallocateMemory(funCall.BytesToDeallocate);
         }
