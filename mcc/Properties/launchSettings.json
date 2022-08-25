@@ -6,7 +6,7 @@
     },
     "debug": {
       "commandName": "Project",
-      "commandLineArgs": "-d misc\\valid\\many_args.c",
+      "commandLineArgs": "-d misc\\valid\\many_args4.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "test": {
@@ -72,6 +72,11 @@
     "comments": {
       "commandName": "Project",
       "commandLineArgs": "-t comments",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
+    "misc": {
+      "commandName": "Project",
+      "commandLineArgs": "-t misc",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     }
   }

@@ -63,58 +63,50 @@ namespace mcc
 
         private void GenerateFunctionCall(ASTFunctionCallNode funCall)
         {
-            // note3.5: make sure stack stays aligned by subbing 8 bytes if excess args is odd
-            // todo: refactor
-            int baseOffset = 0;
-            int argsInRegisters = 4;
-            if (OperatingSystem.IsLinux())
-            {
-                argsInRegisters = 6;
-            }
-            else if (OperatingSystem.IsWindows())
-            {
-                argsInRegisters = 4;
-                baseOffset += 32;  // 32 byte shadow space on windows
-            }
+            const int pointerSize = 8;
 
-            bool isOdd = pushCounter % 2 != 0;
-            if (isOdd && funCall.Arguments.Count > argsInRegisters)
+            // allocate space for arguments, 16 byte aligned
+            int allocate = 16 * ((funCall.Arguments.Count * pointerSize + 15) / 16);
+            if (pushCounter % 2 != 0)
             {
-                Instruction("subq $8, %rsp");    // add padding for 16 byte alignment
+                // stack pointer is not aligned (due to binOp), add padding
+                allocate += pointerSize;
             }
+            Instruction($"subq ${allocate}, %rsp");
 
+            // move arguments beginning at last argument, up the stack beginning at stack pointer into temp storage
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
             {
                 Generate(funCall.Arguments[i]);
-                Instruction("pushq %rax");
+                Instruction($"movq %rax, {i * pointerSize}(%rsp)");
             }
 
-            // note3.5: make sure stack stays aligned by subbing 8 bytes if excess args is odd
-            // todo: parameters beyond 4/6 are on the stack (need stack position calculations)
-            if (OperatingSystem.IsLinux())
-            {
-                for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegister8B.Length); i++)
-                {
-                    Instruction("popq %" + argRegister8B[i]);
-                }
-            }
-            else
-            {
-                for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegisterWin8B.Length); i++)
-                {
-                    Instruction("popq %" + argRegisterWin8B[i]);
-                }
-            }
+            string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
 
-            if (OperatingSystem.IsWindows())
+            // pop arguments into registers, rest should be then at the stack pointer
+            for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegs.Length); i++)
             {
-                Instruction("subq $32, %rsp");  // shadow space
+                if (OperatingSystem.IsWindows())
+                {
+                    // on windows dont pop into registers but move them, so that shadow space is already created
+                    Instruction($"movq {i * pointerSize}(%rsp), %{argRegs[i]}");
+                }
+                else
+                {
+                    Instruction("popq %" + argRegs[i]);
+                }
             }
 
             CallFunction(funCall.Name);
-            // baseoffset (shadow space on windows) + n arguments not in registers + padding (isodd)
-            funCall.BytesToDeallocate = Math.Max(funCall.Arguments.Count - argsInRegisters + (isOdd ? 1 : 0), 0) * 8 + baseOffset;
-            DeallocateMemory(funCall.BytesToDeallocate);
+
+            // deallocate is allocate minus the ones which were popped into registers
+            int deallocate = allocate - (argRegs.Length * pointerSize);
+            if (OperatingSystem.IsWindows())
+            {
+                // on windows we need to deallocate the shadow space as well, where we moved args but didnt pop them
+                deallocate = allocate;
+            }
+            Instruction($"addq ${deallocate}, %rsp");
         }
 
         private void GenerateContinue(ASTContinueNode con)
