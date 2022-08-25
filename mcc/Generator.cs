@@ -107,7 +107,7 @@ namespace mcc
             CallFunction(funCall.Name);
 
             // deallocate is allocate minus the ones which were popped into registers
-            int deallocate = allocate - (argRegs.Length * pointerSize);
+            int deallocate = allocate - (Math.Min(funCall.Arguments.Count, argRegs.Length) * pointerSize);
             if (OperatingSystem.IsWindows())
             {
                 // on windows we need to deallocate the shadow space as well, where we moved args but didnt pop them
