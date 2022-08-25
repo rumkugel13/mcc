@@ -72,6 +72,13 @@ namespace mcc
                 // stack pointer is not aligned (due to binOp), add padding
                 allocate += pointerSize;
             }
+
+            // make sure we allocate at least enough for shadow space on windows
+            if (OperatingSystem.IsWindows())
+            {
+                allocate = Math.Max(allocate, 4 * pointerSize);
+            }
+
             Instruction($"subq ${allocate}, %rsp");
 
             // move arguments beginning at last argument, up the stack beginning at stack pointer into temp storage
