@@ -18,6 +18,7 @@ namespace mcc
         readonly string[] argRegister8B = new string[6] { "rdi", "rsi", "rdx", "rcx", "r8", "r9", };
         readonly string[] argRegisterWin4B = new string[4] { "ecx", "edx", "r8d", "r9d", };
         readonly string[] argRegisterWin8B = new string[4] { "rcx", "rdx", "r8", "r9", };
+        int pushCounter = 0;
 
         public Generator(ASTNode rootNode)
         {
@@ -62,30 +63,58 @@ namespace mcc
 
         private void GenerateFunctionCall(ASTFunctionCallNode funCall)
         {
+            const int pointerSize = 8;
+
+            // allocate space for arguments, 16 byte aligned
+            int allocate = 16 * (((funCall.Arguments.Count * pointerSize) + 15) / 16);
+            if (pushCounter % 2 != 0)
+            {
+                // stack pointer is not aligned (due to binOp), add padding
+                allocate += pointerSize;
+            }
+
+            // make sure we allocate at least enough for shadow space on windows
+            if (OperatingSystem.IsWindows())
+            {
+                allocate = Math.Max(allocate, 4 * pointerSize);
+            }
+
+            Instruction($"subq ${allocate}, %rsp");
+
+            // move arguments beginning at last argument, up the stack beginning at stack pointer into temp storage
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
             {
                 Generate(funCall.Arguments[i]);
-                Instruction("pushq %rax");
+                Instruction($"movq %rax, {i * pointerSize}(%rsp)");
             }
 
-            // todo: parameters beyond 4/6 are on the stack (need stack position calculations)
-            if (OperatingSystem.IsLinux())
+            string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
+            int regsUsed = Math.Min(funCall.Arguments.Count, argRegs.Length);
+
+            // pop arguments into registers, rest should be then at the stack pointer
+            for (int i = 0; i < regsUsed; i++)
             {
-                for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegister8B.Length); i++)
+                if (OperatingSystem.IsWindows())
                 {
-                    Instruction("popq %" + argRegister8B[i]);
+                    // on windows dont pop into registers but move them, so that shadow space is already created
+                    Instruction($"movq {i * pointerSize}(%rsp), %{argRegs[i]}");
                 }
-            }
-            else
-            {
-                for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegisterWin8B.Length); i++)
+                else
                 {
-                    Instruction("popq %" + argRegisterWin8B[i]);
+                    Instruction("popq %" + argRegs[i]);
                 }
             }
 
             CallFunction(funCall.Name);
-            //DeallocateMemory(funCall.BytesToDeallocate);
+
+            // deallocate is allocate minus the ones which were popped into registers
+            int deallocate = allocate - (regsUsed * pointerSize);
+            if (OperatingSystem.IsWindows())
+            {
+                // on windows we need to deallocate the shadow space as well, where we moved args but didnt pop them
+                deallocate = allocate;
+            }
+            Instruction($"addq ${deallocate}, %rsp");
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -322,6 +351,7 @@ namespace mcc
         private void GenerateReturn(ASTReturnNode ret)
         {
             Generate(ret.Expression);
+            // todo: jump to epilogue, do not generate epilogue multiple times
             FunctionEpilogue();
         }
 
@@ -345,7 +375,7 @@ namespace mcc
                         Instruction("movl %" + argRegister4B[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
                     }
                 }
-                else
+                else if (OperatingSystem.IsWindows())
                 {
                     for (int i = 0; i < Math.Min(function.Parameters.Count, argRegisterWin4B.Length); i++)
                     {
@@ -452,13 +482,15 @@ namespace mcc
 
         private void PushLeftOperand()
         {
-            Instruction("push %rax");
+            Instruction("pushq %rax");
+            pushCounter++;
         }
 
         private void PopLeftOperand()
         {
             Instruction("movl %eax, %ecx"); // need to switch src and dest for - and /
-            Instruction("pop %rax");
+            Instruction("popq %rax");
+            pushCounter--;
         }
 
         private void CompareZero()

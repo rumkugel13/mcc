@@ -333,10 +333,14 @@ namespace mcc
                 ArmGenerator generator = new ArmGenerator(program);
                 return generator.GenerateARM();
             }
-            else
+            else if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64)
             {
                 Generator generator = new Generator(program);
                 return generator.GenerateX86();
+            }
+            else
+            {
+                return "";
             }
         }
 

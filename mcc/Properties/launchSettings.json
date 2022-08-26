@@ -6,12 +6,12 @@
     },
     "debug": {
       "commandName": "Project",
-      "commandLineArgs": "-d comments\\invalid\\missing_ending.c",
+      "commandLineArgs": "-d stage_9\\valid\\mutual_recursion.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "test": {
       "commandName": "Project",
-      "commandLineArgs": "-t stage_9\\valid\\mutual_recursion.c",
+      "commandLineArgs": "-t misc\\valid\\many_args.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     },
     "stage1": {
@@ -72,6 +72,11 @@
     "comments": {
       "commandName": "Project",
       "commandLineArgs": "-t comments",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
+    "misc": {
+      "commandName": "Project",
+      "commandLineArgs": "-t misc",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     }
   }

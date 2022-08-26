@@ -61,20 +61,43 @@ namespace mcc
 
         private void GenerateFunctionCall(ASTFunctionCallNode funCall)
         {
+            const int pointerSize = 8;
+
+            // allocate space for arguments, 16 byte aligned
+            int allocate = 16 * (((funCall.Arguments.Count * pointerSize) + 15) / 16);
+            ArmInstruction("sub sp, sp, #" + allocate);
+
+            // move arguments beginning at last argument, up the stack beginning at stack pointer into temp storage
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
             {
                 Generate(funCall.Arguments[i]);
-                ArmInstruction("str w0, [sp, #-16]!");   // push 16 bytes, needs to be 16 byte aligned
+                ArmInstruction($"str w0, [sp, #{i * pointerSize}]");
             }
 
-            // todo: only works for first 8 arguments, rest is on stack (needs stack calculations)
-            for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegister4B.Length); i++)
+            int regsUsed = Math.Min(funCall.Arguments.Count, argRegister4B.Length);
+
+            // move arguments into registers
+            for (int i = 0; i < regsUsed; i++)
             {
-                ArmInstruction($"ldr {argRegister4B[i]}, [sp], #16");     // pop 16 bytes into correct register
+                ArmInstruction($"ldr {argRegister4B[i]}, [sp, #{i * pointerSize}]");
+            }
+
+            // deallocate memory for args in registers, only in pairs of two to maintain stack alignment
+            if (regsUsed % 2 == 0)
+            {
+                ArmInstruction("add sp, sp, #" + (regsUsed * pointerSize));
             }
 
             CallFunction(funCall.Name);
-            //DeallocateMemory(funCall.BytesToDeallocate);
+
+            // deallocate memory for args not in registers
+            int deallocate = allocate - (regsUsed * pointerSize);
+            // if we didnt deallocate parts of the memory, do it all here
+            if (regsUsed % 2 != 0)
+            {
+                deallocate = allocate;
+            }
+            ArmInstruction("add sp, sp, #" + deallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -311,6 +334,7 @@ namespace mcc
         private void GenerateReturn(ASTReturnNode ret)
         {
             Generate(ret.Expression);
+            // todo: jump to epilogue, do not generate epilogue multiple times
             FunctionEpilogue();
         }
 

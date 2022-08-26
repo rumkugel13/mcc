@@ -88,9 +88,6 @@ namespace mcc
             {
                 Validate(arg);
             }
-
-            // todo: calculate correct bytes based on how many where passed in registers
-            funCall.BytesToDeallocate = funCall.Arguments.Count * pointerSize;
         }
 
         private void ValidateContinue(ASTContinueNode con)
@@ -394,21 +391,39 @@ namespace mcc
             varMaps.Push(new Dictionary<string, int>());
             varScopes.Push(new HashSet<string>());
 
+            // todo: refactor
+            int baseOffset = paramOffset;
+            int argsInRegisters = 4;
+            if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+            {
+                argsInRegisters = 8;
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                argsInRegisters = 6;
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                argsInRegisters = 4;
+                baseOffset += 32;  // 32 byte shadow space on windows
+            }
+
             for (int i = 0; i < function.Parameters.Count; i++)
             {
                 int offset;
-                //if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+                if (i < argsInRegisters)
                 {
-                    varOffset -= intSize; 
+                    varOffset -= intSize; // reserve n bytes for datatype
                     declarationCount++; // count function parameters as declaration
-                    // todo: use paramoffset for parameters on stack
+
                     offset = varOffset;
                 }
-                //else
-                //{
-                //    offset = paramOffset + i * pointerSize;
-                //}
-                
+                else
+                {
+                    // 8n+16 (16 bytes for return address and frame pointer, if normal function prologue is used)
+                    offset = baseOffset + ((i - argsInRegisters) * pointerSize);
+                }
+
                 string? parameter = function.Parameters[i];
                 varMaps.Peek()[parameter] = offset;
                 varScopes.Peek().Add(parameter);
@@ -428,7 +443,7 @@ namespace mcc
 
             // 16 byte aligned
             // todo: calculate max simultaneous declared variables to save on memory
-            function.BytesToAllocate = 16 * ((declarationCount * intSize + 15) / 16);
+            function.BytesToAllocate = 16 * (((declarationCount * intSize) + 15) / 16);
 
             varMaps.Pop();
             varScopes.Pop();
