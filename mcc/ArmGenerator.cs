@@ -81,13 +81,20 @@ namespace mcc
                 ArmInstruction($"ldr {argRegister4B[i]}, [sp, #{i * pointerSize}]");
             }
 
-            // deallocate memory for args in registers
-            ArmInstruction("add sp, sp, #" + Math.Min(funCall.Arguments.Count, argRegister4B.Length) * pointerSize);
+            // deallocate memory for args in registers, only in pairs of two to maintain stack alignment
+            if (Math.Min(funCall.Arguments.Count, argRegister4B.Length) % 2 == 0)
+            {
+                ArmInstruction("add sp, sp, #" + Math.Min(funCall.Arguments.Count, argRegister4B.Length) * pointerSize);
+            }
 
             CallFunction(funCall.Name);
 
             // deallocate memory for args not in registers
             int deallocate = allocate - Math.Min(funCall.Arguments.Count, argRegister4B.Length) * pointerSize;
+            if (Math.Min(funCall.Arguments.Count, argRegister4B.Length) % 2 != 0)
+            {
+                deallocate = allocate;
+            }
             ArmInstruction("add sp, sp, #" + deallocate);
             //DeallocateMemory(funCall.BytesToDeallocate);
         }
