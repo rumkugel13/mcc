@@ -88,28 +88,6 @@ namespace mcc
             {
                 Validate(arg);
             }
-
-            // note3.5: make sure stack stays aligned by subbing 8 bytes if excess args is odd
-            // todo: refactor
-            int baseOffset = 0;
-            int argsInRegisters = 4;
-            if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
-            {
-                argsInRegisters = 8;
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                argsInRegisters = 6;
-            }
-            else if (OperatingSystem.IsWindows())
-            {
-                argsInRegisters = 4;
-                baseOffset += 32;  // 32 byte shadow space on windows
-            }
-
-            // todo: this is platform specific, move to generator, as it also depends on push/pop for alignment
-            // todo: calculate correct bytes based on how many where passed in registers
-            funCall.BytesToDeallocate = Math.Max(funCall.Arguments.Count - argsInRegisters, 0) * pointerSize + baseOffset;
         }
 
         private void ValidateContinue(ASTContinueNode con)
@@ -443,7 +421,7 @@ namespace mcc
                 else
                 {
                     // 8n+16 (16 bytes for return address and frame pointer, if normal function prologue is used)
-                    offset = baseOffset + (i - argsInRegisters) * pointerSize;
+                    offset = baseOffset + ((i - argsInRegisters) * pointerSize);
                 }
 
                 string? parameter = function.Parameters[i];
@@ -465,7 +443,7 @@ namespace mcc
 
             // 16 byte aligned
             // todo: calculate max simultaneous declared variables to save on memory
-            function.BytesToAllocate = 16 * ((declarationCount * intSize + 15) / 16);
+            function.BytesToAllocate = 16 * (((declarationCount * intSize) + 15) / 16);
 
             varMaps.Pop();
             varScopes.Pop();

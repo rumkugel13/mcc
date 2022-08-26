@@ -66,7 +66,7 @@ namespace mcc
             const int pointerSize = 8;
 
             // allocate space for arguments, 16 byte aligned
-            int allocate = 16 * ((funCall.Arguments.Count * pointerSize + 15) / 16);
+            int allocate = 16 * (((funCall.Arguments.Count * pointerSize) + 15) / 16);
             if (pushCounter % 2 != 0)
             {
                 // stack pointer is not aligned (due to binOp), add padding
@@ -89,9 +89,10 @@ namespace mcc
             }
 
             string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
+            int regsUsed = Math.Min(funCall.Arguments.Count, argRegs.Length);
 
             // pop arguments into registers, rest should be then at the stack pointer
-            for (int i = 0; i < Math.Min(funCall.Arguments.Count, argRegs.Length); i++)
+            for (int i = 0; i < regsUsed; i++)
             {
                 if (OperatingSystem.IsWindows())
                 {
@@ -107,7 +108,7 @@ namespace mcc
             CallFunction(funCall.Name);
 
             // deallocate is allocate minus the ones which were popped into registers
-            int deallocate = allocate - (Math.Min(funCall.Arguments.Count, argRegs.Length) * pointerSize);
+            int deallocate = allocate - (regsUsed * pointerSize);
             if (OperatingSystem.IsWindows())
             {
                 // on windows we need to deallocate the shadow space as well, where we moved args but didnt pop them
