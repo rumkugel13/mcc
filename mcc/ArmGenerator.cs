@@ -350,7 +350,6 @@ namespace mcc
                 FunctionPrologue(function.Name);
                 AllocateMemoryForVariables(function.BytesToAllocate);
 
-                // todo: parameters beyond 8 are on the stack (need stack position calculations)
                 for (int i = 0; i < Math.Min(function.Parameters.Count, argRegister4B.Length); i++)
                 {
                     // move arguments from registers to reserved stack position

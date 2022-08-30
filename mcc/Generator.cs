@@ -367,20 +367,10 @@ namespace mcc
                 FunctionPrologue(function.Name);
                 AllocateMemoryForVariables(function.BytesToAllocate);
 
-                // todo: parameters beyond 4/6 are on the stack (need stack position calculations)
-                if (OperatingSystem.IsLinux())
+                string[] argRegs = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
+                for (int i = 0; i < Math.Min(function.Parameters.Count, argRegs.Length); i++)
                 {
-                    for (int i = 0; i < Math.Min(function.Parameters.Count, argRegister4B.Length); i++)
-                    {
-                        Instruction("movl %" + argRegister4B[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
-                    }
-                }
-                else if (OperatingSystem.IsWindows())
-                {
-                    for (int i = 0; i < Math.Min(function.Parameters.Count, argRegisterWin4B.Length); i++)
-                    {
-                        Instruction("movl %" + argRegisterWin4B[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
-                    }
+                    Instruction("movl %" + argRegs[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
                 }
 
                 foreach (var blockItem in function.BlockItems)

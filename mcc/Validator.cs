@@ -294,6 +294,7 @@ namespace mcc
             dec.IsGlobal = true;
             if (dec.Initializer is not ASTNoExpressionNode)
             {
+                // todo: allow expression if it only contains constants, can be evaluated at compile time
                 if (dec.Initializer is not ASTConstantNode)
                 {
                     FailVariable("Trying to assign non constant value to Global Variable", dec.Name, dec);
