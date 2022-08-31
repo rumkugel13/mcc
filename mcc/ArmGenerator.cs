@@ -65,7 +65,7 @@ namespace mcc
 
             // allocate space for arguments, 16 byte aligned
             int allocate = 16 * (((funCall.Arguments.Count * pointerSize) + 15) / 16);
-            ArmInstruction("sub sp, sp, #" + allocate);
+            AllocateMemory(allocate);
 
             // move arguments beginning at last argument, up the stack beginning at stack pointer into temp storage
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
@@ -97,7 +97,7 @@ namespace mcc
             {
                 deallocate = allocate;
             }
-            ArmInstruction("add sp, sp, #" + deallocate);
+            DeallocateMemory(deallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -348,12 +348,11 @@ namespace mcc
             if (function.IsDefinition)
             {
                 FunctionPrologue(function.Name);
-                AllocateMemoryForVariables(function.BytesToAllocate);
+                AllocateMemory(function.BytesToAllocate);
 
                 for (int i = 0; i < Math.Min(function.Parameters.Count, argRegister4B.Length); i++)
                 {
-                    // move arguments from registers to reserved stack position
-                    ArmInstruction($"str {argRegister4B[i]}, [x29, #" + (-(i + 1) * 4) + "]");
+                    MoveRegisterToMemory(argRegister4B[i], -(i + 1) * 4);
                 }
 
                 foreach (var blockItem in function.BlockItems)
@@ -448,7 +447,7 @@ namespace mcc
             ArmInstruction("str wzr, [x29, #" + byteOffset + "]");
         }
 
-        private void AllocateMemoryForVariables(int bytesToAllocate)
+        private void AllocateMemory(int bytesToAllocate)
         {
             ArmInstruction("sub sp, sp, #" + bytesToAllocate);
         }
@@ -456,6 +455,11 @@ namespace mcc
         private void DeallocateMemory(int bytesToDeallocate)
         {
             ArmInstruction("add sp, sp, #" + bytesToDeallocate);
+        }
+
+        private void MoveRegisterToMemory(string register, int frameOffset)
+        {
+            ArmInstruction($"str {register}, [x29, #" + frameOffset + "]");
         }
 
         private void CallFunction(string name)

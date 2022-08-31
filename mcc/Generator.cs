@@ -79,7 +79,7 @@ namespace mcc
                 allocate = Math.Max(allocate, 4 * pointerSize);
             }
 
-            Instruction($"subq ${allocate}, %rsp");
+            AllocateMemory(allocate);
 
             // move arguments beginning at last argument, up the stack beginning at stack pointer into temp storage
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
@@ -114,7 +114,7 @@ namespace mcc
                 // on windows we need to deallocate the shadow space as well, where we moved args but didnt pop them
                 deallocate = allocate;
             }
-            Instruction($"addq ${deallocate}, %rsp");
+            DeallocateMemory(deallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -365,12 +365,12 @@ namespace mcc
             if (function.IsDefinition)
             {
                 FunctionPrologue(function.Name);
-                AllocateMemoryForVariables(function.BytesToAllocate);
+                AllocateMemory(function.BytesToAllocate);
 
                 string[] argRegs = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
                 for (int i = 0; i < Math.Min(function.Parameters.Count, argRegs.Length); i++)
                 {
-                    Instruction("movl %" + argRegs[i] + ", " + (-(i + 1) * 4) + "(%rbp)");
+                    MoveRegisterToMemory(argRegs[i], -(i + 1) * 4);
                 }
 
                 foreach (var blockItem in function.BlockItems)
@@ -455,7 +455,7 @@ namespace mcc
             StoreLocalVariable(byteOffset);
         }
 
-        private void AllocateMemoryForVariables(int bytesToAllocate)
+        private void AllocateMemory(int bytesToAllocate)
         {
             Instruction("subq $" + bytesToAllocate + ", %rsp");
         }
@@ -463,6 +463,11 @@ namespace mcc
         private void DeallocateMemory(int bytesToDeallocate)
         {
             Instruction("addq $" + bytesToDeallocate + ", %rsp");
+        }
+
+        private void MoveRegisterToMemory(string register, int frameOffset)
+        {
+            Instruction("movl %" + register + ", " + frameOffset + "(%rbp)");
         }
 
         private void CallFunction(string name)
