@@ -85,9 +85,10 @@ namespace mcc
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
             {
                 Generate(funCall.Arguments[i]);
-                Instruction($"movq %rax, {i * pointerSize}(%rsp)");
+                StoreInt(i * pointerSize);
             }
 
+            string[] argRegs4 = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
             string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
             int regsUsed = Math.Min(funCall.Arguments.Count, argRegs.Length);
 
@@ -97,7 +98,7 @@ namespace mcc
                 if (OperatingSystem.IsWindows())
                 {
                     // on windows dont pop into registers but move them, so that shadow space is already created
-                    Instruction($"movq {i * pointerSize}(%rsp), %{argRegs[i]}");
+                    MoveMemoryToRegister(argRegs4[i], i * pointerSize);
                 }
                 else
                 {
@@ -455,6 +456,11 @@ namespace mcc
             StoreLocalVariable(byteOffset);
         }
 
+        private void StoreInt(int offset)
+        {
+            Instruction($"movl %eax, {offset}(%rsp)");
+        }
+
         private void AllocateMemory(int bytesToAllocate)
         {
             Instruction("subq $" + bytesToAllocate + ", %rsp");
@@ -465,9 +471,14 @@ namespace mcc
             Instruction("addq $" + bytesToDeallocate + ", %rsp");
         }
 
-        private void MoveRegisterToMemory(string register, int frameOffset)
+        private void MoveRegisterToMemory(string register, int offset)
         {
-            Instruction("movl %" + register + ", " + frameOffset + "(%rbp)");
+            Instruction("movl %" + register + ", " + offset + "(%rbp)");
+        }
+
+        private void MoveMemoryToRegister(string register, int offset)
+        {
+            Instruction($"movl {offset}(%rsp), %{register}");
         }
 
         private void CallFunction(string name)

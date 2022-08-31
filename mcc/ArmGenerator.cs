@@ -71,7 +71,7 @@ namespace mcc
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
             {
                 Generate(funCall.Arguments[i]);
-                ArmInstruction($"str w0, [sp, #{i * pointerSize}]");
+                StoreInt(i * pointerSize);
             }
 
             int regsUsed = Math.Min(funCall.Arguments.Count, argRegister4B.Length);
@@ -79,7 +79,7 @@ namespace mcc
             // move arguments into registers
             for (int i = 0; i < regsUsed; i++)
             {
-                ArmInstruction($"ldr {argRegister4B[i]}, [sp, #{i * pointerSize}]");
+                MoveMemoryToRegister(argRegister4B[i], i * pointerSize);
             }
 
             // deallocate memory for args in registers, only in pairs of two to maintain stack alignment
@@ -447,6 +447,11 @@ namespace mcc
             ArmInstruction("str wzr, [x29, #" + byteOffset + "]");
         }
 
+        private void StoreInt(int offset)
+        {
+            ArmInstruction($"str w0, [sp, #{offset}]");
+        }
+
         private void AllocateMemory(int bytesToAllocate)
         {
             ArmInstruction("sub sp, sp, #" + bytesToAllocate);
@@ -457,9 +462,14 @@ namespace mcc
             ArmInstruction("add sp, sp, #" + bytesToDeallocate);
         }
 
-        private void MoveRegisterToMemory(string register, int frameOffset)
+        private void MoveRegisterToMemory(string register, int offset)
         {
-            ArmInstruction($"str {register}, [x29, #" + frameOffset + "]");
+            ArmInstruction($"str {register}, [x29, #" + offset + "]");
+        }
+
+        private void MoveMemoryToRegister(string register, int offset)
+        {
+            ArmInstruction($"ldr {register}, [sp, #{offset}]");
         }
 
         private void CallFunction(string name)
