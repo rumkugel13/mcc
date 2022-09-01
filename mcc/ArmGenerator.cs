@@ -82,22 +82,39 @@ namespace mcc
                 MoveMemoryToRegister(argRegister4B[i], i * pointerSize);
             }
 
-            // deallocate memory for args in registers, only in pairs of two to maintain stack alignment
-            if (regsUsed % 2 == 0)
+            if (funCall.Arguments.Count > regsUsed)
             {
-                ArmInstruction("add sp, sp, #" + (regsUsed * pointerSize));
+                // pre deallocate temp memory, so that args on memory are in correct offset
+                DeallocateMemory(regsUsed * pointerSize);
             }
+            else
+            {
+                // deallocate all temp memory, since all args are in registers
+                DeallocateMemory(allocate);
+            }
+
+            // deallocate memory for args in registers, only in pairs of two to maintain stack alignment
+            //if (regsUsed % 2 == 0)
+            //{
+            //    ArmInstruction("add sp, sp, #" + (regsUsed * pointerSize));
+            //}
 
             CallFunction(funCall.Name);
 
-            // deallocate memory for args not in registers
-            int deallocate = allocate - (regsUsed * pointerSize);
-            // if we didnt deallocate parts of the memory, do it all here
-            if (regsUsed % 2 != 0)
+            if (funCall.Arguments.Count > regsUsed)
             {
-                deallocate = allocate;
+                // post deallocate temp memory, we dont ned args on memory anymore
+                DeallocateMemory(allocate - (regsUsed * pointerSize));
             }
-            DeallocateMemory(deallocate);
+
+            // deallocate memory for args not in registers
+            //int deallocate = allocate - (regsUsed * pointerSize);
+            //// if we didnt deallocate parts of the memory, do it all here
+            //if (regsUsed % 2 != 0)
+            //{
+            //    deallocate = allocate;
+            //}
+            //DeallocateMemory(deallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
