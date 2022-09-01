@@ -92,30 +92,42 @@ namespace mcc
             string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
             int regsUsed = Math.Min(funCall.Arguments.Count, argRegs.Length);
 
-            // pop arguments into registers, rest should be then at the stack pointer
+            // move arguments into registers
             for (int i = 0; i < regsUsed; i++)
             {
-                if (OperatingSystem.IsWindows())
+                MoveMemoryToRegister(argRegs4[i], i * pointerSize);
+            }
+
+            // on windows we need the shadow space (4 * pointerSize), so we dont deallocate before function call
+            if (!OperatingSystem.IsWindows())
+            {
+                if (funCall.Arguments.Count > regsUsed)
                 {
-                    // on windows dont pop into registers but move them, so that shadow space is already created
-                    MoveMemoryToRegister(argRegs4[i], i * pointerSize);
+                    // pre deallocate temp memory, so that args on memory are in correct offset
+                    DeallocateMemory(regsUsed * pointerSize);
                 }
                 else
                 {
-                    Instruction("popq %" + argRegs[i]);
+                    // deallocate all temp memory, since all args are in registers
+                    DeallocateMemory(allocate);
                 }
             }
 
             CallFunction(funCall.Name);
 
-            // deallocate is allocate minus the ones which were popped into registers
-            int deallocate = allocate - (regsUsed * pointerSize);
-            if (OperatingSystem.IsWindows())
+            if (!OperatingSystem.IsWindows())
+            {
+                if (funCall.Arguments.Count > regsUsed)
+                {
+                    // post deallocate temp memory, we dont ned args on memory anymore
+                    DeallocateMemory(allocate - (regsUsed * pointerSize));
+                }
+            }
+            else
             {
                 // on windows we need to deallocate the shadow space as well, where we moved args but didnt pop them
-                deallocate = allocate;
+                DeallocateMemory(allocate);
             }
-            DeallocateMemory(deallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
