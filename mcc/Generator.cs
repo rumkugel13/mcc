@@ -92,18 +92,10 @@ namespace mcc
             string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
             int regsUsed = Math.Min(funCall.Arguments.Count, argRegs.Length);
 
-            // pop arguments into registers, rest should be then at the stack pointer
+            // move arguments into registers
             for (int i = 0; i < regsUsed; i++)
             {
-                //if (OperatingSystem.IsWindows())
-                {
-                    // on windows dont pop into registers but move them, so that shadow space is already created
-                    MoveMemoryToRegister(argRegs4[i], i * pointerSize);
-                }
-                //else
-                //{
-                //    Instruction("popq %" + argRegs[i]);
-                //}
+                MoveMemoryToRegister(argRegs4[i], i * pointerSize);
             }
 
             // on windows we need the shadow space (4 * pointerSize), so we dont deallocate before function call
@@ -136,15 +128,6 @@ namespace mcc
                 // on windows we need to deallocate the shadow space as well, where we moved args but didnt pop them
                 DeallocateMemory(allocate);
             }
-
-            // deallocate is allocate minus the ones which were popped into registers
-            //int deallocate = allocate - (regsUsed * pointerSize);
-            //if (OperatingSystem.IsWindows())
-            //{
-            //    // on windows we need to deallocate the shadow space as well, where we moved args but didnt pop them
-            //    deallocate = allocate;
-            //}
-            //DeallocateMemory(deallocate);
         }
 
         private void GenerateContinue(ASTContinueNode con)
