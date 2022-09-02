@@ -354,6 +354,10 @@ namespace mcc
                         FailFunction("Trying to declare already existing function", function.Name, function);
                     }
                 }
+                else if (new HashSet<string>(function.Parameters).Count != function.Parameters.Count)
+                {
+                    FailFunction("Duplicate argument names for function", function.Name, function);
+                }
                 else
                 {
                     funcMap.Add(function.Name, new Function() { Defined = false, ParameterCount = function.Parameters.Count });
@@ -376,10 +380,18 @@ namespace mcc
                     {
                         FailFunction("Trying to define declared function with wrong parameter count", function.Name, function);
                     }
+                    else if (new HashSet<string>(function.Parameters).Count != function.Parameters.Count)
+                    {
+                        FailFunction("Duplicate argument names for function", function.Name, function);
+                    }
                     else
                     {
                         funcMap[function.Name] = new Function() { Defined = true, ParameterCount = function.Parameters.Count };
                     }
+                }
+                else if (new HashSet<string>(function.Parameters).Count != function.Parameters.Count)
+                {
+                    FailFunction("Duplicate argument names for function", function.Name, function);
                 }
                 else
                 {
