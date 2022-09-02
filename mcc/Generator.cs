@@ -19,6 +19,7 @@ namespace mcc
         readonly string[] argRegisterWin4B = new string[4] { "ecx", "edx", "r8d", "r9d", };
         readonly string[] argRegisterWin8B = new string[4] { "rcx", "rdx", "r8", "r9", };
         int pushCounter = 0;
+        const int pointerSize = 8;
 
         public Generator(ASTNode rootNode)
         {
@@ -63,23 +64,8 @@ namespace mcc
 
         private void GenerateFunctionCall(ASTFunctionCallNode funCall)
         {
-            const int pointerSize = 8;
-
             // allocate space for arguments, 16 byte aligned
-            int allocate = 16 * (((funCall.Arguments.Count * pointerSize) + 15) / 16);
-            if (pushCounter % 2 != 0)
-            {
-                // stack pointer is not aligned (due to binOp), add padding
-                allocate += pointerSize;
-            }
-
-            // make sure we allocate at least enough for shadow space on windows
-            if (OperatingSystem.IsWindows())
-            {
-                allocate = Math.Max(allocate, 4 * pointerSize);
-            }
-
-            AllocateMemory(allocate);
+            int allocated = AllocateAtLeast(funCall.Arguments.Count * pointerSize);
 
             // move arguments beginning at last argument, up the stack beginning at stack pointer into temp storage
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
@@ -88,46 +74,16 @@ namespace mcc
                 StoreInt(i * pointerSize);
             }
 
-            string[] argRegs4 = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
-            string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
-            int regsUsed = Math.Min(funCall.Arguments.Count, argRegs.Length);
-
             // move arguments into registers
-            for (int i = 0; i < regsUsed; i++)
-            {
-                MoveMemoryToRegister(argRegs4[i], i * pointerSize);
-            }
+            MoveArgsIntoRegisters(funCall.Arguments.Count);
 
-            // on windows we need the shadow space (4 * pointerSize), so we dont deallocate before function call
-            if (!OperatingSystem.IsWindows())
-            {
-                if (funCall.Arguments.Count > regsUsed)
-                {
-                    // pre deallocate temp memory, so that args on memory are in correct offset
-                    DeallocateMemory(regsUsed * pointerSize);
-                }
-                else
-                {
-                    // deallocate all temp memory, since all args are in registers
-                    DeallocateMemory(allocate);
-                }
-            }
+            // pre deallocate temp memory, so that args on memory are in correct offset
+            PreCallDeallocate(allocated, funCall.Arguments.Count);
 
             CallFunction(funCall.Name);
 
-            if (!OperatingSystem.IsWindows())
-            {
-                if (funCall.Arguments.Count > regsUsed)
-                {
-                    // post deallocate temp memory, we dont ned args on memory anymore
-                    DeallocateMemory(allocate - (regsUsed * pointerSize));
-                }
-            }
-            else
-            {
-                // on windows we need to deallocate the shadow space as well, where we moved args but didnt pop them
-                DeallocateMemory(allocate);
-            }
+            // post deallocate temp memory, we dont ned args on memory anymore
+            PostCallDeallocate(allocated, funCall.Arguments.Count);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -491,6 +447,83 @@ namespace mcc
         private void MoveMemoryToRegister(string register, int offset)
         {
             Instruction($"movl {offset}(%rsp), %{register}");
+        }
+
+        private int AllocateAtLeast(int bytes)
+        {
+            // allocate space for arguments, 16 byte aligned
+            int allocate = 16 * ((bytes + 15) / 16);
+            if (pushCounter % 2 != 0)
+            {
+                // stack pointer is not aligned (due to binOp), add padding
+                allocate += pointerSize;
+            }
+
+            // make sure we allocate at least enough for shadow space on windows
+            if (OperatingSystem.IsWindows())
+            {
+                allocate = Math.Max(allocate, 4 * pointerSize);
+            }
+
+            AllocateMemory(allocate);
+
+            return allocate;
+        }
+
+        private void MoveArgsIntoRegisters(int argCount)
+        {
+            string[] argRegs4 = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
+            //string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
+            int regsUsed = Math.Min(argCount, argRegs4.Length);
+
+            // move arguments into registers
+            for (int i = 0; i < regsUsed; i++)
+            {
+                MoveMemoryToRegister(argRegs4[i], i * pointerSize);
+            }
+        }
+
+        private void PreCallDeallocate(int allocated, int argCount)
+        {
+            string[] argRegs4 = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
+            //string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
+            int regsUsed = Math.Min(argCount, argRegs4.Length);
+
+            // on windows we need the shadow space (4 * pointerSize), so we dont deallocate before function call
+            if (!OperatingSystem.IsWindows())
+            {
+                if (argCount > regsUsed)
+                {
+                    // pre deallocate temp memory, so that args on memory are in correct offset
+                    DeallocateMemory(regsUsed * pointerSize);
+                }
+                else
+                {
+                    // deallocate all temp memory, since all args are in registers
+                    DeallocateMemory(allocated);
+                }
+            }
+        }
+
+        private void PostCallDeallocate(int allocated, int argCount)
+        {
+            string[] argRegs4 = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
+            //string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
+            int regsUsed = Math.Min(argCount, argRegs4.Length);
+
+            if (!OperatingSystem.IsWindows())
+            {
+                if (argCount > regsUsed)
+                {
+                    // post deallocate temp memory, we dont ned args on memory anymore
+                    DeallocateMemory(allocated - (regsUsed * pointerSize));
+                }
+            }
+            else
+            {
+                // on windows we need to deallocate the shadow space as well, where we moved args but didnt pop them
+                DeallocateMemory(allocated);
+            }
         }
 
         private void CallFunction(string name)

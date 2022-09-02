@@ -17,6 +17,7 @@ namespace mcc
         const string lbVarAddress = ".addr_";
         readonly string[] argRegister4B = new string[8] { "w0","w1", "w2", "w3", "w4", "w5", "w6", "w7", };
         readonly string[] argRegister8B = new string[8] { "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", };
+        const int pointerSize = 8;
 
         public ArmGenerator(ASTNode rootNode)
         {
@@ -61,11 +62,8 @@ namespace mcc
 
         private void GenerateFunctionCall(ASTFunctionCallNode funCall)
         {
-            const int pointerSize = 8;
-
             // allocate space for arguments, 16 byte aligned
-            int allocate = 16 * (((funCall.Arguments.Count * pointerSize) + 15) / 16);
-            AllocateMemory(allocate);
+            int allocated = AllocateAtLeast(funCall.Arguments.Count * pointerSize);
 
             // move arguments beginning at last argument, up the stack beginning at stack pointer into temp storage
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
@@ -74,32 +72,16 @@ namespace mcc
                 StoreInt(i * pointerSize);
             }
 
-            int regsUsed = Math.Min(funCall.Arguments.Count, argRegister4B.Length);
-
             // move arguments into registers
-            for (int i = 0; i < regsUsed; i++)
-            {
-                MoveMemoryToRegister(argRegister4B[i], i * pointerSize);
-            }
+            MoveArgsIntoRegisters(funCall.Arguments.Count);
 
-            if (funCall.Arguments.Count > regsUsed)
-            {
-                // pre deallocate temp memory, so that args on memory are in correct offset
-                DeallocateMemory(regsUsed * pointerSize);
-            }
-            else
-            {
-                // deallocate all temp memory, since all args are in registers
-                DeallocateMemory(allocate);
-            }
+            // pre deallocate temp memory, so that args on memory are in correct offset
+            PreCallDeallocate(allocated, funCall.Arguments.Count);
 
             CallFunction(funCall.Name);
 
-            if (funCall.Arguments.Count > regsUsed)
-            {
-                // post deallocate temp memory, we dont ned args on memory anymore
-                DeallocateMemory(allocate - (regsUsed * pointerSize));
-            }
+            // post deallocate temp memory, we dont ned args on memory anymore
+            PostCallDeallocate(allocated, funCall.Arguments.Count);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -472,6 +454,53 @@ namespace mcc
         private void MoveMemoryToRegister(string register, int offset)
         {
             ArmInstruction($"ldr {register}, [sp, #{offset}]");
+        }
+
+        private int AllocateAtLeast(int bytes)
+        {
+            // allocate space for arguments, 16 byte aligned
+            int allocate = 16 * ((bytes + 15) / 16);
+            AllocateMemory(allocate);
+
+            return allocate;
+        }
+
+        private void MoveArgsIntoRegisters(int argCount)
+        {
+            int regsUsed = Math.Min(argCount, argRegister4B.Length);
+
+            // move arguments into registers
+            for (int i = 0; i < regsUsed; i++)
+            {
+                MoveMemoryToRegister(argRegister4B[i], i * pointerSize);
+            }
+        }
+
+        private void PreCallDeallocate(int allocated, int argCount)
+        {
+            int regsUsed = Math.Min(argCount, argRegister4B.Length);
+
+            if (argCount > regsUsed)
+            {
+                // pre deallocate temp memory, so that args on memory are in correct offset
+                DeallocateMemory(regsUsed * pointerSize);
+            }
+            else
+            {
+                // deallocate all temp memory, since all args are in registers
+                DeallocateMemory(allocated);
+            }
+        }
+
+        private void PostCallDeallocate(int allocated, int argCount)
+        {
+            int regsUsed = Math.Min(argCount, argRegister4B.Length);
+
+            if (argCount > regsUsed)
+            {
+                // post deallocate temp memory, we dont ned args on memory anymore
+                DeallocateMemory(allocated - (regsUsed * pointerSize));
+            }
         }
 
         private void CallFunction(string name)
