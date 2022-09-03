@@ -9,14 +9,12 @@ namespace mcc
         static bool debug = false;
         static string VersionString = "mcc v0.16";
         static string Exe = ".exe";
-        static char Sep = ';';
 
         static void Main(string[] args)
         {
             if (OperatingSystem.IsLinux())
             {
                 Exe = "";
-                Sep = ':';
             }
 
             switch (args.Length)
@@ -286,10 +284,12 @@ namespace mcc
 
         static string GetFullPath(string executable)
         {
+            char pathSeperator = OperatingSystem.IsWindows() ? ';' : ':';
+
             string? temp = Environment.GetEnvironmentVariable("PATH");
             if (!string.IsNullOrEmpty(temp))
             {
-                foreach (string folder in temp.Split(Sep))
+                foreach (string folder in temp.Split(pathSeperator))
                 {
                     string result = Path.Combine(folder, executable);
                     if (File.Exists(result))
@@ -328,20 +328,10 @@ namespace mcc
 
         static string GenerateFromASTNode(ASTNode program)
         {
-            if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
-            {
-                AsmGenerator generator = new AsmGenerator(program);
-                return generator.GenerateArm64();
-            }
-            else if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64)
-            {
-                AsmGenerator generator = new AsmGenerator(program);
-                return generator.GenerateX64();
-            }
-            else
-            {
-                return "";
-            }
+            AsmGenerator generator = new AsmGenerator(program);
+            return System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? generator.GenerateArm64()
+                : (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64 ? generator.GenerateX64() 
+                : string.Empty);
         }
 
         static void PrintFromASTNode(ASTNode program)
