@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace mcc
+namespace mcc.Backends
 {
     internal class X64Backend : IBackend
     {
@@ -30,7 +30,7 @@ namespace mcc
 
         public void GenerateGlobalVariableAddress(string name)
         {
-            
+
         }
 
         public void GenerateUninitializedGlobalVariable(string name)
@@ -189,7 +189,7 @@ namespace mcc
                 if (argCount > regsUsed)
                 {
                     // post deallocate temp memory, we dont ned args on memory anymore
-                    DeallocateMemory(allocated - (regsUsed * pointerSize));
+                    DeallocateMemory(allocated - regsUsed * pointerSize);
                 }
             }
             else

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace mcc
+namespace mcc.Backends
 {
     internal class Arm64Backend : IBackend
     {
@@ -163,7 +163,7 @@ namespace mcc
             if (argCount > regsUsed)
             {
                 // post deallocate temp memory, we dont ned args on memory anymore
-                DeallocateMemory(allocated - (regsUsed * pointerSize));
+                DeallocateMemory(allocated - regsUsed * pointerSize);
             }
         }
 

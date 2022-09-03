@@ -1,4 +1,4 @@
-﻿namespace mcc
+﻿namespace mcc.Backends
 {
     internal interface IBackend
     {

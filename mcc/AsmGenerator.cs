@@ -1,4 +1,6 @@
-﻿namespace mcc
+﻿using mcc.Backends;
+
+namespace mcc
 {
     class AsmGenerator
     {
