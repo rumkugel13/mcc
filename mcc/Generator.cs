@@ -336,11 +336,7 @@ namespace mcc
                 FunctionPrologue(function.Name);
                 AllocateMemory(function.BytesToAllocate);
 
-                string[] argRegs = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
-                for (int i = 0; i < Math.Min(function.Parameters.Count, argRegs.Length); i++)
-                {
-                    MoveRegisterToMemory(argRegs[i], -(i + 1) * 4);
-                }
+                MoveRegistersIntoMemory(function.Parameters.Count);
 
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);
@@ -480,6 +476,18 @@ namespace mcc
             for (int i = 0; i < regsUsed; i++)
             {
                 MoveMemoryToRegister(argRegs4[i], i * pointerSize);
+            }
+        }
+
+        public void MoveRegistersIntoMemory(int argCount)
+        {
+            string[] argRegs4 = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
+            //string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
+            int regsUsed = Math.Min(argCount, argRegs4.Length);
+
+            for (int i = 0; i < regsUsed; i++)
+            {
+                MoveRegisterToMemory(argRegs4[i], -(i + 1) * 4);
             }
         }
 

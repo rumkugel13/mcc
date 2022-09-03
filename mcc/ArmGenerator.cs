@@ -334,10 +334,7 @@ namespace mcc
                 FunctionPrologue(function.Name);
                 AllocateMemory(function.BytesToAllocate);
 
-                for (int i = 0; i < Math.Min(function.Parameters.Count, argRegister4B.Length); i++)
-                {
-                    MoveRegisterToMemory(argRegister4B[i], -(i + 1) * 4);
-                }
+                MoveRegistersIntoMemory(function.Parameters.Count);
 
                 foreach (var blockItem in function.BlockItems)
                     Generate(blockItem);
@@ -473,6 +470,16 @@ namespace mcc
             for (int i = 0; i < regsUsed; i++)
             {
                 MoveMemoryToRegister(argRegister4B[i], i * pointerSize);
+            }
+        }
+
+        public void MoveRegistersIntoMemory(int argCount)
+        {
+            int regsUsed = Math.Min(argCount, argRegister4B.Length);
+
+            for (int i = 0; i < regsUsed; i++)
+            {
+                MoveRegisterToMemory(argRegister4B[i], -(i + 1) * 4);
             }
         }
 
