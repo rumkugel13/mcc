@@ -330,13 +330,13 @@ namespace mcc
         {
             if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
             {
-                ArmGenerator generator = new ArmGenerator(program);
-                return generator.GenerateARM();
+                AsmGenerator generator = new AsmGenerator(program);
+                return generator.GenerateArm64();
             }
             else if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64)
             {
-                Generator generator = new Generator(program);
-                return generator.GenerateX86();
+                AsmGenerator generator = new AsmGenerator(program);
+                return generator.GenerateX64();
             }
             else
             {
