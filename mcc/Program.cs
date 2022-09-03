@@ -7,7 +7,7 @@ namespace mcc
     {
         static bool silent = true;
         static bool debug = false;
-        static string VersionString = "mcc v0.15";
+        static string VersionString = "mcc v0.16";
         static string Exe = ".exe";
         static char Sep = ';';
 
