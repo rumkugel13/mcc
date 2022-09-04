@@ -93,22 +93,24 @@
             OPEN_PARENTHESIS,
             CLOSE_PARENTHESIS,
             SEMICOLON,
-            MINUS,
-            BIT_NEGATE,
+            QUESTION,
+            COLON,
+            EQUALS,
+            COMMA,
+
+            BIT_NEGATE,     // begin unary
             EXCLAMATION,
-            PLUS,
+            MINUS,          // begin binary
+            PLUS,           // end unary
+
             MULTIPLICATION,
             DIVISION,
             BIT_AND,
             BIT_OR,
-            EQUALS,
             LESS_THAN,
             GREATER_THAN,
             REMAINDER,
             BIT_XOR,
-            QUESTION,
-            COLON,
-            COMMA,
             LOGICAL_AND,
             LOGICAL_OR,
             DOUBLE_EQUALS,
@@ -116,7 +118,7 @@
             LESS_EQUAL,
             GREATER_EQUAL,
             SHIFT_LEFT,
-            SHIFT_RIGHT,        
+            SHIFT_RIGHT,    // end binary
         }
 
         public static Dictionary<string, SymbolTypes> Symbols = new Dictionary<string, SymbolTypes>
@@ -152,35 +154,15 @@
             { ">>", SymbolTypes.SHIFT_RIGHT },
         };
 
-        public static HashSet<SymbolTypes> Unary = new HashSet<SymbolTypes>
+        public static bool IsUnary(SymbolTypes type)
         {
-            SymbolTypes.PLUS,
-            SymbolTypes.MINUS,
-            SymbolTypes.BIT_NEGATE,
-            SymbolTypes.EXCLAMATION,
-        };
+            return type >= SymbolTypes.BIT_NEGATE && type <= SymbolTypes.PLUS;
+        }
 
-        public static HashSet<SymbolTypes> Binary = new HashSet<SymbolTypes>
+        public static bool IsBinary(SymbolTypes type)
         {
-            SymbolTypes.MULTIPLICATION,
-            SymbolTypes.DIVISION,
-            SymbolTypes.PLUS,
-            SymbolTypes.MINUS,
-            SymbolTypes.LESS_THAN,
-            SymbolTypes.GREATER_THAN,
-            SymbolTypes.REMAINDER,
-            SymbolTypes.BIT_AND,
-            SymbolTypes.BIT_OR,
-            SymbolTypes.BIT_XOR,
-            SymbolTypes.LOGICAL_AND,
-            SymbolTypes.LOGICAL_OR,
-            SymbolTypes.DOUBLE_EQUALS,
-            SymbolTypes.NOT_EQUALS,
-            SymbolTypes.LESS_EQUAL,
-            SymbolTypes.GREATER_EQUAL,
-            SymbolTypes.SHIFT_LEFT,
-            SymbolTypes.SHIFT_RIGHT,
-        };
+            return type >= SymbolTypes.MINUS && type <= SymbolTypes.SHIFT_RIGHT;
+        }
 
         public override string ToString()
         {
