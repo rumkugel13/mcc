@@ -152,34 +152,34 @@
             { ">>", SymbolTypes.SHIFT_RIGHT },
         };
 
-        public static HashSet<string> Unary = new HashSet<string>
+        public static HashSet<SymbolTypes> Unary = new HashSet<SymbolTypes>
         {
-            "+",
-            "-",
-            "~",
-            "!",
+            SymbolTypes.PLUS,
+            SymbolTypes.MINUS,
+            SymbolTypes.BIT_NEGATE,
+            SymbolTypes.EXCLAMATION,
         };
 
-        public static HashSet<string> Binary = new HashSet<string>
+        public static HashSet<SymbolTypes> Binary = new HashSet<SymbolTypes>
         {
-            "*",
-            "/",
-            "+",
-            "-",
-            "<",
-            ">",
-            "%",
-            "&",
-            "|",
-            "^",
-            "&&",
-            "||",
-            "==",
-            "!=",
-            "<=",
-            ">=",
-            "<<",
-            ">>",
+            SymbolTypes.MULTIPLICATION,
+            SymbolTypes.DIVISION,
+            SymbolTypes.PLUS,
+            SymbolTypes.MINUS,
+            SymbolTypes.LESS_THAN,
+            SymbolTypes.GREATER_THAN,
+            SymbolTypes.REMAINDER,
+            SymbolTypes.BIT_AND,
+            SymbolTypes.BIT_OR,
+            SymbolTypes.BIT_XOR,
+            SymbolTypes.LOGICAL_AND,
+            SymbolTypes.LOGICAL_OR,
+            SymbolTypes.DOUBLE_EQUALS,
+            SymbolTypes.NOT_EQUALS,
+            SymbolTypes.LESS_EQUAL,
+            SymbolTypes.GREATER_EQUAL,
+            SymbolTypes.SHIFT_LEFT,
+            SymbolTypes.SHIFT_RIGHT,
         };
 
         public override string ToString()

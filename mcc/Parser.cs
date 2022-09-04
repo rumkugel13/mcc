@@ -576,7 +576,7 @@
 
         private bool PeekUnarySymbol()
         {
-            return Peek() is Symbol symbol && Symbol.Unary.Contains(symbol.Value);
+            return Peek() is Symbol symbol && Symbol.Unary.Contains(symbol.SymbolType);
         }
 
         private void ExpectUnarySymbol(out char symbol)
@@ -594,7 +594,7 @@
 
         private bool PeekBinarySymbol()
         {
-            return Peek() is Symbol symbol && Symbol.Binary.Contains(symbol.Value);
+            return Peek() is Symbol symbol && Symbol.Binary.Contains(symbol.SymbolType);
         }
 
         private void ExpectBinarySymbol(out string value)
