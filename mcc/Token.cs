@@ -77,7 +77,7 @@
     class Symbol : Token
     {
         public string Value;
-        SymbolTypes SymbolType;
+        public SymbolTypes SymbolType;
 
         public Symbol(string symbol)
         {
@@ -88,8 +88,8 @@
 
         public enum SymbolTypes
         {
-            OPEN_BRACKETS,
-            CLOSE_BRACKETS,
+            OPEN_BRACES,
+            CLOSE_BRACES,
             OPEN_PARENTHESIS,
             CLOSE_PARENTHESIS,
             SEMICOLON,
@@ -121,8 +121,8 @@
 
         public static Dictionary<string, SymbolTypes> Symbols = new Dictionary<string, SymbolTypes>
         {
-            { "{", SymbolTypes.OPEN_BRACKETS },
-            { "}", SymbolTypes.CLOSE_BRACKETS },
+            { "{", SymbolTypes.OPEN_BRACES },
+            { "}", SymbolTypes.CLOSE_BRACES },
             { "(", SymbolTypes.OPEN_PARENTHESIS },
             { ")", SymbolTypes.CLOSE_PARENTHESIS },
             { ";", SymbolTypes.SEMICOLON },

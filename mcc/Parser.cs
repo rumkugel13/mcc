@@ -35,7 +35,7 @@
 
         private ASTTopLevelItemNode ParseTopLevelItem()
         {
-            if (Peek(2) is Symbol symbol && symbol.Value == "(")
+            if (Peek(2) is Symbol symbol && symbol.SymbolType == Symbol.SymbolTypes.OPEN_PARENTHESIS)
             {
                 return ParseFunction();
             }
@@ -49,7 +49,7 @@
         {
             ExpectKeyword(Keyword.KeywordTypes.INT);
             ExpectIdentifier(out string name, out int line, out int column);
-            ExpectSymbol("(");
+            ExpectSymbol(Symbol.SymbolTypes.OPEN_PARENTHESIS);
 
             List<string> parameters = new List<string>();
             if (PeekKeyword(Keyword.KeywordTypes.INT))
@@ -58,31 +58,31 @@
                 ExpectIdentifier(out string id);
                 parameters.Add(id);
 
-                while (PeekSymbol(","))
+                while (PeekSymbol(Symbol.SymbolTypes.COMMA))
                 {
-                    ExpectSymbol(",");
+                    ExpectSymbol(Symbol.SymbolTypes.COMMA);
                     ExpectKeyword(Keyword.KeywordTypes.INT);
                     ExpectIdentifier(out string id2);
                     parameters.Add(id2);
                 }
             }
 
-            ExpectSymbol(")");
+            ExpectSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS);
 
-            if (PeekSymbol("{"))
+            if (PeekSymbol(Symbol.SymbolTypes.OPEN_BRACES))
             {
                 List<ASTBlockItemNode> blockItems = new List<ASTBlockItemNode>();
-                ExpectSymbol("{");
-                while (!PeekSymbol("}"))
+                ExpectSymbol(Symbol.SymbolTypes.OPEN_BRACES);
+                while (!PeekSymbol(Symbol.SymbolTypes.CLOSE_BRACES))
                 {
                     blockItems.Add(ParseBlockItem());
                 }
-                ExpectSymbol("}");
+                ExpectSymbol(Symbol.SymbolTypes.CLOSE_BRACES);
                 return new ASTFunctionNode(name, parameters, blockItems) { LineNumber = line, LineCharacter = column};
             }
             else
             {
-                ExpectSymbol(";");
+                ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
                 return new ASTFunctionNode(name, parameters) { LineNumber = line, LineCharacter = column};
             }
         }
@@ -101,23 +101,23 @@
 
         private ASTCompundNode ParseCompound()
         {
-            ExpectSymbol("{");
+            ExpectSymbol(Symbol.SymbolTypes.OPEN_BRACES);
 
             List<ASTBlockItemNode> blockItems = new List<ASTBlockItemNode>();
-            while (!PeekSymbol("}"))
+            while (!PeekSymbol(Symbol.SymbolTypes.CLOSE_BRACES))
             {
                 blockItems.Add(ParseBlockItem());
             }
-            ExpectSymbol("}");
+            ExpectSymbol(Symbol.SymbolTypes.CLOSE_BRACES);
             return new ASTCompundNode(blockItems);
         }
 
         private ASTWhileNode ParseWhile()
         {
             ExpectKeyword(Keyword.KeywordTypes.WHILE);
-            ExpectSymbol("(");
+            ExpectSymbol(Symbol.SymbolTypes.OPEN_PARENTHESIS);
             ASTAbstractExpressionNode exp = ParseExpression();
-            ExpectSymbol(")");
+            ExpectSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS);
             ASTStatementNode statement = ParseStatement();
             return new ASTWhileNode(exp, statement);
         }
@@ -127,42 +127,42 @@
             ExpectKeyword(Keyword.KeywordTypes.DO);
             ASTStatementNode statement = ParseStatement();
             ExpectKeyword(Keyword.KeywordTypes.WHILE);
-            ExpectSymbol("(");
+            ExpectSymbol(Symbol.SymbolTypes.OPEN_PARENTHESIS);
             ASTAbstractExpressionNode exp = ParseExpression();
-            ExpectSymbol(")");
-            ExpectSymbol(";");
+            ExpectSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS);
+            ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
             return new ASTDoWhileNode(statement, exp);
         }
 
         private ASTBreakNode ParseBreak()
         {
             ExpectKeyword(Keyword.KeywordTypes.BREAK, out int line, out int column);
-            ExpectSymbol(";");
+            ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
             return new ASTBreakNode() { LineNumber = line, LineCharacter = column };
         }
 
         private ASTContinueNode ParseContinue()
         {
             ExpectKeyword(Keyword.KeywordTypes.CONTINUE, out int line, out int column);
-            ExpectSymbol(";");
+            ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
             return new ASTContinueNode() { LineNumber = line, LineCharacter = column };
         }
 
         private ASTForNode ParseFor()
         {
             ExpectKeyword(Keyword.KeywordTypes.FOR);
-            ExpectSymbol("(");
+            ExpectSymbol(Symbol.SymbolTypes.OPEN_PARENTHESIS);
             ASTAbstractExpressionNode init = ParseOptionalExpression();
-            ExpectSymbol(";");
+            ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
             ASTAbstractExpressionNode condition = ParseOptionalExpression();
             if (condition is ASTNoExpressionNode)
             {
                 condition = new ASTConstantNode(1); // insert a true condition
             }
 
-            ExpectSymbol(";");
+            ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
             ASTAbstractExpressionNode post = ParseOptionalExpression();
-            ExpectSymbol(")");
+            ExpectSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS);
             ASTStatementNode statement = ParseStatement();
             return new ASTForNode(statement, init, condition, post);
         }
@@ -170,7 +170,7 @@
         private ASTForDeclarationNode ParseForDeclaration()
         {
             ExpectKeyword(Keyword.KeywordTypes.FOR);
-            ExpectSymbol("(");
+            ExpectSymbol(Symbol.SymbolTypes.OPEN_PARENTHESIS);
             ASTDeclarationNode decl = ParseDeclaration(); // includes ;
             ASTAbstractExpressionNode condition = ParseOptionalExpression();
             if (condition is ASTNoExpressionNode)
@@ -178,16 +178,16 @@
                 condition = new ASTConstantNode(1); // insert a true condition
             }
 
-            ExpectSymbol(";");
+            ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
             ASTAbstractExpressionNode post = ParseOptionalExpression();
-            ExpectSymbol(")");
+            ExpectSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS);
             ASTStatementNode statement = ParseStatement();
             return new ASTForDeclarationNode(statement, decl, condition, post);
         }
 
         private ASTAbstractExpressionNode ParseOptionalExpression()
         {
-            if (!PeekSymbol(";") && !PeekSymbol(")"))
+            if (!PeekSymbol(Symbol.SymbolTypes.SEMICOLON) && !PeekSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS))
             {
                 return ParseExpression();
             }
@@ -234,14 +234,14 @@
             {
                 return ParseContinue();
             }
-            else if (PeekSymbol("{"))
+            else if (PeekSymbol(Symbol.SymbolTypes.OPEN_BRACES))
             {
                 return ParseCompound();
             }
             else
             {
                 ASTAbstractExpressionNode exp = ParseOptionalExpression();
-                ExpectSymbol(";");
+                ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
                 return new ASTExpressionNode(exp);
             }
         }
@@ -249,9 +249,9 @@
         private ASTConditionNode ParseCondition()
         {
             ExpectKeyword(Keyword.KeywordTypes.IF);
-            ExpectSymbol("(");
+            ExpectSymbol(Symbol.SymbolTypes.OPEN_PARENTHESIS);
             ASTAbstractExpressionNode condition = ParseExpression();
-            ExpectSymbol(")");
+            ExpectSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS);
             ASTStatementNode ifBranch = ParseStatement();
             if (PeekKeyword(Keyword.KeywordTypes.ELSE))
             {
@@ -270,16 +270,16 @@
             ExpectKeyword(Keyword.KeywordTypes.INT);
             ExpectIdentifier(out string id, out int line, out int column);
 
-            if (PeekSymbol("="))
+            if (PeekSymbol(Symbol.SymbolTypes.EQUALS))
             {
-                ExpectSymbol("=");
+                ExpectSymbol(Symbol.SymbolTypes.EQUALS);
                 ASTAbstractExpressionNode exp = ParseExpression();
-                ExpectSymbol(";");
+                ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
                 return new ASTDeclarationNode(id, exp) { LineNumber = line, LineCharacter = column };
             }
             else
             {
-                ExpectSymbol(";");
+                ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
                 return new ASTDeclarationNode(id) { LineNumber = line, LineCharacter = column };
             }
         }
@@ -288,7 +288,7 @@
         {
             ExpectKeyword(Keyword.KeywordTypes.RETURN, out int line, out int column);
             ASTAbstractExpressionNode exp = ParseExpression();
-            ExpectSymbol(";");
+            ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
             return new ASTReturnNode(exp) { LineNumber = line, LineCharacter = column };
         }
 
@@ -308,20 +308,20 @@
         private ASTFunctionCallNode ParseFunctionCall()
         {
             ExpectIdentifier(out string id, out int line, out int column);
-            ExpectSymbol("(");
+            ExpectSymbol(Symbol.SymbolTypes.OPEN_PARENTHESIS);
 
             List<ASTAbstractExpressionNode> arguments = new List<ASTAbstractExpressionNode>();
-            if (!PeekSymbol(")"))
+            if (!PeekSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS))
             {
                 arguments.Add(ParseExpression());
-                while (PeekSymbol(","))
+                while (PeekSymbol(Symbol.SymbolTypes.COMMA))
                 {
-                    ExpectSymbol(",");
+                    ExpectSymbol(Symbol.SymbolTypes.COMMA);
                     arguments.Add(ParseExpression());
                 }
             }
 
-            ExpectSymbol(")");
+            ExpectSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS);
             return new ASTFunctionCallNode(id, arguments) { LineNumber = line, LineCharacter = column };
         }
 
@@ -335,16 +335,16 @@
             {
                 return ParseConstant();
             }
-            else if (PeekSymbol("("))
+            else if (PeekSymbol(Symbol.SymbolTypes.OPEN_PARENTHESIS))
             {
-                ExpectSymbol("(");
+                ExpectSymbol(Symbol.SymbolTypes.OPEN_PARENTHESIS);
                 ASTAbstractExpressionNode exp = ParseExpression();
-                ExpectSymbol(")");
+                ExpectSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS);
                 return exp;
             }
             else if (Peek() is Identifier)
             {
-                if (Peek(1) is Symbol symbol && symbol.Value == "(")
+                if (Peek(1) is Symbol symbol && symbol.SymbolType == Symbol.SymbolTypes.OPEN_PARENTHESIS)
                 {
                     return ParseFunctionCall();
                 }
@@ -364,7 +364,7 @@
         private ASTAbstractExpressionNode ParseTerm()
         {
             ASTAbstractExpressionNode exp = ParseFactor();
-            while (PeekSymbol("*") || PeekSymbol("/") || PeekSymbol("%"))
+            while (PeekSymbol(Symbol.SymbolTypes.MULTIPLICATION) || PeekSymbol(Symbol.SymbolTypes.DIVISION) || PeekSymbol(Symbol.SymbolTypes.REMAINDER))
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseFactor();
@@ -376,7 +376,7 @@
         private ASTAbstractExpressionNode ParseAdditiveExpression()
         {
             ASTAbstractExpressionNode exp = ParseTerm();
-            while (PeekSymbol("+") || PeekSymbol("-"))
+            while (PeekSymbol(Symbol.SymbolTypes.PLUS) || PeekSymbol(Symbol.SymbolTypes.MINUS))
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseTerm();
@@ -388,7 +388,7 @@
         private ASTAbstractExpressionNode ParseShiftExpression()
         {
             ASTAbstractExpressionNode exp = ParseAdditiveExpression();
-            while (PeekSymbol("<<") || PeekSymbol(">>"))
+            while (PeekSymbol(Symbol.SymbolTypes.SHIFT_LEFT) || PeekSymbol(Symbol.SymbolTypes.SHIFT_RIGHT))
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseAdditiveExpression();
@@ -400,8 +400,8 @@
         private ASTAbstractExpressionNode ParseRelationalExpression()
         {
             ASTAbstractExpressionNode exp = ParseShiftExpression();
-            while (PeekSymbol("<") || PeekSymbol(">") ||
-                   PeekSymbol("<=") || PeekSymbol(">="))
+            while (PeekSymbol(Symbol.SymbolTypes.LESS_THAN) || PeekSymbol(Symbol.SymbolTypes.GREATER_THAN) ||
+                   PeekSymbol(Symbol.SymbolTypes.LESS_EQUAL) || PeekSymbol(Symbol.SymbolTypes.GREATER_EQUAL))
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseShiftExpression();
@@ -413,7 +413,7 @@
         private ASTAbstractExpressionNode ParseEqualityExpression()
         {
             ASTAbstractExpressionNode exp = ParseRelationalExpression();
-            while (PeekSymbol("!=") || PeekSymbol("=="))
+            while (PeekSymbol(Symbol.SymbolTypes.NOT_EQUALS) || PeekSymbol(Symbol.SymbolTypes.DOUBLE_EQUALS))
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseRelationalExpression();
@@ -425,7 +425,7 @@
         private ASTAbstractExpressionNode ParseBitwiseAndExpression()
         {
             ASTAbstractExpressionNode exp = ParseEqualityExpression();
-            while (PeekSymbol("&"))
+            while (PeekSymbol(Symbol.SymbolTypes.BIT_AND))
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseEqualityExpression();
@@ -437,7 +437,7 @@
         private ASTAbstractExpressionNode ParseBitwiseXorExpression()
         {
             ASTAbstractExpressionNode exp = ParseBitwiseAndExpression();
-            while (PeekSymbol("^"))
+            while (PeekSymbol(Symbol.SymbolTypes.BIT_XOR))
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseBitwiseAndExpression();
@@ -449,7 +449,7 @@
         private ASTAbstractExpressionNode ParseBitwiseOrExpression()
         {
             ASTAbstractExpressionNode exp = ParseBitwiseXorExpression();
-            while (PeekSymbol("|"))
+            while (PeekSymbol(Symbol.SymbolTypes.BIT_OR))
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseBitwiseXorExpression();
@@ -461,7 +461,7 @@
         private ASTAbstractExpressionNode ParseLogicalAndExpression()
         {
             ASTAbstractExpressionNode exp = ParseBitwiseOrExpression();
-            while (PeekSymbol("&&"))
+            while (PeekSymbol(Symbol.SymbolTypes.LOGICAL_AND))
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseBitwiseOrExpression();
@@ -473,7 +473,7 @@
         private ASTAbstractExpressionNode ParseLogicalOrExpression()
         {
             ASTAbstractExpressionNode exp = ParseLogicalAndExpression();
-            while (PeekSymbol("||"))
+            while (PeekSymbol(Symbol.SymbolTypes.LOGICAL_OR))
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseLogicalAndExpression();
@@ -485,11 +485,11 @@
         private ASTAbstractExpressionNode ParseConditionalExpression()
         {
             ASTAbstractExpressionNode exp = ParseLogicalOrExpression();
-            if (PeekSymbol("?"))
+            if (PeekSymbol(Symbol.SymbolTypes.QUESTION))
             {
-                ExpectSymbol("?");
+                ExpectSymbol(Symbol.SymbolTypes.QUESTION);
                 ASTAbstractExpressionNode ifBranch = ParseExpression();
-                ExpectSymbol(":");
+                ExpectSymbol(Symbol.SymbolTypes.COLON);
                 ASTAbstractExpressionNode elseBranch = ParseConditionalExpression();
                 return new ASTConditionalExpressionNode(exp, ifBranch, elseBranch);
             }
@@ -501,7 +501,7 @@
 
         private ASTAbstractExpressionNode ParseExpression()
         {
-            if (Peek() is Identifier && Peek(1) is Symbol symbol && symbol.Value == "=")
+            if (Peek() is Identifier && Peek(1) is Symbol symbol && symbol.SymbolType == Symbol.SymbolTypes.EQUALS)
             {
                 return ParseAssignment();
             }
@@ -514,7 +514,7 @@
         private ASTAssignNode ParseAssignment()
         {
             ExpectIdentifier(out string id, out int line, out int column);
-            ExpectSymbol("=");
+            ExpectSymbol(Symbol.SymbolTypes.EQUALS);
             ASTAbstractExpressionNode expression = ParseExpression();
             return new ASTAssignNode(id, expression) { LineNumber = line, LineCharacter = column };
         }
@@ -557,12 +557,12 @@
             return tokens[index + forward];
         }
 
-        private bool PeekSymbol(string value)
+        private bool PeekSymbol(Symbol.SymbolTypes type)
         {
-            return Peek() is Symbol symbol && symbol.Value == value;
+            return Peek() is Symbol symbol && symbol.SymbolType == type;
         }
 
-        private void ExpectSymbol(string value)
+        private void ExpectSymbol(Symbol.SymbolTypes value)
         {
             if (PeekSymbol(value))
             {
@@ -570,7 +570,7 @@
             }
             else
             {
-                Fail(Token.TokenType.SYMBOL, value);
+                Fail(Token.TokenType.SYMBOL, value.ToString());
             }
         }
 
