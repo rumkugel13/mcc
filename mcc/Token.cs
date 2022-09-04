@@ -2,14 +2,12 @@
 {
     class Keyword : Token
     {
-        public string Value = "";
         public KeywordTypes KeywordType;
 
-        public Keyword(string keyword)
+        public Keyword(KeywordTypes keywordType)
         {
             Type = TokenType.KEYWORD;
-            Value = keyword;
-            KeywordType = Keywords[keyword];
+            KeywordType = keywordType;
         }
 
         public static Dictionary<string, KeywordTypes> Keywords = new Dictionary<string, KeywordTypes>
@@ -40,7 +38,7 @@
 
         public override string ToString()
         {
-            return base.ToString() + " " + Value;
+            return base.ToString() + " " + KeywordType.ToString().ToLower();
         }
     }
 

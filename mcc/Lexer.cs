@@ -78,8 +78,8 @@ namespace mcc
 
                 string temp = stream.Substring(start, streamIndex - start);
 
-                if (Keyword.Keywords.ContainsKey(temp))
-                    return new Keyword(temp) { Line = line, Column = column };
+                if (Keyword.Keywords.TryGetValue(temp, out var value))
+                    return new Keyword(value) { Line = line, Column = column };
                 else
                     return new Identifier(temp) { Line = line, Column = column };
             }
