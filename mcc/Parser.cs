@@ -557,6 +557,11 @@
             return tokens[index + forward];
         }
 
+        private bool PeekSymbol(string value)
+        {
+            return Peek() is Symbol symbol && symbol.Value == value;
+        }
+
         private void ExpectSymbol(string value)
         {
             if (PeekSymbol(value))
@@ -569,14 +574,27 @@
             }
         }
 
-        private bool PeekSymbol(string value)
-        {
-            return Peek() is Symbol symbol && symbol.Value == value;
-        }
-
         private bool PeekUnarySymbol()
         {
             return Peek() is Symbol symbol && Symbol.Unary.Contains(symbol.Value);
+        }
+
+        private void ExpectUnarySymbol(out char symbol)
+        {
+            symbol = char.MinValue;
+            if (PeekUnarySymbol())
+            {
+                symbol = ((Symbol)Next()).Value[0];
+            }
+            else
+            {
+                Fail("Expected Unary Operator");
+            }
+        }
+
+        private bool PeekBinarySymbol()
+        {
+            return Peek() is Symbol symbol && Symbol.Binary.Contains(symbol.Value);
         }
 
         private void ExpectBinarySymbol(out string value)
@@ -590,11 +608,6 @@
             {
                 Fail("Expected Binary Operator");
             }
-        }
-
-        private bool PeekBinarySymbol()
-        {
-            return Peek() is Symbol symbol && Symbol.Binary.Contains(symbol.Value);
         }
 
         private void ExpectKeyword(Keyword.KeywordTypes type)
@@ -668,19 +681,6 @@
             else
             {
                 Fail(Token.TokenType.INTEGER);
-            }
-        }
-
-        private void ExpectUnarySymbol(out char symbol)
-        {
-            symbol = char.MinValue;
-            if (PeekUnarySymbol())
-            {
-                symbol = ((Symbol)Next()).Value[0];
-            }
-            else
-            {
-                Fail("Expected Unary Operator");
             }
         }
 

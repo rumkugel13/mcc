@@ -77,44 +77,79 @@
     class Symbol : Token
     {
         public string Value;
+        SymbolTypes SymbolType;
 
         public Symbol(string symbol)
         {
             Type = TokenType.SYMBOL;
             Value = symbol;
+            SymbolType = Symbols[symbol];
         }
 
-        public static HashSet<string> Symbols = new HashSet<string>
+        public enum SymbolTypes
         {
-            "{",
-            "}",
-            "(",
-            ")",
-            ";",
-            "-",
-            "~",
-            "!",
-            "+",
-            "*",
-            "/",
-            "&",
-            "|",
-            "=",
-            "<",
-            ">",
-            "%",
-            "^",
-            "?",
-            ":",
-            ",",
-            "&&",
-            "||",
-            "==",
-            "!=",
-            "<=",
-            ">=",
-            "<<",
-            ">>",
+            OPEN_BRACKETS,
+            CLOSE_BRACKETS,
+            OPEN_PARENTHESIS,
+            CLOSE_PARENTHESIS,
+            SEMICOLON,
+            MINUS,
+            BIT_NEGATE,
+            EXCLAMATION,
+            PLUS,
+            MULTIPLICATION,
+            DIVISION,
+            BIT_AND,
+            BIT_OR,
+            EQUALS,
+            LESS_THAN,
+            GREATER_THAN,
+            REMAINDER,
+            BIT_XOR,
+            QUESTION,
+            COLON,
+            COMMA,
+            LOGICAL_AND,
+            LOGICAL_OR,
+            DOUBLE_EQUALS,
+            NOT_EQUALS,
+            LESS_EQUAL,
+            GREATER_EQUAL,
+            SHIFT_LEFT,
+            SHIFT_RIGHT,        
+        }
+
+        public static Dictionary<string, SymbolTypes> Symbols = new Dictionary<string, SymbolTypes>
+        {
+            { "{", SymbolTypes.OPEN_BRACKETS },
+            { "}", SymbolTypes.CLOSE_BRACKETS },
+            { "(", SymbolTypes.OPEN_PARENTHESIS },
+            { ")", SymbolTypes.CLOSE_PARENTHESIS },
+            { ";", SymbolTypes.SEMICOLON },
+            { "-", SymbolTypes.MINUS },
+            { "~", SymbolTypes.BIT_NEGATE },
+            { "!", SymbolTypes.EXCLAMATION },
+            { "+", SymbolTypes.PLUS },
+            { "*", SymbolTypes.MULTIPLICATION },
+            { "/", SymbolTypes.DIVISION },
+            { "&", SymbolTypes.BIT_AND },
+            { "|", SymbolTypes.BIT_OR },
+            { "=", SymbolTypes.EQUALS },
+            { "<", SymbolTypes.LESS_THAN },
+            { ">", SymbolTypes.GREATER_THAN },
+            { "%", SymbolTypes.REMAINDER },
+            { "^", SymbolTypes.BIT_XOR },
+            { "?", SymbolTypes.QUESTION },
+            { ":", SymbolTypes.COLON },
+            { ",", SymbolTypes.COMMA },
+            { "&&", SymbolTypes.LOGICAL_AND },
+            { "||", SymbolTypes.LOGICAL_OR },
+            { "==", SymbolTypes.DOUBLE_EQUALS },
+            { "!=", SymbolTypes.NOT_EQUALS },
+            { "<=", SymbolTypes.LESS_EQUAL },
+            { ">=", SymbolTypes.GREATER_EQUAL },
+            { "<<", SymbolTypes.SHIFT_LEFT },
+            { ">>", SymbolTypes.SHIFT_RIGHT },
         };
 
         public static HashSet<string> Unary = new HashSet<string>

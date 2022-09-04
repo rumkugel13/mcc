@@ -49,10 +49,10 @@ namespace mcc
 
             Advance();
 
-            if (Symbol.Symbols.Contains(currentChar.ToString()))
+            if (Symbol.Symbols.ContainsKey(currentChar.ToString()))
             {
                 // symbol
-                if (HasMoreTokens() && Symbol.Symbols.Contains(stream[streamIndex].ToString()) && Symbol.Symbols.Contains(stream.Substring(start, 2)))
+                if (HasMoreTokens() && Symbol.Symbols.ContainsKey(stream[streamIndex].ToString()) && Symbol.Symbols.ContainsKey(stream.Substring(start, 2)))
                 {
                     Advance();
                     return new Symbol(stream.Substring(start, 2)) { Line = line, Column = column };
