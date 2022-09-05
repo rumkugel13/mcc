@@ -241,26 +241,22 @@ namespace mcc
         {
             if (dec.IsGlobal)
             {
-                GenerateGlobalDeclaration(dec);
-                return;
-            }
-
-            if (dec.Initializer is not ASTNoExpressionNode)
-            {
-                Generate(dec.Initializer);
-                backend.StoreLocalVariable(dec.Offset);
+                if (dec.Initializer is not ASTNoExpressionNode)
+                {
+                    backend.GenerateGlobalVariable(dec.Name, dec.GlobalValue);
+                }
             }
             else
             {
-                backend.InitializeLocalVariable(dec.Offset);
-            }
-        }
-
-        private void GenerateGlobalDeclaration(ASTDeclarationNode dec)
-        {
-            if (dec.Initializer is not ASTNoExpressionNode)
-            {
-                backend.GenerateGlobalVariable(dec.Name, dec.GlobalValue);
+                if (dec.Initializer is not ASTNoExpressionNode)
+                {
+                    Generate(dec.Initializer);
+                    backend.StoreLocalVariable(dec.Offset);
+                }
+                else
+                {
+                    backend.InitializeLocalVariable(dec.Offset);
+                }
             }
         }
 
