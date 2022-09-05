@@ -199,40 +199,20 @@
 
         private ASTStatementNode ParseStatement()
         {
-            if (PeekKeyword(Keyword.KeywordTypes.RETURN))
+            if (Peek() is Keyword keyword)
             {
-                return ParseReturn();
-            }
-            else if (PeekKeyword(Keyword.KeywordTypes.IF))
-            {
-                return ParseCondition();
-            }
-            else if (PeekKeyword(Keyword.KeywordTypes.DO))
-            {
-                return ParseDoWhile();
-            }
-            else if (PeekKeyword(Keyword.KeywordTypes.FOR))
-            {
-                if (Peek(2) is Keyword kw && kw.KeywordType == Keyword.KeywordTypes.INT)
+                switch (keyword.KeywordType)
                 {
-                    return ParseForDeclaration();
+                    case Keyword.KeywordTypes.RETURN: return ParseReturn();
+                    case Keyword.KeywordTypes.IF: return ParseCondition();
+                    case Keyword.KeywordTypes.FOR:
+                        return Peek(2) is Keyword kw && kw.KeywordType == Keyword.KeywordTypes.INT ? ParseForDeclaration() : ParseFor();
+                    case Keyword.KeywordTypes.WHILE: return ParseWhile();
+                    case Keyword.KeywordTypes.DO: return ParseDoWhile();
+                    case Keyword.KeywordTypes.BREAK: return ParseBreak();
+                    case Keyword.KeywordTypes.CONTINUE: return ParseContinue();
+                    default: Fail("Unexpected keyword " + keyword.KeywordType); return new ASTNoStatementNode();
                 }
-                else
-                {
-                    return ParseFor();
-                }
-            }
-            else if (PeekKeyword(Keyword.KeywordTypes.WHILE))
-            {
-                return ParseWhile();
-            }
-            else if (PeekKeyword(Keyword.KeywordTypes.BREAK))
-            {
-                return ParseBreak();
-            }
-            else if (PeekKeyword(Keyword.KeywordTypes.CONTINUE))
-            {
-                return ParseContinue();
             }
             else if (PeekSymbol(Symbol.SymbolTypes.OPEN_BRACES))
             {
@@ -610,6 +590,11 @@
             }
         }
 
+        private bool PeekKeyword(Keyword.KeywordTypes type)
+        {
+            return Peek() is Keyword keyword && keyword.KeywordType == type;
+        }
+
         private void ExpectKeyword(Keyword.KeywordTypes type)
         {
             if (PeekKeyword(type))
@@ -635,11 +620,6 @@
             {
                 Fail(Token.TokenType.KEYWORD, type.ToString());
             }
-        }
-
-        private bool PeekKeyword(Keyword.KeywordTypes type)
-        {
-            return Peek() is Keyword keyword && keyword.KeywordType == type;
         }
 
         private void ExpectIdentifier(out string id)
