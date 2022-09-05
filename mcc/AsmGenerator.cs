@@ -8,6 +8,7 @@ namespace mcc
         IBackend backend;
 
         int labelCounter = 0;
+        string functionScope;
         const string lbLoopBegin = ".lb";
         const string lbLoopContinue = ".lc";
         const string lbLoopPost = ".lp";
@@ -15,6 +16,7 @@ namespace mcc
         const string lbJump = ".j";
         const string lbJumpEqual = ".je";
         const string lbJumpNotEqual = ".jne";
+        const string lbEndFunction = ".end_";
 
         const int pointerSize = 8;
 
@@ -325,8 +327,15 @@ namespace mcc
         private void GenerateReturn(ASTReturnNode ret)
         {
             Generate(ret.Expression);
-            // todo: jump to epilogue, do not generate epilogue multiple times
-            backend.FunctionEpilogue();
+            if (ret.IsLastReturn)
+            {
+                backend.Label(lbEndFunction + functionScope);
+                backend.FunctionEpilogue();
+            }
+            else
+            {
+                backend.Jump(lbEndFunction + functionScope);
+            }
         }
 
         private void GenerateExpression(ASTExpressionNode exp)
@@ -338,6 +347,7 @@ namespace mcc
         {
             if (function.IsDefinition)
             {
+                functionScope = function.Name;
                 backend.FunctionPrologue(function.Name);
                 backend.AllocateMemory(function.BytesToAllocate);
 
@@ -350,6 +360,7 @@ namespace mcc
                 {
                     // return 0 if no return statement found
                     backend.IntegerConstant(0);
+                    backend.Label(lbEndFunction + function.Name);
                     backend.FunctionEpilogue();
                 }
             }
