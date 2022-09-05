@@ -446,9 +446,17 @@ namespace mcc
             foreach (var blockItem in function.BlockItems)
             {
                 Validate(blockItem);
-                if (blockItem is ASTReturnNode)
+                if (blockItem is ASTReturnNode ret)
                 {
+                    if (containsReturn)
+                    {
+                        Fail("Duplicate return statement", ret);
+                        return;
+                    }
+
                     containsReturn = true;
+                    ret.IsLastReturn = true;
+                    // todo: everything after this is unreachable code
                 }
             }
 
@@ -492,6 +500,11 @@ namespace mcc
         private void FailLoopScope(string msg, ASTNode node)
         {
             throw new ASTLoopScopeException($"Fail: {msg} at Line: {node.LineNumber}, Column: {node.LineCharacter}");
+        }
+
+        private void Fail(string msg, ASTNode node)
+        {
+            throw new ASTFunctionException($"Fail: {msg} at Line: {node.LineNumber}, Column: {node.LineCharacter}");
         }
     }
 }
