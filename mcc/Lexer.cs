@@ -16,7 +16,7 @@ namespace mcc
             List<Token> tokens = new();
             while (HasMoreTokens())
             {
-                if (char.IsWhiteSpace(Peek()))
+                if (char.IsWhiteSpace(stream[streamIndex]))
                 {
                     if (stream[streamIndex] == '\n')
                     {
@@ -27,9 +27,9 @@ namespace mcc
                         Advance();
                     }
                 }
-                else if (Peek().Equals('/') && (Peek(1).Equals('/') || Peek(1).Equals('*')))
+                else if (stream[streamIndex].Equals('/') && (streamIndex + 1 < stream.Length) && (stream[streamIndex + 1].Equals('/') || stream[streamIndex + 1].Equals('*')))
                 {
-                    if (Peek(1).Equals('/'))
+                    if (stream[streamIndex + 1].Equals('/'))
                     {
                         SkipComment();
                     }
@@ -103,60 +103,44 @@ namespace mcc
 
         private void SkipMultiLineComment()
         {
-            if (stream[streamIndex] == '/' && HasMoreTokens() && stream[streamIndex + 1] == '*')
+            // multiline comment
+            while (HasMoreTokens())
             {
-                // multiline comment
-                while (HasMoreTokens())
+                if (stream[streamIndex] == '\n')
                 {
-                    if (stream[streamIndex] == '\n')
+                    AdvanceLine();
+                }
+                else if (stream[streamIndex] == '*' && HasMoreTokens())
+                {
+                    Advance();
+                    if (stream[streamIndex] == '/')
                     {
-                        AdvanceLine();
-                    }
-                    else if (stream[streamIndex] == '*' && HasMoreTokens())
-                    {
+                        // end of multiline comment
                         Advance();
-                        if (stream[streamIndex] == '/')
-                        {
-                            // end of multiline comment
-                            Advance();
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        Advance();
+                        break;
                     }
                 }
+                else
+                {
+                    Advance();
+                }
+            }
 
-                if (!HasMoreTokens())
-                {
-                    Fail("Fail: Missing ending of multiline comment");
-                }
+            if (!HasMoreTokens())
+            {
+                Fail("Fail: Missing ending of multiline comment");
             }
         }
 
         private void SkipComment()
         {
-            if (stream[streamIndex] == '/' && HasMoreTokens() && stream[streamIndex + 1] == '/')
+            // comment
+            while (HasMoreTokens() && stream[streamIndex] != '\n')
             {
-                // comment
-                while (HasMoreTokens() && stream[streamIndex] != '\n')
-                {
-                    Advance();
-                }
-
-                AdvanceLine();
-            }
-        }
-
-        private char Peek(int forward = 0)
-        {
-            if (!(streamIndex + forward < stream.Length))
-            {
-                Fail("Missing Tokens");
+                Advance();
             }
 
-            return stream[streamIndex + forward];
+            AdvanceLine();
         }
 
         private void AdvanceLine()
