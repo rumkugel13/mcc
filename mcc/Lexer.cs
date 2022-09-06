@@ -73,7 +73,48 @@ namespace mcc
             }
             else if (char.IsDigit(currentChar))
             {
-                // integer
+                if (currentChar.Equals('0') && HasMoreTokens() && stream[streamIndex].Equals('x'))
+                {
+                    // hex number
+                    Advance();  // skip 'x'
+                    while (HasMoreTokens() && (char.IsDigit(stream[streamIndex]) 
+                        || (stream[streamIndex] >= 'a' && stream[streamIndex] <= 'f') 
+                        || (stream[streamIndex] >= 'A' && stream[streamIndex] <= 'F')))
+                    {
+                        Advance();
+                    }
+
+                    string hexString = stream.Substring(start + 2, streamIndex - start - 2);
+                    if (string.IsNullOrEmpty(hexString))
+                    {
+                        Fail("Invalid hex number at Line: " + line + ", Column: " + column);
+                        return new UnknownToken();
+                    }
+
+                    int hexNum = Convert.ToInt32(hexString, 16);
+                    return new Integer(hexNum) { Line = line, Column = column };
+                }
+                else if (currentChar.Equals('0') && HasMoreTokens() && stream[streamIndex].Equals('b'))
+                {
+                    // binary number
+                    Advance();  // skip 'b'
+                    while (HasMoreTokens() && (stream[streamIndex].Equals('0') || stream[streamIndex].Equals('1')))
+                    {
+                        Advance();
+                    }
+
+                    string binString = stream.Substring(start + 2, streamIndex - start - 2);
+                    if (string.IsNullOrEmpty(binString))
+                    {
+                        Fail("Invalid binary number at Line: " + line + ", Column: " + column);
+                        return new UnknownToken();
+                    }
+
+                    int binNum = Convert.ToInt32(binString, 2);
+                    return new Integer(binNum) { Line = line, Column = column };
+                }
+
+                // decimal integer
                 while (HasMoreTokens() && char.IsDigit(stream[streamIndex]))
                     Advance();
 
@@ -96,7 +137,7 @@ namespace mcc
             }
             else
             {
-                Fail("Fail: Unkown Character or Symbol: " + currentChar);
+                Fail("Unkown Character or Symbol: " + currentChar);
                 return new UnknownToken();
             }
         }
@@ -128,7 +169,7 @@ namespace mcc
 
             if (!HasMoreTokens())
             {
-                Fail("Fail: Missing ending of multiline comment");
+                Fail("Missing ending of multiline comment");
             }
         }
 
@@ -159,7 +200,7 @@ namespace mcc
         private void Fail(string message)
         {
             //Console.Error.WriteLine(message);
-            throw new UnknownTokenException(message);
+            throw new UnknownTokenException("Fail: " + message);
         }
     }
 }
