@@ -81,7 +81,7 @@ namespace mcc
 
                 return new Integer(temp) { Line = line, Column = column };
             }
-            else if (char.IsLetterOrDigit(currentChar))
+            else if (char.IsLetter(currentChar) || currentChar.Equals('_'))
             {
                 // keyword or identifier
                 while (HasMoreTokens() && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')))
