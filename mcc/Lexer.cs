@@ -16,7 +16,32 @@ namespace mcc
             List<Token> tokens = new();
             while (HasMoreTokens())
             {
-                tokens.Add(GetNextToken());
+                if (char.IsWhiteSpace(Peek()))
+                {
+                    if (stream[streamIndex] == '\n')
+                    {
+                        AdvanceLine();
+                    }
+                    else
+                    {
+                        Advance();
+                    }
+                }
+                else if (Peek().Equals('/') && (Peek(1).Equals('/') || Peek(1).Equals('*')))
+                {
+                    if (Peek(1).Equals('/'))
+                    {
+                        SkipComment();
+                    }
+                    else
+                    {
+                        SkipMultiLineComment();
+                    }
+                }
+                else
+                {
+                    tokens.Add(GetNextToken());
+                }
             }
             return tokens;
         }
@@ -28,20 +53,6 @@ namespace mcc
 
         private Token GetNextToken()
         {
-            if (!HasMoreTokens())
-            {
-                return new EndToken();
-            }
-
-            bool skipped;
-            do
-            {
-                SkipWhiteSpace();
-                skipped = SkipComment();
-                skipped |= SkipMultiLineComment();
-            }
-            while (skipped);
-
             char currentChar = stream[streamIndex];
             int line = currentLine;
             int column = currentColumn;
@@ -90,7 +101,7 @@ namespace mcc
             }
         }
 
-        private bool SkipMultiLineComment()
+        private void SkipMultiLineComment()
         {
             if (stream[streamIndex] == '/' && HasMoreTokens() && stream[streamIndex + 1] == '*')
             {
@@ -99,64 +110,60 @@ namespace mcc
                 {
                     if (stream[streamIndex] == '\n')
                     {
-                        streamIndex++;
-                        currentLine++;
-                        currentColumn = 1;
+                        AdvanceLine();
                     }
                     else if (stream[streamIndex] == '*' && HasMoreTokens())
                     {
                         Advance();
                         if (stream[streamIndex] == '/')
                         {
+                            // end of multiline comment
                             Advance();
-                            SkipWhiteSpace();
                             break;
                         }
                     }
                     else
+                    {
                         Advance();
+                    }
                 }
 
                 if (!HasMoreTokens())
                 {
                     Fail("Fail: Missing ending of multiline comment");
                 }
-                return true;
             }
-            return false;
         }
 
-        private bool SkipComment()
+        private void SkipComment()
         {
             if (stream[streamIndex] == '/' && HasMoreTokens() && stream[streamIndex + 1] == '/')
             {
                 // comment
                 while (HasMoreTokens() && stream[streamIndex] != '\n')
+                {
                     Advance();
-                SkipWhiteSpace();
-                return true;
-            }
+                }
 
-            return false;
+                AdvanceLine();
+            }
         }
 
-        private void SkipWhiteSpace()
+        private char Peek(int forward = 0)
         {
-            while (streamIndex < stream.Length - 1)
+            if (!(streamIndex + forward < stream.Length))
             {
-                if (stream[streamIndex] == '\n')
-                {
-                    streamIndex++;
-                    currentLine++;
-                    currentColumn = 1;
-                }
-                else if (char.IsWhiteSpace(stream[streamIndex]))
-                {
-                    Advance();
-                }
-                else
-                    break;
+                Fail("Missing Tokens");
             }
+
+            return stream[streamIndex + forward];
+        }
+
+        private void AdvanceLine()
+        {
+            streamIndex++;
+            currentLine++;
+            currentColumn = 1;
         }
 
         private void Advance()

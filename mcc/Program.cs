@@ -315,7 +315,7 @@ namespace mcc
 
         static IReadOnlyList<Token> Lex(string file)
         {
-            string content = string.Join("\n", File.ReadAllLines(file)).TrimEnd();
+            string content = string.Join("\n", File.ReadAllLines(file));
             Lexer lexer = new Lexer(content);
             return lexer.GetAllTokens();
         }
