@@ -150,7 +150,7 @@ namespace mcc
                     {
                         Console.WriteLine($"Comparing Results ... Expected: {expected}, Got: {got} " + (expected == got ? "OK" : "Fail"));
                         Interpret(sourceFile, out int interpreted);
-                        Console.WriteLine("Interpreted value = " + (interpreted < 0 ? (interpreted + 256) : interpreted));
+                        Console.WriteLine("Interpreted value = " + interpreted);
                         if (expected == got)
                             valid = true;
                     }
