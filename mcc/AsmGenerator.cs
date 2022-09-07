@@ -72,7 +72,9 @@ namespace mcc
         private void GenerateFunctionCall(ASTFunctionCallNode funCall)
         {
             // allocate space for arguments, 16 byte aligned
-            int allocated = backend.AllocateAtLeast(funCall.Arguments.Count * pointerSize);
+            int allocated = 0;
+            if (funCall.Arguments.Count * pointerSize > 0)
+                allocated = backend.AllocateAtLeast(funCall.Arguments.Count * pointerSize);
 
             // move arguments beginning at last argument, up the stack beginning at stack pointer into temp storage
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
@@ -85,12 +87,14 @@ namespace mcc
             backend.MoveArgsIntoRegisters(funCall.Arguments.Count);
 
             // pre deallocate temp memory, so that args on memory are in correct offset
-            backend.PreCallDeallocate(allocated, funCall.Arguments.Count);
+            if (allocated > 0)
+                backend.PreCallDeallocate(allocated, funCall.Arguments.Count);
 
             backend.CallFunction(funCall.Name);
 
             // post deallocate temp memory, we dont ned args on memory anymore
-            backend.PostCallDeallocate(allocated, funCall.Arguments.Count);
+            if (allocated > 0)
+                backend.PostCallDeallocate(allocated, funCall.Arguments.Count);
         }
 
         private void GenerateContinue(ASTContinueNode con)
@@ -345,7 +349,9 @@ namespace mcc
             {
                 functionScope = function.Name;
                 backend.FunctionPrologue(function.Name);
-                backend.AllocateMemory(function.BytesToAllocate);
+
+                if (function.BytesToAllocate > 0)
+                    backend.AllocateMemory(function.BytesToAllocate);
 
                 backend.MoveRegistersIntoMemory(function.Parameters.Count);
 
