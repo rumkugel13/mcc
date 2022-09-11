@@ -245,9 +245,9 @@ namespace mcc
         {
             if (dec.IsGlobal)
             {
-                if (dec.Initializer is not ASTNoExpressionNode)
+                if (dec.Initializer is ASTConstantNode constant)
                 {
-                    backend.GenerateGlobalVariable(dec.Name, dec.GlobalValue);
+                    backend.GenerateGlobalVariable(dec.Name, constant.Value);
                 }
             }
             else

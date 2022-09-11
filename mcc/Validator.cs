@@ -302,7 +302,6 @@ namespace mcc
                 else
                 {
                     Validate(dec.Initializer);
-                    dec.GlobalValue = ((ASTConstantNode)dec.Initializer).Value;
                     globalVarMap[dec.Name] = true;
                 }
             }

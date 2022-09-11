@@ -268,9 +268,9 @@
 
         private void InterpretGlobalDeclaration(ASTDeclarationNode dec)
         {
-            if (dec.Initializer is not ASTNoExpressionNode)
+            if (dec.Initializer is ASTConstantNode constant)
             {
-                globalVariables[dec.Name] = dec.GlobalValue;
+                globalVariables[dec.Name] = constant.Value;
             }
             else
             {

@@ -6,7 +6,6 @@ namespace mcc
         public string Name;
         public ASTAbstractExpressionNode Initializer;
         public bool IsGlobal;
-        public int GlobalValue;
         public int Offset;
 
         public ASTDeclarationNode(string id)
