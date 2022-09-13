@@ -10,6 +10,7 @@ namespace mcc
         {
             Value = value;
             Expression = expression;
+            this.IsConstantExpression = expression.IsConstantExpression;
         }
     }
 }

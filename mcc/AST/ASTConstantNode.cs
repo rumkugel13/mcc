@@ -8,6 +8,7 @@ namespace mcc
         public ASTConstantNode(int value)
         {
             Value = value;
+            this.IsConstantExpression = true;
         }
     }
 }

@@ -12,6 +12,7 @@ namespace mcc
             Value = value;
             ExpressionLeft = expLeft;
             ExpressionRight = expRight;
+            this.IsConstantExpression = expLeft.IsConstantExpression && expRight.IsConstantExpression;
         }
     }
 }
