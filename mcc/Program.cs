@@ -138,27 +138,28 @@ namespace mcc
 
         static bool TestOne(string sourceFile)
         {
-            bool valid = false;
             if (Compile(sourceFile))
             {
-                if (!silent) Console.Write("Running gcc ... ");
+                if (!silent) Console.Write("Compiling for reference ... ");
                 GccCompile(sourceFile);
                 if (!silent) Console.WriteLine("OK");
-                if (TryGetExitCode(sourceFile.Replace(".c", ".out"), out int expected))
+                string outPath = sourceFile.Replace(".c", ".out");
+                if (TryGetExitCode(outPath, out int expected))
                 {
-                    if (TryGetExitCode(sourceFile.Replace(".c", Exe), out int got))
+                    File.Delete(outPath);
+                    string exePath = sourceFile.Replace(".c", Exe);
+                    if (TryGetExitCode(exePath, out int got))
                     {
+                        File.Delete(exePath);
                         Console.WriteLine($"Comparing Results ... Expected: {expected}, Got: {got} " + (expected == got ? "OK" : "Fail"));
                         Interpret(sourceFile, out int interpreted);
                         Console.WriteLine("Interpreted value = " + interpreted);
                         if (expected == got)
-                            valid = true;
+                            return true;
                     }
                 }
             }
-            File.Delete(sourceFile.Replace(".c", Exe));
-            File.Delete(sourceFile.Replace(".c", ".out"));
-            return valid;
+            return false;
         }
 
         static bool TryGetExitCode(string file, out int exitCode)
