@@ -17,6 +17,12 @@ namespace mcc
 
         public void TestAll(string stage)
         {
+            if (!Directory.Exists(stage))
+            {
+                Console.WriteLine("Unknown folder: " + stage);
+                return;
+            }
+
             Console.WriteLine("Testing all in " + stage);
             string validPath = Path.Combine(stage, "valid");
             string invalidPath = Path.Combine(stage, "invalid");
@@ -43,6 +49,12 @@ namespace mcc
 
         public bool TestOne(string sourceFile)
         {
+            if (!File.Exists(sourceFile))
+            {
+                Console.WriteLine("Unknown file: " + sourceFile);
+                return false;
+            }
+
             if (Compile(sourceFile))
             {
                 if (!this.Silent) Console.Write("Compiling for reference ... ");

@@ -5,7 +5,7 @@ namespace mcc
 {
     internal class Program
     {
-        static string VersionString = "mcc v0.16";
+        static readonly string VersionString = "mcc v0.16";
 
         static void Main(string[] args)
         {
@@ -31,7 +31,7 @@ namespace mcc
                         string filePath = args[0];
                         engine.Compile(filePath);
                     }
-                    else if (args[0].Equals("-v"))
+                    else if (args[0].Equals("-v") || args[0].Equals("--version"))
                     {
                         PrintVersion();
                     }
@@ -39,53 +39,37 @@ namespace mcc
                 case 2:
                     string argument = args[0];
                     string value = args[1];
+                    engine.Silent = false;
 
-                    if (argument.Equals("-t"))
+                    switch (argument)
                     {
-                        engine.Silent = false;
-
-                        string path = value;
-                        if (path.EndsWith(".c"))
-                        {
-                            if (!File.Exists(path))
+                        case "-t":
+                        case "--test":
+                            if (value.EndsWith(".c"))
                             {
-                                Console.WriteLine("Unknown file: " + path);
-                                return;
+                                engine.TestOne(value);
                             }
-
-                            engine.TestOne(path);
-                        }
-                        else
-                        {
-                            if (!Directory.Exists(path))
+                            else
                             {
-                                Console.WriteLine("Unknown folder: " + path);
-                                return;
+                                engine.TestAll(value);
                             }
-
-                            engine.TestAll(path);
-                        }
-                    }
-                    else if (argument.Equals("-p"))
-                    {
-                        engine.Silent = false;
-                        string filePath = value;
-                        engine.Compile(filePath);
-                    }
-                    else if (argument.Equals("-d"))
-                    {
-                        engine.Silent = false;
-                        engine.Debug = true;
-                        string filePath = value;
-                        engine.Compile(filePath);
-                    }
-                    else if (argument.Equals("-i"))
-                    {
-                        engine.Silent = true;
-                        engine.Debug = false;
-                        string filePath = value;
-                        engine.Interpret(filePath, out int interpreted);
-                        Console.WriteLine(interpreted);
+                            break;
+                        case "-p":
+                        case "--verbose":
+                            engine.Compile(value);
+                            break;
+                        case "-d":
+                        case "--debug":
+                            engine.Debug = true;
+                            engine.Compile(value);
+                            break;
+                        case "-i":
+                        case "--interpret":
+                            engine.Silent = true;
+                            engine.Debug = false;
+                            engine.Interpret(value, out int interpreted);
+                            Console.WriteLine(interpreted);
+                            break;
                     }
 
                     break;
@@ -101,18 +85,18 @@ namespace mcc
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("Usage:");
-            builder.AppendLine("   mcc [-p | -d] <c-file>");
-            builder.AppendLine("   mcc -v");
-            builder.AppendLine("   mcc -t [<stage_folder> | <c-file>]");
-            builder.AppendLine("   mcc -i <c-file>");
+            builder.AppendLine("   mcc [-p | --verbose | -d | --debug] <source_file>");
+            builder.AppendLine("   mcc [-v | --version]");
+            builder.AppendLine("   mcc [-t | --test] [<stage_folder> | <source_file>]");
+            builder.AppendLine("   mcc [-i | --interpret] <source_file>");
             builder.AppendLine("Options:");
-            builder.AppendLine("   <c-file>             Compile c-file silently");
-            builder.AppendLine("   -p <c-file>          Compile c-file with Verbose output");
-            builder.AppendLine("   -d <c-file>          Compile c-file with Debug output");
-            builder.AppendLine("   -v                   Print Version");
-            builder.AppendLine("   -t <stage_folder>    Test c-files in stage folder");
-            builder.AppendLine("   -t <c-file>          Test single c-file");
-            builder.AppendLine("   -i <c-file>          Interpret single c-file");
+            builder.AppendLine("   <source_file>                    Compile source file silently");
+            builder.AppendLine("   [-p | --verbose] <source_file>   Compile source file with Verbose output");
+            builder.AppendLine("   [-d | --debug] <source_file>     Compile source file with Debug output");
+            builder.AppendLine("   [-v | --version]                 Print Version");
+            builder.AppendLine("   [-t | --test] <stage_folder>     Test source files in stage folder");
+            builder.AppendLine("   [-t | --test] <source_file>      Test single source file");
+            builder.AppendLine("   [-i | --interpret] <source_file> Interpret single source file");
             Console.Write(builder.ToString());
         }
     }
