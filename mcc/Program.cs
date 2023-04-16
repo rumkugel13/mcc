@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using mcc.Backends;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace mcc
@@ -10,13 +12,20 @@ namespace mcc
         static string VersionString = "mcc v0.16";
         static string Exe = ".exe";
 
+        static Architecture targetArch = Architecture.X64;
+        static OSPlatform targetOS = OSPlatform.Windows;
+
         static void Main(string[] args)
         {
             if (OperatingSystem.IsLinux())
             {
                 Exe = "";
+                targetOS = OSPlatform.Linux;
             }
 
+            targetArch = RuntimeInformation.OSArchitecture;
+
+            // todo: add -target option
             switch (args.Length)
             {
                 case 0:
@@ -249,7 +258,7 @@ namespace mcc
 
                 //nodegenerator
                 if (!silent) Console.Write("Generating Assembly ... ");
-                string assembly = GenerateFromASTNode(program);
+                string assembly = GenerateAssemblyFromASTNode(program);
                 if (!silent) Console.WriteLine("OK");
                 if (!silent && debug) PrintAssembly(assembly);
 
@@ -327,12 +336,20 @@ namespace mcc
             return parser.ParseProgram();
         }
 
-        static string GenerateFromASTNode(ASTNode program)
+        static string GenerateAssemblyFromASTNode(ASTNode program)
         {
-            AsmGenerator generator = new AsmGenerator(program);
-            return System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? generator.GenerateArm64()
-                : (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64 ? generator.GenerateX64() 
-                : string.Empty);
+            IBackend backend;
+            switch (targetArch)
+            {
+                case Architecture.X64:
+                    backend = new X64Backend(targetOS); break;
+                case Architecture.Arm64:
+                    backend = new Arm64Backend(targetOS); break;
+                default: throw new NotSupportedException("Target Architecture " + targetArch + " not supported.");
+            }
+
+            AsmGenerator generator = new AsmGenerator(program, backend);
+            return generator.Generate();
         }
 
         static void PrintFromASTNode(ASTNode program)

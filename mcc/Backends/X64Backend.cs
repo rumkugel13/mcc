@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.InteropServices;
+using System.Text;
 
 namespace mcc.Backends
 {
@@ -13,6 +14,13 @@ namespace mcc.Backends
 
         int pushCounter = 0;
         const int pointerSize = 8;
+
+        OSPlatform targetOS;
+
+        public X64Backend(OSPlatform os)
+        {
+            this.targetOS = os;
+        }
 
         public string GetAssembly()
         {
@@ -121,7 +129,7 @@ namespace mcc.Backends
             }
 
             // make sure we allocate at least enough for shadow space on windows
-            if (OperatingSystem.IsWindows())
+            if (targetOS == OSPlatform.Windows)
             {
                 allocate = Math.Max(allocate, 4 * pointerSize);
             }
@@ -133,8 +141,8 @@ namespace mcc.Backends
 
         public void MoveArgsIntoRegisters(int argCount)
         {
-            string[] argRegs4 = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
-            //string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
+            string[] argRegs4 = targetOS == OSPlatform.Linux ? argRegister4B : argRegisterWin4B;
+            //string[] argRegs = targetOS == OSPlatform.Linux ? argRegister8B : argRegisterWin8B;
             int regsUsed = Math.Min(argCount, argRegs4.Length);
 
             // move arguments into registers
@@ -146,8 +154,8 @@ namespace mcc.Backends
 
         public void MoveRegistersIntoMemory(int argCount)
         {
-            string[] argRegs4 = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
-            //string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
+            string[] argRegs4 = targetOS == OSPlatform.Linux ? argRegister4B : argRegisterWin4B;
+            //string[] argRegs = targetOS == OSPlatform.Linux ? argRegister8B : argRegisterWin8B;
             int regsUsed = Math.Min(argCount, argRegs4.Length);
 
             for (int i = 0; i < regsUsed; i++)
@@ -158,12 +166,12 @@ namespace mcc.Backends
 
         public void PreCallDeallocate(int allocated, int argCount)
         {
-            string[] argRegs4 = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
-            //string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
+            string[] argRegs4 = targetOS == OSPlatform.Linux ? argRegister4B : argRegisterWin4B;
+            //string[] argRegs = targetOS == OSPlatform.Linux ? argRegister8B : argRegisterWin8B;
             int regsUsed = Math.Min(argCount, argRegs4.Length);
 
             // on windows we need the shadow space (4 * pointerSize), so we dont deallocate before function call
-            if (!OperatingSystem.IsWindows())
+            if (targetOS != OSPlatform.Windows)
             {
                 if (argCount > regsUsed)
                 {
@@ -180,11 +188,11 @@ namespace mcc.Backends
 
         public void PostCallDeallocate(int allocated, int argCount)
         {
-            string[] argRegs4 = OperatingSystem.IsLinux() ? argRegister4B : argRegisterWin4B;
-            //string[] argRegs = OperatingSystem.IsLinux() ? argRegister8B : argRegisterWin8B;
+            string[] argRegs4 = targetOS == OSPlatform.Linux ? argRegister4B : argRegisterWin4B;
+            //string[] argRegs = targetOS == OSPlatform.Linux ? argRegister8B : argRegisterWin8B;
             int regsUsed = Math.Min(argCount, argRegs4.Length);
 
-            if (!OperatingSystem.IsWindows())
+            if (targetOS != OSPlatform.Windows)
             {
                 if (argCount > regsUsed)
                 {

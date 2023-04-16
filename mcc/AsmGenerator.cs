@@ -20,24 +20,31 @@ namespace mcc
 
         const int pointerSize = 8;
 
-        public AsmGenerator(ASTNode rootNode)
+        public AsmGenerator(ASTNode rootNode, IBackend backend)
         {
             this.rootNode = rootNode;
+            this.backend = backend;
         }
 
-        public string GenerateX64()
+        public string Generate()
         {
-            backend = new X64Backend();
             Generate(rootNode);
-            return backend.GetAssembly();
+            return this.backend.GetAssembly();
         }
 
-        public string GenerateArm64()
-        {
-            backend = new Arm64Backend();
-            Generate(rootNode);
-            return backend.GetAssembly();
-        }
+        //public string GenerateX64()
+        //{
+        //    backend = new X64Backend();
+        //    Generate(rootNode);
+        //    return backend.GetAssembly();
+        //}
+
+        //public string GenerateArm64()
+        //{
+        //    backend = new Arm64Backend();
+        //    Generate(rootNode);
+        //    return backend.GetAssembly();
+        //}
 
         private void Generate(ASTNode node)
         {
