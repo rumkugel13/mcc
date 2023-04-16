@@ -37,11 +37,14 @@ namespace mcc
                     }
                     break;
                 case 2:
-                    if (args[0].Equals("-t"))
+                    string argument = args[0];
+                    string value = args[1];
+
+                    if (argument.Equals("-t"))
                     {
                         engine.Silent = false;
 
-                        string path = args[1];
+                        string path = value;
                         if (path.EndsWith(".c"))
                         {
                             if (!File.Exists(path))
@@ -63,24 +66,24 @@ namespace mcc
                             engine.TestAll(path);
                         }
                     }
-                    else if (args[0].Equals("-p"))
+                    else if (argument.Equals("-p"))
                     {
                         engine.Silent = false;
-                        string filePath = args[1];
+                        string filePath = value;
                         engine.Compile(filePath);
                     }
-                    else if (args[0].Equals("-d"))
+                    else if (argument.Equals("-d"))
                     {
                         engine.Silent = false;
                         engine.Debug = true;
-                        string filePath = args[1];
+                        string filePath = value;
                         engine.Compile(filePath);
                     }
-                    else if (args[0].Equals("-i"))
+                    else if (argument.Equals("-i"))
                     {
                         engine.Silent = true;
                         engine.Debug = false;
-                        string filePath = args[1];
+                        string filePath = value;
                         engine.Interpret(filePath, out int interpreted);
                         Console.WriteLine(interpreted);
                     }
