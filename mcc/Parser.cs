@@ -222,7 +222,7 @@
             {
                 ASTAbstractExpressionNode exp = ParseOptionalExpression();
                 ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
-                return new ASTExpressionNode(exp);
+                return new ASTExpressionNode(exp) { LineNumber = exp.LineNumber, LineCharacter = exp.LineCharacter };
             }
         }
 

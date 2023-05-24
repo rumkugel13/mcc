@@ -199,7 +199,7 @@ namespace mcc
 
         private void Fail(string message)
         {
-            //Console.Error.WriteLine(message);
+            //Console.Error.WriteLine("Fail: " + message);
             throw new UnknownTokenException("Fail: " + message);
         }
     }

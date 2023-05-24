@@ -32,20 +32,6 @@ namespace mcc
             return this.backend.GetAssembly();
         }
 
-        //public string GenerateX64()
-        //{
-        //    backend = new X64Backend();
-        //    Generate(rootNode);
-        //    return backend.GetAssembly();
-        //}
-
-        //public string GenerateArm64()
-        //{
-        //    backend = new Arm64Backend();
-        //    Generate(rootNode);
-        //    return backend.GetAssembly();
-        //}
-
         private void Generate(ASTNode node)
         {
             switch (node)
