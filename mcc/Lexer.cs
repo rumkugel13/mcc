@@ -61,15 +61,15 @@ namespace mcc
 
             if (Symbol.Symbols.ContainsKey(currentChar.ToString()))
             {
-                return GetSymbol(currentChar);
+                return GetSymbol();
             }
             else if (char.IsDigit(currentChar))
             {
-                return GetNumber(currentChar);
+                return GetNumber();
             }
             else if (char.IsLetter(currentChar) || currentChar.Equals('_'))
             {
-                return GetKeywordOrIdentifier(currentChar);
+                return GetKeywordOrIdentifier();
             }
             else
             {
@@ -78,7 +78,7 @@ namespace mcc
             }
         }
 
-        private Token GetKeywordOrIdentifier(char currentChar)
+        private Token GetKeywordOrIdentifier()
                 {
             while (HasMoreTokens() && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')))
                     Advance();
@@ -91,9 +91,27 @@ namespace mcc
                 return new Identifier(temp) { Line = currentLine, Column = startColumn };
             }
 
-        private Token GetNumber(char currentChar)
+        private Token GetNumber()
+        {
+            char first = stream[tokenStart];
+            if (first.Equals('0') && HasMoreTokens() && stream[streamIndex].Equals('x'))
             {
-                if (currentChar.Equals('0') && HasMoreTokens() && stream[streamIndex].Equals('x'))
+                return GetHexNumber();
+            }
+            else if (first.Equals('0') && HasMoreTokens() && stream[streamIndex].Equals('b'))
+            {
+                return GetBinaryNumber();
+            }
+
+            // decimal integer
+            while (HasMoreTokens() && char.IsDigit(stream[streamIndex]))
+                Advance();
+
+            int temp = int.Parse(stream.Substring(tokenStart, streamIndex - tokenStart));
+            return new Integer(temp) { Line = currentLine, Column = startColumn };
+        }
+
+        private Token GetHexNumber()
                 {
                     // hex number
                     Advance();  // skip 'x'
@@ -114,7 +132,8 @@ namespace mcc
                     int hexNum = Convert.ToInt32(hexString, 16);
                 return new Integer(hexNum) { Line = currentLine, Column = startColumn };
                 }
-                else if (currentChar.Equals('0') && HasMoreTokens() && stream[streamIndex].Equals('b'))
+
+        private Token GetBinaryNumber()
                 {
                     // binary number
                     Advance();  // skip 'b'
@@ -134,16 +153,7 @@ namespace mcc
                 return new Integer(binNum) { Line = currentLine, Column = startColumn };
                 }
 
-                // decimal integer
-                while (HasMoreTokens() && char.IsDigit(stream[streamIndex]))
-                    Advance();
-
-            int temp = int.Parse(stream.Substring(tokenStart, streamIndex - tokenStart));
-
-            return new Integer(temp) { Line = currentLine, Column = startColumn };
-            }
-
-        private Symbol GetSymbol(char currentChar)
+        private Symbol GetSymbol()
         {
             if (HasMoreTokens() && Symbol.Symbols.ContainsKey(stream[streamIndex].ToString()) && Symbol.Symbols.ContainsKey(stream.Substring(tokenStart, 2)))
             {
@@ -153,7 +163,7 @@ namespace mcc
                 return new Symbol(stream.Substring(tokenStart, 2)) { Line = currentLine, Column = startColumn };
             }
             else
-                return new Symbol(currentChar.ToString()) { Line = currentLine, Column = startColumn };
+                return new Symbol(stream[tokenStart].ToString()) { Line = currentLine, Column = startColumn };
         }
 
         private void SkipMultiLineComment()
