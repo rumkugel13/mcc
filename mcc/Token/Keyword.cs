@@ -1,6 +1,6 @@
 ﻿namespace mcc
 {
-    class Keyword : Token
+    public class Keyword : Token
     {
         public KeywordTypes KeywordType;
 

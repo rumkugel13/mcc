@@ -1,6 +1,6 @@
 ﻿namespace mcc
 {
-    class Integer : Token
+    public class Integer : Token
     {
         public int Value;
 

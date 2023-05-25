@@ -1,10 +1,10 @@
 ﻿
 namespace mcc
 {
-    class Lexer
+    public class Lexer
     {
         private string stream;
-        private int streamIndex = 0, currentLine = 1, currentColumn = 1;
+        private int streamIndex = 0, currentLine = 1, currentColumn = 1, startColumn = 1, tokenStart = 1;
 
         public Lexer(string stream)
         {
@@ -54,24 +54,44 @@ namespace mcc
         private Token GetNextToken()
         {
             char currentChar = stream[streamIndex];
-            int line = currentLine;
-            int column = currentColumn;
-            int start = streamIndex;
+            startColumn = currentColumn;
+            tokenStart = streamIndex;
 
             Advance();
 
             if (Symbol.Symbols.ContainsKey(currentChar.ToString()))
             {
-                // symbol
-                if (HasMoreTokens() && Symbol.Symbols.ContainsKey(stream[streamIndex].ToString()) && Symbol.Symbols.ContainsKey(stream.Substring(start, 2)))
-                {
-                    Advance();
-                    return new Symbol(stream.Substring(start, 2)) { Line = line, Column = column };
-                }
-                else
-                    return new Symbol(currentChar.ToString()) { Line = line, Column = column };
+                return GetSymbol(currentChar);
             }
             else if (char.IsDigit(currentChar))
+            {
+                return GetNumber(currentChar);
+            }
+            else if (char.IsLetter(currentChar) || currentChar.Equals('_'))
+            {
+                return GetKeywordOrIdentifier(currentChar);
+            }
+            else
+            {
+                Fail("Unkown Character or Symbol: " + currentChar);
+                return new UnknownToken();
+            }
+        }
+
+        private Token GetKeywordOrIdentifier(char currentChar)
+                {
+            while (HasMoreTokens() && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')))
+                    Advance();
+
+            string temp = stream.Substring(tokenStart, streamIndex - tokenStart);
+
+            if (Keyword.Keywords.TryGetValue(temp, out var value))
+                return new Keyword(value) { Line = currentLine, Column = startColumn };
+                else
+                return new Identifier(temp) { Line = currentLine, Column = startColumn };
+            }
+
+        private Token GetNumber(char currentChar)
             {
                 if (currentChar.Equals('0') && HasMoreTokens() && stream[streamIndex].Equals('x'))
                 {
@@ -84,15 +104,15 @@ namespace mcc
                         Advance();
                     }
 
-                    string hexString = stream.Substring(start + 2, streamIndex - start - 2);
+                string hexString = stream.Substring(tokenStart + 2, streamIndex - tokenStart - 2);
                     if (string.IsNullOrEmpty(hexString))
                     {
-                        Fail("Invalid hex number at Line: " + line + ", Column: " + column);
+                    Fail("Invalid hex number at Line: " + currentLine + ", Column: " + startColumn);
                         return new UnknownToken();
                     }
 
                     int hexNum = Convert.ToInt32(hexString, 16);
-                    return new Integer(hexNum) { Line = line, Column = column };
+                return new Integer(hexNum) { Line = currentLine, Column = startColumn };
                 }
                 else if (currentChar.Equals('0') && HasMoreTokens() && stream[streamIndex].Equals('b'))
                 {
@@ -103,43 +123,37 @@ namespace mcc
                         Advance();
                     }
 
-                    string binString = stream.Substring(start + 2, streamIndex - start - 2);
+                string binString = stream.Substring(tokenStart + 2, streamIndex - tokenStart - 2);
                     if (string.IsNullOrEmpty(binString))
                     {
-                        Fail("Invalid binary number at Line: " + line + ", Column: " + column);
+                    Fail("Invalid binary number at Line: " + currentLine + ", Column: " + startColumn);
                         return new UnknownToken();
                     }
 
                     int binNum = Convert.ToInt32(binString, 2);
-                    return new Integer(binNum) { Line = line, Column = column };
+                return new Integer(binNum) { Line = currentLine, Column = startColumn };
                 }
 
                 // decimal integer
                 while (HasMoreTokens() && char.IsDigit(stream[streamIndex]))
                     Advance();
 
-                int temp = int.Parse(stream.Substring(start, streamIndex - start));
+            int temp = int.Parse(stream.Substring(tokenStart, streamIndex - tokenStart));
 
-                return new Integer(temp) { Line = line, Column = column };
+            return new Integer(temp) { Line = currentLine, Column = startColumn };
             }
-            else if (char.IsLetter(currentChar) || currentChar.Equals('_'))
+
+        private Symbol GetSymbol(char currentChar)
+        {
+            if (HasMoreTokens() && Symbol.Symbols.ContainsKey(stream[streamIndex].ToString()) && Symbol.Symbols.ContainsKey(stream.Substring(tokenStart, 2)))
             {
                 // keyword or identifier
                 while (HasMoreTokens() && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')))
                     Advance();
-
-                string temp = stream.Substring(start, streamIndex - start);
-
-                if (Keyword.Keywords.TryGetValue(temp, out var value))
-                    return new Keyword(value) { Line = line, Column = column };
-                else
-                    return new Identifier(temp) { Line = line, Column = column };
+                return new Symbol(stream.Substring(tokenStart, 2)) { Line = currentLine, Column = startColumn };
             }
             else
-            {
-                Fail("Unkown Character or Symbol: " + currentChar);
-                return new UnknownToken();
-            }
+                return new Symbol(currentChar.ToString()) { Line = currentLine, Column = startColumn };
         }
 
         private void SkipMultiLineComment()

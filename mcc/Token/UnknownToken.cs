@@ -1,6 +1,6 @@
 ﻿namespace mcc
 {
-    class UnknownToken : Token
+    public class UnknownToken : Token
     {
         public UnknownToken()
         {

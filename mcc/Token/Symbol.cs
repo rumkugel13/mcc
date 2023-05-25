@@ -1,6 +1,6 @@
 ﻿namespace mcc
 {
-    class Symbol : Token
+    public class Symbol : Token
     {
         public string Value;
         public SymbolTypes SymbolType;

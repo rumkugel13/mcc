@@ -1,6 +1,6 @@
 ﻿namespace mcc
 {
-    abstract class Token
+    public abstract class Token
     {
         public TokenType Type;
         public int Line, Column;

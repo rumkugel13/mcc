@@ -1,6 +1,6 @@
 ﻿namespace mcc
 {
-    class EndToken : Token
+    public class EndToken : Token
     {
         public EndToken()
         {

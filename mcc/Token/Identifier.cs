@@ -1,6 +1,6 @@
 ﻿namespace mcc
 {
-    class Identifier : Token
+    public class Identifier : Token
     {
         public string Value = "";
 
