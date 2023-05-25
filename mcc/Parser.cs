@@ -511,8 +511,8 @@
                 Fail("Missing Tokens");
             }
 
-            currLine = tokens[index].Line;
-            currColumn = tokens[index].Column;
+            currLine = tokens[index].Position.Line;
+            currColumn = tokens[index].Position.Column;
 
             return tokens[index++];
         }
@@ -668,7 +668,7 @@
         {
             failed = true;
             if (index == tokens.Count) index--;
-            throw new UnexpectedValueException("Fail: " + message + " at Line: " + tokens[index].Line + ", Column: " + tokens[index].Column);
+            throw new UnexpectedValueException("Fail: " + message + " at " + tokens[index].Position);
         }
 
         private void Fail(Token.TokenType expected)

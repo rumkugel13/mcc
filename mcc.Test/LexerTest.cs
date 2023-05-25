@@ -5,15 +5,15 @@ namespace mcc.Test
     {
         private const string stringReturn0 = "int main() {\r\n    return 0;\r\n}";
         private readonly IReadOnlyList<Token> tokensReturn0 = new List<Token>() {
-            new Keyword(Keyword.KeywordTypes.INT) { Line = 1, Column = 1 },
-            new Identifier("main"){ Line = 1, Column = 5 },
-            new Symbol("("){ Line = 1, Column = 9 },
-            new Symbol(")"){ Line = 1, Column = 10 },
-            new Symbol("{"){ Line = 1, Column = 12 },
-            new Keyword(Keyword.KeywordTypes.RETURN){ Line = 2, Column = 5 },
-            new Integer(0){ Line = 2, Column = 12 },
-            new Symbol(";"){ Line = 2, Column = 13 },
-            new Symbol("}"){ Line = 3, Column = 1 },
+            new Keyword(Keyword.KeywordTypes.INT) { Position = new Token.TokenPos { Line = 1, Column = 1 } },
+            new Identifier("main") { Position = new Token.TokenPos { Line = 1, Column = 5 } },
+            new Symbol("(") { Position = new Token.TokenPos { Line = 1, Column = 9 } },
+            new Symbol(")") { Position = new Token.TokenPos { Line = 1, Column = 10 } },
+            new Symbol("{") { Position = new Token.TokenPos { Line = 1, Column = 12 } },
+            new Keyword(Keyword.KeywordTypes.RETURN) { Position = new Token.TokenPos { Line = 2, Column = 5 } },
+            new Integer(0) { Position = new Token.TokenPos { Line = 2, Column = 12 } },
+            new Symbol(";") { Position = new Token.TokenPos { Line = 2, Column = 13 } },
+            new Symbol("}") { Position = new Token.TokenPos { Line = 3, Column = 1 } },
         };
 
         [TestMethod]

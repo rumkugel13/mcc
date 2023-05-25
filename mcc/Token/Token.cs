@@ -3,7 +3,16 @@
     public abstract class Token
     {
         public TokenType Type;
-        public int Line, Column;
+        public TokenPos Position;
+
+        public struct TokenPos
+        {
+            public int Line, Column;
+            public override string ToString()
+            {
+                return "Pos: " + Line + ":" + Column;
+            }
+        }
 
         public enum TokenType
         {
@@ -17,7 +26,7 @@
 
         public override string ToString()
         {
-            return "Line: " + Line + ", Column: " + Column + " | " + Type.ToString();
+            return Position.ToString() + " | " + Type.ToString();
         }
     }
 }
