@@ -95,13 +95,19 @@ namespace mcc
             {
                 return GetBinaryNumber();
             }
+            else
+            {
+                return GetDecimalNumber();
+            }
+        }
 
-            // decimal integer
+        private Token GetDecimalNumber()
+        {
             while (HasMoreTokens() && char.IsDigit(stream[streamIndex]))
                 Advance();
 
             int temp = int.Parse(stream.Substring(tokenStart, streamIndex - tokenStart));
-            return new Integer(temp) {Position = GetTokenPos() };
+            return new Integer(temp) { Position = GetTokenPos() };
         }
 
         private Token GetHexNumber()

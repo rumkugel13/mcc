@@ -8,7 +8,8 @@
         public struct TokenPos
         {
             public int Line, Column;
-            public override string ToString()
+
+            public override readonly string ToString()
             {
                 return "Pos: " + Line + ":" + Column;
             }
