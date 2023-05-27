@@ -296,7 +296,7 @@ namespace mcc
 
         private void GenerateBinaryOp(ASTBinaryOpNode binOp)
         {
-            if (binOp.NeedsShortCircuit)
+            if (binOp.Value == "&&" || binOp.Value == "||")
             {
                 GenerateShortCircuit(binOp);
                 return;
@@ -408,64 +408,61 @@ namespace mcc
 
         private static int EvaluateBinaryOp(ASTBinaryOpNode binOp)
         {
-            if (binOp.NeedsShortCircuit)
+            if (binOp.Value == "||")
             {
-                if (binOp.Value == "||")
+                if (Evaluate(binOp.ExpressionLeft) != 0)
                 {
-                    if (Evaluate(binOp.ExpressionLeft) != 0)
+                    return 1;
+                }
+                else
+                {
+                    return Evaluate(binOp.ExpressionRight) != 0 ? 1 : 0;
+                }
+            }
+            else if (binOp.Value == "&&")
+            {
+                if (Evaluate(binOp.ExpressionLeft) == 0)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return Evaluate(binOp.ExpressionRight) != 0 ? 1 : 0;
+                }
+            }
+            else
+            {
+                if (binOp.IsComparison)
+                {
+                    switch (binOp.Value)
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        return Evaluate(binOp.ExpressionRight) != 0 ? 1 : 0;
+                        case "==": return Evaluate(binOp.ExpressionLeft) == Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                        case "!=": return Evaluate(binOp.ExpressionLeft) != Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                        case ">=": return Evaluate(binOp.ExpressionLeft) >= Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                        case ">": return Evaluate(binOp.ExpressionLeft) > Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                        case "<=": return Evaluate(binOp.ExpressionLeft) <= Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                        case "<": return Evaluate(binOp.ExpressionLeft) < Evaluate(binOp.ExpressionRight) ? 1 : 0;
                     }
                 }
-                else if (binOp.Value == "&&")
+                else
                 {
-                    if (Evaluate(binOp.ExpressionLeft) == 0)
+                    switch (binOp.Value)
                     {
-                        return 0;
-                    }
-                    else
-                    {
-                        return Evaluate(binOp.ExpressionRight) != 0 ? 1 : 0;
+                        case "+": return Evaluate(binOp.ExpressionLeft) + Evaluate(binOp.ExpressionRight);
+                        case "*": return Evaluate(binOp.ExpressionLeft) * Evaluate(binOp.ExpressionRight);
+                        case "-": return Evaluate(binOp.ExpressionLeft) - Evaluate(binOp.ExpressionRight);
+                        case "<<": return Evaluate(binOp.ExpressionLeft) << Evaluate(binOp.ExpressionRight);
+                        case ">>": return Evaluate(binOp.ExpressionLeft) >> Evaluate(binOp.ExpressionRight);
+                        case "&": return Evaluate(binOp.ExpressionLeft) & Evaluate(binOp.ExpressionRight);
+                        case "|": return Evaluate(binOp.ExpressionLeft) | Evaluate(binOp.ExpressionRight);
+                        case "^": return Evaluate(binOp.ExpressionLeft) ^ Evaluate(binOp.ExpressionRight);
+                        case "/": return Evaluate(binOp.ExpressionLeft) / Evaluate(binOp.ExpressionRight);
+                        case "%": return Evaluate(binOp.ExpressionLeft) % Evaluate(binOp.ExpressionRight);
                     }
                 }
 
                 return 0;
             }
-
-            if (binOp.IsComparison)
-            {
-                switch (binOp.Value)
-                {
-                    case "==": return Evaluate(binOp.ExpressionLeft) == Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                    case "!=": return Evaluate(binOp.ExpressionLeft) != Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                    case ">=": return Evaluate(binOp.ExpressionLeft) >= Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                    case ">": return Evaluate(binOp.ExpressionLeft) > Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                    case "<=": return Evaluate(binOp.ExpressionLeft) <= Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                    case "<": return Evaluate(binOp.ExpressionLeft) < Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                }
-            }
-            else
-            {
-                switch (binOp.Value)
-                {
-                    case "+": return Evaluate(binOp.ExpressionLeft) + Evaluate(binOp.ExpressionRight);
-                    case "*": return Evaluate(binOp.ExpressionLeft) * Evaluate(binOp.ExpressionRight);
-                    case "-": return Evaluate(binOp.ExpressionLeft) - Evaluate(binOp.ExpressionRight);
-                    case "<<": return Evaluate(binOp.ExpressionLeft) << Evaluate(binOp.ExpressionRight);
-                    case ">>": return Evaluate(binOp.ExpressionLeft) >> Evaluate(binOp.ExpressionRight);
-                    case "&": return Evaluate(binOp.ExpressionLeft) & Evaluate(binOp.ExpressionRight);
-                    case "|": return Evaluate(binOp.ExpressionLeft) | Evaluate(binOp.ExpressionRight);
-                    case "^": return Evaluate(binOp.ExpressionLeft) ^ Evaluate(binOp.ExpressionRight);
-                    case "/": return Evaluate(binOp.ExpressionLeft) / Evaluate(binOp.ExpressionRight);
-                    case "%": return Evaluate(binOp.ExpressionLeft) % Evaluate(binOp.ExpressionRight);
-                }
-            }
-
-            return 0;
         }
     }
 }

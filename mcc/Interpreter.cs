@@ -297,64 +297,61 @@
 
         private int InterpretBinaryOp(ASTBinaryOpNode binOp)
         {
-            if (binOp.NeedsShortCircuit)
+            if (binOp.Value == "||")
             {
-                if (binOp.Value == "||")
+                if (Interpret(binOp.ExpressionLeft) != 0)
                 {
-                    if (Interpret(binOp.ExpressionLeft) != 0)
+                    return 1;
+                }
+                else
+                {
+                    return Interpret(binOp.ExpressionRight) != 0 ? 1 : 0;
+                }
+            }
+            else if (binOp.Value == "&&")
+            {
+                if (Interpret(binOp.ExpressionLeft) == 0)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return Interpret(binOp.ExpressionRight) != 0 ? 1 : 0;
+                }
+            }
+            else
+            {
+                if (binOp.IsComparison)
+                {
+                    switch (binOp.Value)
                     {
-                        return 1;
-                    }
-                    else
-                    {
-                        return Interpret(binOp.ExpressionRight) != 0 ? 1 : 0;
+                        case "==": return Interpret(binOp.ExpressionLeft) == Interpret(binOp.ExpressionRight) ? 1 : 0;
+                        case "!=": return Interpret(binOp.ExpressionLeft) != Interpret(binOp.ExpressionRight) ? 1 : 0;
+                        case ">=": return Interpret(binOp.ExpressionLeft) >= Interpret(binOp.ExpressionRight) ? 1 : 0;
+                        case ">": return Interpret(binOp.ExpressionLeft) > Interpret(binOp.ExpressionRight) ? 1 : 0;
+                        case "<=": return Interpret(binOp.ExpressionLeft) <= Interpret(binOp.ExpressionRight) ? 1 : 0;
+                        case "<": return Interpret(binOp.ExpressionLeft) < Interpret(binOp.ExpressionRight) ? 1 : 0;
                     }
                 }
-                else if (binOp.Value == "&&")
+                else
                 {
-                    if (Interpret(binOp.ExpressionLeft) == 0)
+                    switch (binOp.Value)
                     {
-                        return 0;
-                    }
-                    else
-                    {
-                        return Interpret(binOp.ExpressionRight) != 0 ? 1 : 0;
+                        case "+": return Interpret(binOp.ExpressionLeft) + Interpret(binOp.ExpressionRight);
+                        case "*": return Interpret(binOp.ExpressionLeft) * Interpret(binOp.ExpressionRight);
+                        case "-": return Interpret(binOp.ExpressionLeft) - Interpret(binOp.ExpressionRight);
+                        case "<<": return Interpret(binOp.ExpressionLeft) << Interpret(binOp.ExpressionRight);
+                        case ">>": return Interpret(binOp.ExpressionLeft) >> Interpret(binOp.ExpressionRight);
+                        case "&": return Interpret(binOp.ExpressionLeft) & Interpret(binOp.ExpressionRight);
+                        case "|": return Interpret(binOp.ExpressionLeft) | Interpret(binOp.ExpressionRight);
+                        case "^": return Interpret(binOp.ExpressionLeft) ^ Interpret(binOp.ExpressionRight);
+                        case "/": return Interpret(binOp.ExpressionLeft) / Interpret(binOp.ExpressionRight);
+                        case "%": return Interpret(binOp.ExpressionLeft) % Interpret(binOp.ExpressionRight);
                     }
                 }
 
                 return 0;
             }
-
-            if (binOp.IsComparison)
-            {
-                switch (binOp.Value)
-                {
-                    case "==": return Interpret(binOp.ExpressionLeft) == Interpret(binOp.ExpressionRight) ? 1 : 0;
-                    case "!=": return Interpret(binOp.ExpressionLeft) != Interpret(binOp.ExpressionRight) ? 1 : 0;
-                    case ">=": return Interpret(binOp.ExpressionLeft) >= Interpret(binOp.ExpressionRight) ? 1 : 0;
-                    case ">": return Interpret(binOp.ExpressionLeft) > Interpret(binOp.ExpressionRight) ? 1 : 0;
-                    case "<=": return Interpret(binOp.ExpressionLeft) <= Interpret(binOp.ExpressionRight) ? 1 : 0;
-                    case "<": return Interpret(binOp.ExpressionLeft) < Interpret(binOp.ExpressionRight) ? 1 : 0;
-                }
-            }
-            else
-            {
-                switch (binOp.Value)
-                {
-                    case "+": return Interpret(binOp.ExpressionLeft) + Interpret(binOp.ExpressionRight);
-                    case "*": return Interpret(binOp.ExpressionLeft) * Interpret(binOp.ExpressionRight);
-                    case "-": return Interpret(binOp.ExpressionLeft) - Interpret(binOp.ExpressionRight);
-                    case "<<": return Interpret(binOp.ExpressionLeft) << Interpret(binOp.ExpressionRight);
-                    case ">>": return Interpret(binOp.ExpressionLeft) >> Interpret(binOp.ExpressionRight);
-                    case "&": return Interpret(binOp.ExpressionLeft) & Interpret(binOp.ExpressionRight);
-                    case "|": return Interpret(binOp.ExpressionLeft) | Interpret(binOp.ExpressionRight);
-                    case "^": return Interpret(binOp.ExpressionLeft) ^ Interpret(binOp.ExpressionRight);
-                    case "/": return Interpret(binOp.ExpressionLeft) / Interpret(binOp.ExpressionRight);
-                    case "%": return Interpret(binOp.ExpressionLeft) % Interpret(binOp.ExpressionRight);
-                }
-            }
-
-            return 0;
         }
 
         private void InterpretReturn(ASTReturnNode ret)

@@ -445,7 +445,7 @@
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseBitwiseOrExpression();
-                exp = new ASTBinaryOpNode(binOp, exp, second) { NeedsShortCircuit = true };
+                exp = new ASTBinaryOpNode(binOp, exp, second);
             }
             return exp;
         }
@@ -457,7 +457,7 @@
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseLogicalAndExpression();
-                exp = new ASTBinaryOpNode(binOp, exp, second) { NeedsShortCircuit = true };
+                exp = new ASTBinaryOpNode(binOp, exp, second);
             }
             return exp;
         }
