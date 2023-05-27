@@ -307,7 +307,7 @@ namespace mcc
             Generate(binOp.ExpressionRight);
             backend.PopLeftOperand();
 
-            if (binOp.IsComparison)
+            if (Symbol.IsComparison(Symbol.Symbols[binOp.Value]))
             {
                 backend.ComparisonOperation(binOp.Value);
             }
@@ -432,36 +432,26 @@ namespace mcc
             }
             else
             {
-                if (binOp.IsComparison)
+                switch (binOp.Value)
                 {
-                    switch (binOp.Value)
-                    {
-                        case "==": return Evaluate(binOp.ExpressionLeft) == Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                        case "!=": return Evaluate(binOp.ExpressionLeft) != Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                        case ">=": return Evaluate(binOp.ExpressionLeft) >= Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                        case ">": return Evaluate(binOp.ExpressionLeft) > Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                        case "<=": return Evaluate(binOp.ExpressionLeft) <= Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                        case "<": return Evaluate(binOp.ExpressionLeft) < Evaluate(binOp.ExpressionRight) ? 1 : 0;
-                    }
+                    case "+": return Evaluate(binOp.ExpressionLeft) + Evaluate(binOp.ExpressionRight);
+                    case "*": return Evaluate(binOp.ExpressionLeft) * Evaluate(binOp.ExpressionRight);
+                    case "-": return Evaluate(binOp.ExpressionLeft) - Evaluate(binOp.ExpressionRight);
+                    case "<<": return Evaluate(binOp.ExpressionLeft) << Evaluate(binOp.ExpressionRight);
+                    case ">>": return Evaluate(binOp.ExpressionLeft) >> Evaluate(binOp.ExpressionRight);
+                    case "&": return Evaluate(binOp.ExpressionLeft) & Evaluate(binOp.ExpressionRight);
+                    case "|": return Evaluate(binOp.ExpressionLeft) | Evaluate(binOp.ExpressionRight);
+                    case "^": return Evaluate(binOp.ExpressionLeft) ^ Evaluate(binOp.ExpressionRight);
+                    case "/": return Evaluate(binOp.ExpressionLeft) / Evaluate(binOp.ExpressionRight);
+                    case "%": return Evaluate(binOp.ExpressionLeft) % Evaluate(binOp.ExpressionRight);
+                    case "==": return Evaluate(binOp.ExpressionLeft) == Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                    case "!=": return Evaluate(binOp.ExpressionLeft) != Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                    case ">=": return Evaluate(binOp.ExpressionLeft) >= Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                    case ">": return Evaluate(binOp.ExpressionLeft) > Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                    case "<=": return Evaluate(binOp.ExpressionLeft) <= Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                    case "<": return Evaluate(binOp.ExpressionLeft) < Evaluate(binOp.ExpressionRight) ? 1 : 0;
+                    default: return 0;
                 }
-                else
-                {
-                    switch (binOp.Value)
-                    {
-                        case "+": return Evaluate(binOp.ExpressionLeft) + Evaluate(binOp.ExpressionRight);
-                        case "*": return Evaluate(binOp.ExpressionLeft) * Evaluate(binOp.ExpressionRight);
-                        case "-": return Evaluate(binOp.ExpressionLeft) - Evaluate(binOp.ExpressionRight);
-                        case "<<": return Evaluate(binOp.ExpressionLeft) << Evaluate(binOp.ExpressionRight);
-                        case ">>": return Evaluate(binOp.ExpressionLeft) >> Evaluate(binOp.ExpressionRight);
-                        case "&": return Evaluate(binOp.ExpressionLeft) & Evaluate(binOp.ExpressionRight);
-                        case "|": return Evaluate(binOp.ExpressionLeft) | Evaluate(binOp.ExpressionRight);
-                        case "^": return Evaluate(binOp.ExpressionLeft) ^ Evaluate(binOp.ExpressionRight);
-                        case "/": return Evaluate(binOp.ExpressionLeft) / Evaluate(binOp.ExpressionRight);
-                        case "%": return Evaluate(binOp.ExpressionLeft) % Evaluate(binOp.ExpressionRight);
-                    }
-                }
-
-                return 0;
             }
         }
     }

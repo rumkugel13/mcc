@@ -5,7 +5,6 @@ namespace mcc
     {
         public string Value;
         public ASTAbstractExpressionNode ExpressionLeft, ExpressionRight;
-        public bool IsComparison;
 
         public ASTBinaryOpNode(string value, ASTAbstractExpressionNode expLeft, ASTAbstractExpressionNode expRight)
         {

@@ -321,36 +321,26 @@
             }
             else
             {
-                if (binOp.IsComparison)
+                switch (binOp.Value)
                 {
-                    switch (binOp.Value)
-                    {
-                        case "==": return Interpret(binOp.ExpressionLeft) == Interpret(binOp.ExpressionRight) ? 1 : 0;
-                        case "!=": return Interpret(binOp.ExpressionLeft) != Interpret(binOp.ExpressionRight) ? 1 : 0;
-                        case ">=": return Interpret(binOp.ExpressionLeft) >= Interpret(binOp.ExpressionRight) ? 1 : 0;
-                        case ">": return Interpret(binOp.ExpressionLeft) > Interpret(binOp.ExpressionRight) ? 1 : 0;
-                        case "<=": return Interpret(binOp.ExpressionLeft) <= Interpret(binOp.ExpressionRight) ? 1 : 0;
-                        case "<": return Interpret(binOp.ExpressionLeft) < Interpret(binOp.ExpressionRight) ? 1 : 0;
-                    }
+                    case "+": return Interpret(binOp.ExpressionLeft) + Interpret(binOp.ExpressionRight);
+                    case "*": return Interpret(binOp.ExpressionLeft) * Interpret(binOp.ExpressionRight);
+                    case "-": return Interpret(binOp.ExpressionLeft) - Interpret(binOp.ExpressionRight);
+                    case "<<": return Interpret(binOp.ExpressionLeft) << Interpret(binOp.ExpressionRight);
+                    case ">>": return Interpret(binOp.ExpressionLeft) >> Interpret(binOp.ExpressionRight);
+                    case "&": return Interpret(binOp.ExpressionLeft) & Interpret(binOp.ExpressionRight);
+                    case "|": return Interpret(binOp.ExpressionLeft) | Interpret(binOp.ExpressionRight);
+                    case "^": return Interpret(binOp.ExpressionLeft) ^ Interpret(binOp.ExpressionRight);
+                    case "/": return Interpret(binOp.ExpressionLeft) / Interpret(binOp.ExpressionRight);
+                    case "%": return Interpret(binOp.ExpressionLeft) % Interpret(binOp.ExpressionRight);
+                    case "==": return Interpret(binOp.ExpressionLeft) == Interpret(binOp.ExpressionRight) ? 1 : 0;
+                    case "!=": return Interpret(binOp.ExpressionLeft) != Interpret(binOp.ExpressionRight) ? 1 : 0;
+                    case ">=": return Interpret(binOp.ExpressionLeft) >= Interpret(binOp.ExpressionRight) ? 1 : 0;
+                    case ">": return Interpret(binOp.ExpressionLeft) > Interpret(binOp.ExpressionRight) ? 1 : 0;
+                    case "<=": return Interpret(binOp.ExpressionLeft) <= Interpret(binOp.ExpressionRight) ? 1 : 0;
+                    case "<": return Interpret(binOp.ExpressionLeft) < Interpret(binOp.ExpressionRight) ? 1 : 0;
+                    default: return 0;
                 }
-                else
-                {
-                    switch (binOp.Value)
-                    {
-                        case "+": return Interpret(binOp.ExpressionLeft) + Interpret(binOp.ExpressionRight);
-                        case "*": return Interpret(binOp.ExpressionLeft) * Interpret(binOp.ExpressionRight);
-                        case "-": return Interpret(binOp.ExpressionLeft) - Interpret(binOp.ExpressionRight);
-                        case "<<": return Interpret(binOp.ExpressionLeft) << Interpret(binOp.ExpressionRight);
-                        case ">>": return Interpret(binOp.ExpressionLeft) >> Interpret(binOp.ExpressionRight);
-                        case "&": return Interpret(binOp.ExpressionLeft) & Interpret(binOp.ExpressionRight);
-                        case "|": return Interpret(binOp.ExpressionLeft) | Interpret(binOp.ExpressionRight);
-                        case "^": return Interpret(binOp.ExpressionLeft) ^ Interpret(binOp.ExpressionRight);
-                        case "/": return Interpret(binOp.ExpressionLeft) / Interpret(binOp.ExpressionRight);
-                        case "%": return Interpret(binOp.ExpressionLeft) % Interpret(binOp.ExpressionRight);
-                    }
-                }
-
-                return 0;
             }
         }
 

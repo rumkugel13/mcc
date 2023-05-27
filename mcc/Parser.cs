@@ -385,7 +385,7 @@
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseShiftExpression();
-                exp = new ASTBinaryOpNode(binOp, exp, second) { IsComparison = true };
+                exp = new ASTBinaryOpNode(binOp, exp, second);
             }
             return exp;
         }
@@ -397,7 +397,7 @@
             {
                 ExpectBinarySymbol(out string binOp);
                 ASTAbstractExpressionNode second = ParseRelationalExpression();
-                exp = new ASTBinaryOpNode(binOp, exp, second) { IsComparison = true };
+                exp = new ASTBinaryOpNode(binOp, exp, second);
             }
             return exp;
         }

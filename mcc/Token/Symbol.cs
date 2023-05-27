@@ -33,16 +33,16 @@
             DIVISION,
             BIT_AND,
             BIT_OR,
-            LESS_THAN,
-            GREATER_THAN,
             REMAINDER,
             BIT_XOR,
             LOGICAL_AND,
             LOGICAL_OR,
+            LESS_THAN,      // begin comparison
+            GREATER_THAN,
             DOUBLE_EQUALS,
             NOT_EQUALS,
             LESS_EQUAL,
-            GREATER_EQUAL,
+            GREATER_EQUAL,  // end comparison
             SHIFT_LEFT,
             SHIFT_RIGHT,    // end binary
         }
@@ -88,6 +88,11 @@
         public static bool IsBinary(SymbolTypes type)
         {
             return type >= SymbolTypes.MINUS && type <= SymbolTypes.SHIFT_RIGHT;
+        }
+
+        public static bool IsComparison(SymbolTypes type)
+        {
+            return type >= SymbolTypes.LESS_THAN && type <= SymbolTypes.GREATER_EQUAL;
         }
 
         public override string ToString()
