@@ -121,7 +121,7 @@ namespace mcc.Backends
         public int AllocateAtLeast(int bytes)
         {
             // allocate space for arguments, 16 byte aligned
-            int allocate = 16 * ((bytes + 15) / 16);
+            int allocate = IBackend.Align(bytes, 16);
             AllocateMemory(allocate);
 
             return allocate;

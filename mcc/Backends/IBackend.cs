@@ -22,6 +22,7 @@
         void MoveRegisterToMemory(string register, int offset);
         void MoveMemoryToRegister(string register, int offset);
 
+        public static int Align(int bytes, int align) => align * ((bytes + align - 1) / align);
         int AllocateAtLeast(int bytes);
         void MoveArgsIntoRegisters(int argCount);
         void MoveRegistersIntoMemory(int argCount);
