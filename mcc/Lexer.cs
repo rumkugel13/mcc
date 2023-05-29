@@ -129,7 +129,7 @@ namespace mcc
                     }
 
                     int hexNum = Convert.ToInt32(hexString, 16);
-            return new Integer(hexNum) {Position = GetTokenPos() };
+            return new Integer(hexNum) { Position = GetTokenPos() };
                 }
 
         private Token GetBinaryNumber()
@@ -149,7 +149,7 @@ namespace mcc
                     }
 
                     int binNum = Convert.ToInt32(binString, 2);
-            return new Integer(binNum) {Position = GetTokenPos() };
+            return new Integer(binNum) { Position = GetTokenPos() };
                 }
 
         private Symbol GetSymbol()
@@ -159,10 +159,10 @@ namespace mcc
                 // keyword or identifier
                 while (HasMoreTokens() && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')))
                     Advance();
-                return new Symbol(stream.Substring(tokenStart, 2)) {Position = GetTokenPos() };
+                return new Symbol(stream.Substring(tokenStart, 2)) { Position = GetTokenPos() };
             }
             else
-                return new Symbol(stream[tokenStart].ToString()) {Position = GetTokenPos() };
+                return new Symbol(stream[tokenStart].ToString()) { Position = GetTokenPos() };
         }
 
         private Token.TokenPos GetTokenPos()
