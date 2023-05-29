@@ -220,6 +220,7 @@ namespace mcc
             {
                 Advance();
             }
+        }
 
             AdvanceLine();
         }

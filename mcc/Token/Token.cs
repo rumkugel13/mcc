@@ -11,7 +11,7 @@
 
             public override readonly string ToString()
             {
-                return "Pos: " + Line + ":" + Column;
+                return $"Pos: {Line}:{Column}";
             }
         }
 
