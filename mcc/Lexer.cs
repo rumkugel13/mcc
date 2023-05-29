@@ -198,7 +198,7 @@ namespace mcc
                     {
                         // end of multiline comment
                         Advance();
-                        break;
+                        return;
                     }
                 }
                 else
