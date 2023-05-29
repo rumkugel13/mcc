@@ -222,9 +222,6 @@ namespace mcc
             }
         }
 
-            AdvanceLine();
-        }
-
         private void AdvanceLine()
         {
             streamIndex++;
