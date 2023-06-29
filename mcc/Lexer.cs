@@ -1,5 +1,4 @@
-﻿
-namespace mcc
+﻿namespace mcc
 {
     public class Lexer
     {
@@ -16,41 +15,44 @@ namespace mcc
             List<Token> tokens = new();
             while (HasMoreTokens())
             {
-                if (char.IsWhiteSpace(stream[streamIndex]))
-                {
-                    SkipWhitespace();
-                    }
-                else if (stream[streamIndex].Equals('/') && (streamIndex + 1 < stream.Length) && (stream[streamIndex + 1].Equals('/') || stream[streamIndex + 1].Equals('*')))
-                {
-                    if (stream[streamIndex + 1].Equals('/'))
-                    {
-                        SkipComment();
-                    }
-                    else
-                    {
-                        SkipMultiLineComment();
-                    }
-                }
-                else
-                {
-                    tokens.Add(GetNextToken());
-                }
+                tokens.Add(GetNextToken());
             }
             return tokens;
         }
 
-        private bool HasMoreTokens()
+        public bool HasMoreTokens()
         {
             return streamIndex < stream.Length;
         }
 
-        private Token GetNextToken()
+        public Token GetNextToken()
         {
+            if (!HasMoreTokens())
+                return new EndToken();
+
             char currentChar = stream[streamIndex];
             startColumn = currentColumn;
             tokenStart = streamIndex;
 
+            if (char.IsWhiteSpace(currentChar))
+            {
+                SkipWhitespace();
+                return GetNextToken();
+            }
+
             Advance();
+            if (currentChar.Equals('/') && HasMoreTokens() && (stream[streamIndex].Equals('/') || stream[streamIndex].Equals('*')))
+            {
+                if (stream[streamIndex].Equals('/'))
+                {
+                    SkipComment();
+                }
+                else
+                {
+                    SkipMultiLineComment();
+                }
+                return GetNextToken();
+            }
 
             if (Symbol.Symbols.ContainsKey(currentChar.ToString()))
             {
@@ -72,17 +74,17 @@ namespace mcc
         }
 
         private Token GetKeywordOrIdentifier()
-                {
+        {
             while (HasMoreTokens() && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')))
-                    Advance();
+                Advance();
 
             string temp = stream.Substring(tokenStart, streamIndex - tokenStart);
 
             if (Keyword.Keywords.TryGetValue(temp, out var value))
                 return new Keyword(value) { Position = GetTokenPos() };
-                else
+            else
                 return new Identifier(temp) { Position = GetTokenPos() };
-            }
+        }
 
         private Token GetNumber()
         {
@@ -111,54 +113,50 @@ namespace mcc
         }
 
         private Token GetHexNumber()
-                {
-                    // hex number
-                    Advance();  // skip 'x'
-                    while (HasMoreTokens() && (char.IsDigit(stream[streamIndex]) 
-                        || (stream[streamIndex] >= 'a' && stream[streamIndex] <= 'f') 
-                        || (stream[streamIndex] >= 'A' && stream[streamIndex] <= 'F')))
-                    {
-                        Advance();
-                    }
+        {
+            Advance();  // skip 'x'
+            while (HasMoreTokens() && (char.IsDigit(stream[streamIndex])
+                || (stream[streamIndex] >= 'a' && stream[streamIndex] <= 'f')
+                || (stream[streamIndex] >= 'A' && stream[streamIndex] <= 'F')))
+            {
+                Advance();
+            }
 
-                string hexString = stream.Substring(tokenStart + 2, streamIndex - tokenStart - 2);
-                    if (string.IsNullOrEmpty(hexString))
-                    {
-                    Fail("Invalid hex number at Line: " + currentLine + ", Column: " + startColumn);
-                        return new UnknownToken();
-                    }
+            string hexString = stream.Substring(tokenStart + 2, streamIndex - tokenStart - 2);
+            if (string.IsNullOrEmpty(hexString))
+            {
+                Fail("Invalid hex number at Line: " + currentLine + ", Column: " + startColumn);
+                return new UnknownToken();
+            }
 
-                    int hexNum = Convert.ToInt32(hexString, 16);
+            int hexNum = Convert.ToInt32(hexString, 16);
             return new Integer(hexNum) { Position = GetTokenPos() };
-                }
+        }
 
         private Token GetBinaryNumber()
-                {
-                    // binary number
-                    Advance();  // skip 'b'
-                    while (HasMoreTokens() && (stream[streamIndex].Equals('0') || stream[streamIndex].Equals('1')))
-                    {
-                        Advance();
-                    }
+        {
+            Advance();  // skip 'b'
+            while (HasMoreTokens() && (stream[streamIndex].Equals('0') || stream[streamIndex].Equals('1')))
+            {
+                Advance();
+            }
 
-                string binString = stream.Substring(tokenStart + 2, streamIndex - tokenStart - 2);
-                    if (string.IsNullOrEmpty(binString))
-                    {
-                    Fail("Invalid binary number at Line: " + currentLine + ", Column: " + startColumn);
-                        return new UnknownToken();
-                    }
+            string binString = stream.Substring(tokenStart + 2, streamIndex - tokenStart - 2);
+            if (string.IsNullOrEmpty(binString))
+            {
+                Fail("Invalid binary number at Line: " + currentLine + ", Column: " + startColumn);
+                return new UnknownToken();
+            }
 
-                    int binNum = Convert.ToInt32(binString, 2);
+            int binNum = Convert.ToInt32(binString, 2);
             return new Integer(binNum) { Position = GetTokenPos() };
-                }
+        }
 
         private Symbol GetSymbol()
         {
             if (HasMoreTokens() && Symbol.Symbols.ContainsKey(stream[streamIndex].ToString()) && Symbol.Symbols.ContainsKey(stream.Substring(tokenStart, 2)))
             {
-                // keyword or identifier
-                while (HasMoreTokens() && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')))
-                    Advance();
+                Advance();
                 return new Symbol(stream.Substring(tokenStart, 2)) { Position = GetTokenPos() };
             }
             else
@@ -172,11 +170,7 @@ namespace mcc
 
         private void SkipWhitespace()
         {
-            if (stream[streamIndex] == '\n')
-            {
-                AdvanceLine();
-            }
-            else
+            while (HasMoreTokens() && char.IsWhiteSpace(stream[streamIndex]))
             {
                 Advance();
             }
@@ -184,14 +178,10 @@ namespace mcc
 
         private void SkipMultiLineComment()
         {
-            // multiline comment
+            /* multiline comment */
             while (HasMoreTokens())
             {
-                if (stream[streamIndex] == '\n')
-                {
-                    AdvanceLine();
-                }
-                else if (stream[streamIndex] == '*' && HasMoreTokens())
+                if (stream[streamIndex] == '*' && HasMoreTokens())
                 {
                     Advance();
                     if (stream[streamIndex] == '/')
@@ -222,17 +212,17 @@ namespace mcc
             }
         }
 
-        private void AdvanceLine()
-        {
-            streamIndex++;
-            currentLine++;
-            currentColumn = 1;
-        }
-
         private void Advance()
         {
-            streamIndex++;
-            currentColumn++;
+            if (stream[streamIndex++] != '\n')
+            {
+                currentColumn++;
+            }
+            else
+            {
+                currentLine++;
+                currentColumn = 1;
+            }
         }
 
         private void Fail(string message)

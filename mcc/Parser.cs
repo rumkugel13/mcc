@@ -24,7 +24,7 @@
         private ASTProgramNode ParseProgram(string programName)
         {
             List<ASTTopLevelItemNode> topLevelItems = new List<ASTTopLevelItemNode>();
-            while(HasMoreTokens())
+            while(HasMoreTokens() && Peek() is not EndToken)
             {
                 ASTTopLevelItemNode topLevelItem = ParseTopLevelItem();
                 topLevelItems.Add(topLevelItem);
