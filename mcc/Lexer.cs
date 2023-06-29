@@ -181,19 +181,14 @@
             /* multiline comment */
             while (HasMoreTokens())
             {
-                if (stream[streamIndex] == '*' && HasMoreTokens())
+                char token = stream[streamIndex];
+                Advance();
+
+                if (token == '*' && HasMoreTokens() && stream[streamIndex] == '/')
                 {
+                    // end of multiline comment
                     Advance();
-                    if (stream[streamIndex] == '/')
-                    {
-                        // end of multiline comment
-                        Advance();
-                        return;
-                    }
-                }
-                else
-                {
-                    Advance();
+                    return;
                 }
             }
 
