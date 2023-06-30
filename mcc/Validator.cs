@@ -1,5 +1,4 @@
-﻿
-namespace mcc
+﻿namespace mcc
 {
     class Validator
     {
@@ -462,7 +461,7 @@ namespace mcc
 
             // 16 byte aligned
             // todo: calculate max simultaneous declared variables to save on memory
-            function.BytesToAllocate = 16 * (((declarationCount * intSize) + 15) / 16);
+            function.BytesToAllocate = Backends.IBackend.Align(declarationCount * intSize, 16);
 
             varMaps.Pop();
             varScopes.Pop();
