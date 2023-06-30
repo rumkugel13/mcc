@@ -78,12 +78,12 @@
             while (HasMoreTokens() && (char.IsLetterOrDigit(stream[streamIndex]) || stream[streamIndex].Equals('_')))
                 Advance();
 
-            string temp = stream.Substring(tokenStart, streamIndex - tokenStart);
+            string ident = stream.Substring(tokenStart, streamIndex - tokenStart);
 
-            if (Keyword.Keywords.TryGetValue(temp, out var value))
+            if (Keyword.Keywords.TryGetValue(ident, out var value))
                 return new Keyword(value) { Position = GetTokenPos() };
             else
-                return new Identifier(temp) { Position = GetTokenPos() };
+                return new Identifier(ident) { Position = GetTokenPos() };
         }
 
         private Token GetNumber()
@@ -108,8 +108,8 @@
             while (HasMoreTokens() && char.IsDigit(stream[streamIndex]))
                 Advance();
 
-            int temp = int.Parse(stream.Substring(tokenStart, streamIndex - tokenStart));
-            return new Integer(temp) { Position = GetTokenPos() };
+            int decNum = int.Parse(stream.Substring(tokenStart, streamIndex - tokenStart));
+            return new Integer(decNum) { Position = GetTokenPos() };
         }
 
         private Token GetHexNumber()
@@ -181,10 +181,10 @@
             /* multiline comment */
             while (HasMoreTokens())
             {
-                char token = stream[streamIndex];
+                char currentChar = stream[streamIndex];
                 Advance();
 
-                if (token == '*' && HasMoreTokens() && stream[streamIndex] == '/')
+                if (currentChar.Equals('*') && HasMoreTokens() && stream[streamIndex] == '/')
                 {
                     // end of multiline comment
                     Advance();
