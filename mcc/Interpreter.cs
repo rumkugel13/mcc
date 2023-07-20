@@ -272,6 +272,10 @@
             {
                 globalVariables[dec.Name] = constant.Value;
             }
+            else if(dec.Initializer.IsConstantExpression)
+            {
+                globalVariables[dec.Name] = Interpret(dec.Initializer);
+            }
             else
             {
                 globalVariables[dec.Name] = 0;
