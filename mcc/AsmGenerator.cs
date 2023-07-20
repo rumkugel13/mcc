@@ -9,6 +9,7 @@ namespace mcc
 
         int labelCounter = 0;
         string functionScope;
+        int functionReturnCount;
         const string lbLoopBegin = ".lb";
         const string lbLoopContinue = ".lc";
         const string lbLoopPost = ".lp";
@@ -322,7 +323,8 @@ namespace mcc
             Generate(ret.Expression);
             if (ret.IsLastReturn)
             {
-                backend.Label(lbEndFunction + functionScope);
+                if (functionReturnCount > 1)
+                    backend.Label(lbEndFunction + functionScope);
                 backend.FunctionEpilogue();
             }
             else
@@ -341,6 +343,7 @@ namespace mcc
             if (function.IsDefinition)
             {
                 functionScope = function.Name;
+                functionReturnCount = function.ReturnCount;
                 backend.FunctionPrologue(function.Name);
 
                 if (function.BytesToAllocate > 0)
@@ -355,7 +358,7 @@ namespace mcc
                 {
                     // return 0 if no return statement found
                     backend.IntegerConstant(0);
-                    backend.Label(lbEndFunction + function.Name);
+                    backend.Label(lbEndFunction + function.Name); // refactor: do we need the label if this is the only return?
                     backend.FunctionEpilogue();
                 }
             }

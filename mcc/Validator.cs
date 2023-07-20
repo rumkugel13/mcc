@@ -11,6 +11,7 @@
         const int intSize = 4;
         int varOffset = 0;
         int declarationCount = 0;
+        int returnCount = 0;
 
         int loopLabelCounter = 0;
         Stack<int> loops = new Stack<int>();
@@ -332,6 +333,7 @@
 
         private void ValidateReturn(ASTReturnNode ret)
         {
+            returnCount++;
             Validate(ret.Expression);
         }
 
@@ -398,6 +400,7 @@
 
             varOffset = 0;
             declarationCount = 0;
+            returnCount = 0;
             varMaps.Push(new Dictionary<string, int>());
             varScopes.Push(new HashSet<string>());
 
@@ -458,6 +461,7 @@
             }
 
             function.ContainsReturn = containsReturn;
+            function.ReturnCount = returnCount;
 
             // 16 byte aligned
             // todo: calculate max simultaneous declared variables to save on memory
