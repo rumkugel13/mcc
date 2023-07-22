@@ -5,7 +5,6 @@
         ASTNode rootNode;
 
         Stack<Dictionary<string, int>> varMaps = new Stack<Dictionary<string, int>>();
-        Stack<HashSet<string>> varScopes = new Stack<HashSet<string>>();
 
         const int pointerSize = 8; // 32bit = 4, 64bit = 8
         const int intSize = 4;
@@ -169,15 +168,13 @@
         private void PushScope()
         {
             varMaps.Push(new Dictionary<string, int>(varMaps.Peek()));
-            varScopes.Push(new HashSet<string>());
         }
 
         private int PopScope()
         {
-            int newVarCount = varScopes.Peek().Count;
+            int newVarCount = varMaps.Peek().Count;
             varMaps.Pop();
-            varScopes.Pop();
-            // update varoffset so that scope variables in stack can be overriden, could leave it for now
+            // update varoffset so that scope variables in stack can be overridden, could leave it for now
             // todo: would need to calculate max simultaneous declared variables first to save on memory
             //varOffset += newVarCount * intSize;
             return newVarCount * pointerSize;
@@ -252,13 +249,13 @@
 
         private void ValidateDeclaration(ASTDeclarationNode dec)
         {
-            if (varScopes.Count == 0)
+            if (varMaps.Count == 0)
             {
                 ValidateGlobalDeclaration(dec);
                 return;
             }
 
-            if (varScopes.Peek().Contains(dec.Name))
+            if (varMaps.Peek().ContainsKey(dec.Name))
             {
                 FailVariable("Trying to declare existing Variable", dec.Name, dec);
             }
@@ -272,7 +269,6 @@
             varOffset -= intSize;
             dec.Offset = varOffset;
             varMaps.Peek()[dec.Name] = varOffset;
-            varScopes.Peek().Add(dec.Name);
             declarationCount++;
         }
 
@@ -402,11 +398,11 @@
             declarationCount = 0;
             returnCount = 0;
             varMaps.Push(new Dictionary<string, int>());
-            varScopes.Push(new HashSet<string>());
 
             // todo: refactor
             int baseOffset = paramOffset;
             int argsInRegisters = 4;
+            // refactor: this check shouldnt be here
             if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
             {
                 argsInRegisters = 8;
@@ -439,7 +435,6 @@
 
                 string? parameter = function.Parameters[i];
                 varMaps.Peek()[parameter] = offset;
-                varScopes.Peek().Add(parameter);
             }
 
             bool containsReturn = false;
@@ -468,7 +463,6 @@
             function.BytesToAllocate = Backends.IBackend.Align(declarationCount * intSize, 16);
 
             varMaps.Pop();
-            varScopes.Pop();
         }
 
         private void ValidateProgram(ASTProgramNode program)
