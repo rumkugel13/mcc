@@ -6,7 +6,7 @@ namespace mcc
         public ASTAbstractExpressionNode Expression;
         public ASTStatementNode Statement;
         public int LoopCount;
-        public int BytesToDeallocate;
+        public int VarsToDeallocate;
 
         public ASTWhileNode(ASTAbstractExpressionNode expression, ASTStatementNode statement)
         {

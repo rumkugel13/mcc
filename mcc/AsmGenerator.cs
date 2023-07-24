@@ -109,14 +109,14 @@ namespace mcc
             backend.Label(lbLoopBegin + forDecl.LoopCount);
             Generate(forDecl.Statement);
             backend.Label(lbLoopContinue + forDecl.LoopCount);
-            Deallocate(forDecl.BytesToDeallocate);
+            Deallocate(forDecl.VarsToDeallocate);
             Generate(forDecl.Post);
             backend.Label(lbLoopPost + forDecl.LoopCount);
             Generate(forDecl.Condition);
             backend.CompareZero();
             backend.JumpNotEqual(lbLoopBegin + forDecl.LoopCount);
             backend.Label(lbLoopEnd + forDecl.LoopCount);
-            Deallocate(forDecl.BytesToDeallocateInit);
+            Deallocate(forDecl.VarsToDeallocateInit);
         }
 
         private void GenerateFor(ASTForNode fo)
@@ -126,14 +126,14 @@ namespace mcc
             backend.Label(lbLoopBegin + fo.LoopCount);
             Generate(fo.Statement);
             backend.Label(lbLoopContinue + fo.LoopCount);
-            Deallocate(fo.BytesToDeallocate);
+            Deallocate(fo.VarsToDeallocate);
             Generate(fo.Post);
             backend.Label(lbLoopPost + fo.LoopCount);
             Generate(fo.Condition);
             backend.CompareZero();
             backend.JumpNotEqual(lbLoopBegin + fo.LoopCount);
             backend.Label(lbLoopEnd + fo.LoopCount);
-            Deallocate(fo.BytesToDeallocateInit);
+            Deallocate(fo.VarsToDeallocateInit);
         }
 
         private void GenerateDoWhile(ASTDoWhileNode doWhil)
@@ -141,7 +141,7 @@ namespace mcc
             backend.Label(lbLoopBegin + doWhil.LoopCount);
             Generate(doWhil.Statement);
             backend.Label(lbLoopContinue + doWhil.LoopCount);
-            Deallocate(doWhil.BytesToDeallocate);
+            Deallocate(doWhil.VarsToDeallocate);
             Generate(doWhil.Expression);
             backend.CompareZero();
             backend.JumpNotEqual(lbLoopBegin + doWhil.LoopCount);
@@ -154,7 +154,7 @@ namespace mcc
             backend.Label(lbLoopBegin + whil.LoopCount);
             Generate(whil.Statement);
             backend.Label(lbLoopContinue + whil.LoopCount);
-            Deallocate(whil.BytesToDeallocate);
+            Deallocate(whil.VarsToDeallocate);
             Generate(whil.Expression);
             backend.CompareZero();
             backend.JumpNotEqual(lbLoopBegin + whil.LoopCount);
@@ -166,12 +166,12 @@ namespace mcc
             foreach (var blockItem in comp.BlockItems)
                 Generate(blockItem);
 
-            Deallocate(comp.BytesToDeallocate);
+            Deallocate(comp.VarsToDeallocate);
         }
 
-        private void Deallocate(int bytes)
+        private void Deallocate(int count)
         {
-            //Instruction($"addq ${bytes}, %rsp"); // pop off variables from current scope
+            // todo: pop off variables from current scope to save on memory
         }
 
         private void GenerateConditionalExpression(ASTConditionalExpressionNode condEx)

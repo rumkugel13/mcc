@@ -7,8 +7,8 @@ namespace mcc
         public ASTAbstractExpressionNode Condition, Post;
         public ASTDeclarationNode Declaration;
         public int LoopCount;
-        public int BytesToDeallocate;
-        public int BytesToDeallocateInit;
+        public int VarsToDeallocate;
+        public int VarsToDeallocateInit;
 
         public ASTForDeclarationNode(ASTStatementNode body, ASTDeclarationNode declaration, ASTAbstractExpressionNode condition)
         {

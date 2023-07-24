@@ -4,15 +4,13 @@
     {
         ASTNode rootNode;
 
-        Stack<Dictionary<string, int>> varMaps = new Stack<Dictionary<string, int>>();
+        readonly Stack<Dictionary<string, int>> varMaps = new Stack<Dictionary<string, int>>();
 
-        const int pointerSize = 8; // 32bit = 4, 64bit = 8
-        const int intSize = 4;
         int totalDeclCount = 0;
         int returnCount = 0;
 
         int loopLabelCounter = 0;
-        Stack<int> loops = new Stack<int>();
+        readonly Stack<int> loops = new Stack<int>();
 
         struct Function
         {
@@ -20,8 +18,8 @@
             public bool Defined;
         }
 
-        Dictionary<string, Function> funcMap = new Dictionary<string, Function>();
-        Dictionary<string, bool> globalVarMap = new Dictionary<string, bool>();
+        readonly Dictionary<string, Function> funcMap = new Dictionary<string, Function>();
+        readonly Dictionary<string, bool> globalVarMap = new Dictionary<string, bool>();
 
         public Validator(ASTNode rootNode)
         {
@@ -118,9 +116,9 @@
             Validate(forDecl.Condition);
             PushScope();
             Validate(forDecl.Statement);
-            forDecl.BytesToDeallocate = PopScope();
+            forDecl.VarsToDeallocate = PopScope();
             Validate(forDecl.Post);
-            forDecl.BytesToDeallocateInit = PopScope();
+            forDecl.VarsToDeallocateInit = PopScope();
             loops.Pop();
         }
 
@@ -133,9 +131,9 @@
             Validate(fo.Condition);
             PushScope();
             Validate(fo.Statement);
-            fo.BytesToDeallocate = PopScope();
+            fo.VarsToDeallocate = PopScope();
             Validate(fo.Post);
-            fo.BytesToDeallocateInit = PopScope();
+            fo.VarsToDeallocateInit = PopScope();
             loops.Pop();
         }
 
@@ -145,7 +143,7 @@
             loops.Push(loopLabelCounter++);
             PushScope();
             Validate(doWhil.Statement);
-            doWhil.BytesToDeallocate = PopScope();
+            doWhil.VarsToDeallocate = PopScope();
             Validate(doWhil.Expression);
             loops.Pop();
         }
@@ -157,7 +155,7 @@
             Validate(whil.Expression);
             PushScope();
             Validate(whil.Statement);
-            whil.BytesToDeallocate = PopScope();
+            whil.VarsToDeallocate = PopScope();
             loops.Pop();
         }
 
@@ -168,12 +166,10 @@
 
         private int PopScope()
         {
-            int newVarCount = varMaps.Peek().Count;
-            varMaps.Pop();
+            int newVarCount = varMaps.Pop().Count;
             // update varoffset so that scope variables in stack can be overridden, could leave it for now
             // todo: would need to calculate max simultaneous declared variables first to save on memory
-            //varOffset += newVarCount * intSize;
-            return newVarCount * pointerSize;
+            return newVarCount;
         }
 
         private void ValidateCompound(ASTCompundNode comp)
@@ -185,7 +181,7 @@
                 Validate(blockItem);
             }
 
-            comp.BytesToDeallocate = PopScope();
+            comp.VarsToDeallocate = PopScope();
         }
 
         private void ValidateConditionalExpression(ASTConditionalExpressionNode condEx)
