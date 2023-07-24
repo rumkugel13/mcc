@@ -8,8 +8,7 @@
 
         const int pointerSize = 8; // 32bit = 4, 64bit = 8
         const int intSize = 4;
-        int varOffset = 0;
-        int declarationCount = 0;
+        int totalDeclCount = 0;
         int returnCount = 0;
 
         int loopLabelCounter = 0;
@@ -22,9 +21,6 @@
         }
 
         Dictionary<string, Function> funcMap = new Dictionary<string, Function>();
-
-        const int paramOffset = 2 * pointerSize;    // 1 for return pointer, 2 for old base pointer
-
         Dictionary<string, bool> globalVarMap = new Dictionary<string, bool>();
 
         public Validator(ASTNode rootNode)
@@ -215,9 +211,9 @@
             {
                 FailVariable("Trying to reference a non Constant Variable", variable.Name, variable);
             }
-            else if (varMaps.Peek().TryGetValue(variable.Name, out int offset))
+            else if (varMaps.Peek().TryGetValue(variable.Name, out int index))
             {
-                variable.Offset = offset;
+                variable.Index = index;
             }
             else if (globalVarMap.ContainsKey(variable.Name))
             {
@@ -231,10 +227,10 @@
 
         private void ValidateAssign(ASTAssignNode assign)
         {
-            if (varMaps.Peek().TryGetValue(assign.Name, out int offset))
+            if (varMaps.Peek().TryGetValue(assign.Name, out int index))
             {
                 Validate(assign.Expression);
-                assign.Offset = offset;
+                assign.Index = index;
             }
             else if (globalVarMap.ContainsKey(assign.Name))
             {
@@ -265,11 +261,9 @@
                 Validate(dec.Initializer);
             }
 
-            // subtract bytes needed from varOffset
-            varOffset -= intSize;
-            dec.Offset = varOffset;
-            varMaps.Peek()[dec.Name] = varOffset;
-            declarationCount++;
+            dec.Index = totalDeclCount;
+            varMaps.Peek()[dec.Name] = totalDeclCount;
+            totalDeclCount++;
         }
 
         private void ValidateGlobalDeclaration(ASTDeclarationNode dec)
@@ -394,47 +388,15 @@
                 }
             }
 
-            varOffset = 0;
-            declarationCount = 0;
+            totalDeclCount = 0;
             returnCount = 0;
             varMaps.Push(new Dictionary<string, int>());
 
-            // todo: refactor
-            int baseOffset = paramOffset;
-            int argsInRegisters = 4;
-            // refactor: this check shouldnt be here
-            if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
-            {
-                argsInRegisters = 8;
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                argsInRegisters = 6;
-            }
-            else if (OperatingSystem.IsWindows())
-            {
-                argsInRegisters = 4;
-                baseOffset += 32;  // 32 byte shadow space on windows
-            }
-
             for (int i = 0; i < function.Parameters.Count; i++)
             {
-                int offset;
-                if (i < argsInRegisters)
-                {
-                    varOffset -= intSize; // reserve n bytes for datatype
-                    declarationCount++; // count function parameters as declaration
-
-                    offset = varOffset;
-                }
-                else
-                {
-                    // 8n+16 (16 bytes for return address and frame pointer, if normal function prologue is used)
-                    offset = baseOffset + ((i - argsInRegisters) * pointerSize);
-                }
-
                 string? parameter = function.Parameters[i];
-                varMaps.Peek()[parameter] = offset;
+                varMaps.Peek()[parameter] = totalDeclCount;
+                totalDeclCount++;
             }
 
             bool containsReturn = false;
@@ -457,10 +419,7 @@
 
             function.ContainsReturn = containsReturn;
             function.ReturnCount = returnCount;
-
-            // 16 byte aligned
-            // todo: calculate max simultaneous declared variables to save on memory
-            function.BytesToAllocate = Backends.IBackend.Align(declarationCount * intSize, 16);
+            function.TotalDeclCount = totalDeclCount;
 
             varMaps.Pop();
         }

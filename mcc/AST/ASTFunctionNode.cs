@@ -9,7 +9,7 @@ namespace mcc
         public bool IsDefinition;
         public bool ContainsReturn;
         public int ReturnCount;
-        public int BytesToAllocate;
+        public int TotalDeclCount;
 
         public ASTFunctionNode(string name, List<string> parameters, List<ASTBlockItemNode> blockItems)
         {

@@ -5,7 +5,7 @@ namespace mcc
     {
         public string Name;
         public ASTAbstractExpressionNode Expression;
-        public int Offset;
+        public int Index;
         public bool IsGlobal;
 
         public ASTAssignNode(string id, ASTAbstractExpressionNode expression)

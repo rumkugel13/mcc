@@ -11,7 +11,9 @@ namespace mcc.Backends
         readonly string[] argRegister4B = new string[8] { "w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7", };
         readonly string[] argRegister8B = new string[8] { "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", };
 
-        const int pointerSize = 8;
+        const int pointerSize = 8, intSize = 4, winShadowSpace = 32;
+        int memoryOffset = 0;
+        Dictionary<int, int> varOffsets = new();
 
         OSPlatform targetOS;
 
@@ -52,6 +54,8 @@ namespace mcc.Backends
 
         public void FunctionPrologue(string name)
         {
+            memoryOffset = 0;
+            varOffsets.Clear();
             Instruction(".globl " + name);
             Instruction(".text");
             Label(name);
@@ -78,6 +82,18 @@ namespace mcc.Backends
             Instruction("ldr w0, [x2]");
         }
 
+        public int AllocateVariable(int index, int size)
+        {
+            memoryOffset -= size;
+            varOffsets[index] = memoryOffset;
+            return memoryOffset;
+        }
+
+        public int GetVariableLocation(int index)
+        {
+            return varOffsets[index];
+        }
+
         public void StoreLocalVariable(int byteOffset)
         {
             Instruction("str w0, [x29, #" + byteOffset + "]");
@@ -93,9 +109,9 @@ namespace mcc.Backends
             Instruction("str wzr, [x29, #" + byteOffset + "]");
         }
 
-        public void StoreInt(int offset)
+        public void StoreArgInStack(int index, int size)
         {
-            Instruction($"str w0, [sp, #{offset}]");
+            Instruction($"str w0, [sp, #{index * pointerSize}]");
         }
 
         public void AllocateMemory(int bytesToAllocate)
@@ -116,6 +132,12 @@ namespace mcc.Backends
         public void MoveMemoryToRegister(string register, int offset)
         {
             Instruction($"ldr {register}, [sp, #{offset}]");
+        }
+
+        public int GetArgCountNotInRegs(int argCount)
+        {
+            int regsUsed = Math.Min(argCount, argRegister4B.Length);
+            return argCount - regsUsed;
         }
 
         public int AllocateAtLeast(int bytes)
@@ -144,7 +166,17 @@ namespace mcc.Backends
 
             for (int i = 0; i < regsUsed; i++)
             {
-                MoveRegisterToMemory(argRegister4B[i], -(i + 1) * 4);
+                memoryOffset -= intSize;
+                varOffsets[i] = memoryOffset;
+                MoveRegisterToMemory(argRegister4B[i], memoryOffset);
+            }
+
+            int baseOffset = 2 * pointerSize;
+            for (int i = regsUsed; i < argCount; i++)
+            {
+                // 8n+16 (16 bytes for return address and frame pointer, if normal function prologue is used)
+                // vars are already on the stack and not in registers, so we just calc the address to them
+                varOffsets[i] = baseOffset + ((i - regsUsed) * pointerSize);
             }
         }
 

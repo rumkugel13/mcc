@@ -9,13 +9,16 @@
         void FunctionPrologue(string name);
         void FunctionEpilogue();
 
+        int AllocateVariable(int index, int size);
+        int GetVariableLocation(int index);
         void StoreGlobalVariable(string name);
         void LoadGlobalVariable(string name);
         void StoreLocalVariable(int byteOffset);
         void LoadLocalVariable(int byteOffset);
         void InitializeLocalVariable(int byteOffset);
 
-        void StoreInt(int offset);
+        void StoreArgInStack(int index, int size);
+        int GetArgCountNotInRegs(int argCount);
         void AllocateMemory(int bytesToAllocate);
         void DeallocateMemory(int bytesToDeallocate);
 

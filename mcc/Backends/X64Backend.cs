@@ -13,7 +13,9 @@ namespace mcc.Backends
         readonly string[] argRegisterWin8B = new string[4] { "rcx", "rdx", "r8", "r9", };
 
         int pushCounter = 0;
-        const int pointerSize = 8;
+        const int pointerSize = 8, intSize = 4, winShadowSpace = 32;
+        int memoryOffset = 0;
+        Dictionary<int, int> varOffsets = new();
 
         OSPlatform targetOS;
 
@@ -53,6 +55,8 @@ namespace mcc.Backends
 
         public void FunctionPrologue(string name)
         {
+            memoryOffset = 0;
+            varOffsets.Clear();
             Instruction(".globl " + name);
             Instruction(".text");
             Label(name);
@@ -77,6 +81,18 @@ namespace mcc.Backends
             Instruction("movl " + name + "(%rip), %eax");
         }
 
+        public int AllocateVariable(int index, int size)
+        {
+            memoryOffset -= size;
+            varOffsets[index] = memoryOffset;
+            return memoryOffset;
+        }
+
+        public int GetVariableLocation(int index)
+        {
+            return varOffsets[index];
+        }
+
         public void StoreLocalVariable(int byteOffset)
         {
             Instruction("movl %eax, " + byteOffset + "(%rbp)");
@@ -93,9 +109,9 @@ namespace mcc.Backends
             StoreLocalVariable(byteOffset);
         }
 
-        public void StoreInt(int offset)
+        public void StoreArgInStack(int index, int size)
         {
-            Instruction($"movl %eax, {offset}(%rsp)");
+            Instruction($"movl %eax, {index * pointerSize}(%rsp)");
         }
 
         public void AllocateMemory(int bytesToAllocate)
@@ -118,6 +134,14 @@ namespace mcc.Backends
             Instruction($"movl {offset}(%rsp), %{register}");
         }
 
+        public int GetArgCountNotInRegs(int argCount)
+        {
+            string[] argRegs4 = targetOS == OSPlatform.Linux ? argRegister4B : argRegisterWin4B;
+            //string[] argRegs = targetOS == OSPlatform.Linux ? argRegister8B : argRegisterWin8B;
+            int regsUsed = Math.Min(argCount, argRegs4.Length);
+            return argCount - regsUsed;
+        }
+
         public int AllocateAtLeast(int bytes)
         {
             // allocate space for arguments, 16 byte aligned
@@ -131,7 +155,7 @@ namespace mcc.Backends
             // make sure we allocate at least enough for shadow space on windows
             if (targetOS == OSPlatform.Windows)
             {
-                allocate = Math.Max(allocate, 4 * pointerSize);
+                allocate = Math.Max(allocate, winShadowSpace);
             }
 
             AllocateMemory(allocate);
@@ -160,7 +184,17 @@ namespace mcc.Backends
 
             for (int i = 0; i < regsUsed; i++)
             {
-                MoveRegisterToMemory(argRegs4[i], -(i + 1) * 4);
+                memoryOffset -= intSize;
+                varOffsets[i] = memoryOffset;
+                MoveRegisterToMemory(argRegs4[i], memoryOffset);
+            }
+
+            int baseOffset = targetOS == OSPlatform.Linux ? (2 * pointerSize) : ((2 * pointerSize) + winShadowSpace);
+            for (int i = regsUsed; i < argCount; i++)
+            {
+                // 8n+16 (16 bytes for return address and frame pointer, if normal function prologue is used)
+                // vars are already on the stack and not in registers, so we just calc the address to them
+                varOffsets[i] = baseOffset + ((i - regsUsed) * pointerSize);
             }
         }
 

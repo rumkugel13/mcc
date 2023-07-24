@@ -20,6 +20,7 @@ namespace mcc
         const string lbEndFunction = ".end_";
 
         const int pointerSize = 8;
+        const int intSize = 4;
 
         public AsmGenerator(ASTNode rootNode, IBackend backend)
         {
@@ -74,7 +75,7 @@ namespace mcc
             for (int i = funCall.Arguments.Count - 1; i >= 0; i--)
             {
                 Generate(funCall.Arguments[i]);
-                backend.StoreInt(i * pointerSize);
+                backend.StoreArgInStack(i, intSize);
             }
 
             // move arguments into registers
@@ -218,7 +219,8 @@ namespace mcc
             }
             else
             {
-                backend.LoadLocalVariable(variable.Offset);
+                int offset = backend.GetVariableLocation(variable.Index);
+                backend.LoadLocalVariable(offset);
             }
         }
 
@@ -231,7 +233,8 @@ namespace mcc
             }
             else
             {
-                backend.StoreLocalVariable(assign.Offset);
+                int offset = backend.GetVariableLocation(assign.Index);
+                backend.StoreLocalVariable(offset);
             }
         }
 
@@ -246,14 +249,15 @@ namespace mcc
             }
             else
             {
+                int offset = backend.AllocateVariable(dec.Index, 4);
                 if (dec.Initializer is not ASTNoExpressionNode)
                 {
                     Generate(dec.Initializer);
-                    backend.StoreLocalVariable(dec.Offset);
+                    backend.StoreLocalVariable(offset);
                 }
                 else
                 {
-                    backend.InitializeLocalVariable(dec.Offset);
+                    backend.InitializeLocalVariable(offset);
                 }
             }
         }
@@ -346,8 +350,9 @@ namespace mcc
                 functionReturnCount = function.ReturnCount;
                 backend.FunctionPrologue(function.Name);
 
-                if (function.BytesToAllocate > 0)
-                    backend.AllocateMemory(function.BytesToAllocate);
+                int val = backend.GetArgCountNotInRegs(function.Parameters.Count);
+                if (function.TotalDeclCount - val > 0)
+                    backend.AllocateAtLeast((function.TotalDeclCount - val) * intSize);
 
                 backend.MoveRegistersIntoMemory(function.Parameters.Count);
 
