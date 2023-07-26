@@ -212,7 +212,7 @@ namespace mcc
             PrintLine("VAR<" + dec.Name + ">");
             if (dec.Initializer is not ASTNoExpressionNode)
             {
-                PrintLine("ASSIGN:");
+                PrintLine("INITIALIZE:");
                 indent++;
                 Print(dec.Initializer);
                 indent--;
