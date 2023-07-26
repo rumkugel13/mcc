@@ -6,7 +6,7 @@
 
         readonly Stack<Dictionary<string, int>> varMaps = new Stack<Dictionary<string, int>>();
 
-        int totalDeclCount = 0;
+        int totalVarDeclCount = 0;
         int returnCount = 0;
 
         int loopLabelCounter = 0;
@@ -257,9 +257,9 @@
                 Validate(dec.Initializer);
             }
 
-            dec.Index = totalDeclCount;
-            varMaps.Peek()[dec.Name] = totalDeclCount;
-            totalDeclCount++;
+            dec.Index = totalVarDeclCount;
+            varMaps.Peek()[dec.Name] = totalVarDeclCount;
+            totalVarDeclCount++;
         }
 
         private void ValidateGlobalDeclaration(ASTDeclarationNode dec)
@@ -384,15 +384,14 @@
                 }
             }
 
-            totalDeclCount = 0;
+            totalVarDeclCount = 0;
             returnCount = 0;
             varMaps.Push(new Dictionary<string, int>());
 
-            for (int i = 0; i < function.Parameters.Count; i++)
+            foreach (string? parameter in function.Parameters)
             {
-                string? parameter = function.Parameters[i];
-                varMaps.Peek()[parameter] = totalDeclCount;
-                totalDeclCount++;
+                varMaps.Peek()[parameter] = totalVarDeclCount;
+                totalVarDeclCount++;
             }
 
             bool containsReturn = false;
@@ -415,7 +414,7 @@
 
             function.ContainsReturn = containsReturn;
             function.ReturnCount = returnCount;
-            function.TotalDeclCount = totalDeclCount;
+            function.TotalVarDeclCount = totalVarDeclCount;
 
             varMaps.Pop();
         }

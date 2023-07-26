@@ -351,8 +351,8 @@ namespace mcc
                 backend.FunctionPrologue(function.Name);
 
                 int val = backend.GetArgCountNotInRegs(function.Parameters.Count);
-                if (function.TotalDeclCount - val > 0)
-                    backend.AllocateAtLeast((function.TotalDeclCount - val) * intSize);
+                if (function.TotalVarDeclCount - val > 0)
+                    backend.AllocateAtLeast((function.TotalVarDeclCount - val) * intSize);
 
                 backend.MoveRegistersIntoMemory(function.Parameters.Count);
 
