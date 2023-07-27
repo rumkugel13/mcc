@@ -13,7 +13,7 @@
         int GetVariableLocation(int index);
         void StoreGlobalVariable(string name);
         void LoadGlobalVariable(string name);
-        void StoreLocalVariable(int byteOffset);
+        void StoreLocalVariable(int byteOffset, bool keepValue = false);
         void LoadLocalVariable(int byteOffset);
         void InitializeLocalVariable(int byteOffset);
 

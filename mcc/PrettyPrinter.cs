@@ -280,7 +280,7 @@ namespace mcc
         private void PrintAssign(ASTAssignNode assign)
         {
             PrintLine("ASSIGN:");
-            PrintLine("VAR<" + assign.Name + ">");
+            PrintLine("VAR<" + assign.Name + "> (Stmt: " + assign.IsStatement + ")");
             indent++;
             Print(assign.Expression);
             indent--;

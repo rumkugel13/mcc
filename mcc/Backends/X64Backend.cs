@@ -93,7 +93,7 @@ namespace mcc.Backends
             return varOffsets[index];
         }
 
-        public void StoreLocalVariable(int byteOffset)
+        public void StoreLocalVariable(int byteOffset, bool keepValue = false)
         {
             Instruction("movl %eax, " + byteOffset + "(%rbp)");
         }

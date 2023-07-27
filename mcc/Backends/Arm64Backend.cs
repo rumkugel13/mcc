@@ -94,7 +94,7 @@ namespace mcc.Backends
             return varOffsets[index];
         }
 
-        public void StoreLocalVariable(int byteOffset)
+        public void StoreLocalVariable(int byteOffset, bool keepValue = false)
         {
             Instruction("str w0, [x29, #" + byteOffset + "]");
         }

@@ -234,7 +234,7 @@ namespace mcc
             else
             {
                 int offset = backend.GetVariableLocation(assign.Index);
-                backend.StoreLocalVariable(offset);
+                backend.StoreLocalVariable(offset, !assign.IsStatement);
             }
         }
 

@@ -185,11 +185,11 @@
             return new ASTForDeclarationNode(statement, decl, condition, post);
         }
 
-        private ASTAbstractExpressionNode ParseOptionalExpression()
+        private ASTAbstractExpressionNode ParseOptionalExpression(bool isStatement = false)
         {
             if (!PeekSymbol(Symbol.SymbolTypes.SEMICOLON) && !PeekSymbol(Symbol.SymbolTypes.CLOSE_PARENTHESIS))
             {
-                return ParseExpression();
+                return ParseExpression(isStatement);
             }
             else
             {
@@ -220,7 +220,7 @@
             }
             else
             {
-                ASTAbstractExpressionNode exp = ParseOptionalExpression();
+                ASTAbstractExpressionNode exp = ParseOptionalExpression(true);
                 ExpectSymbol(Symbol.SymbolTypes.SEMICOLON);
                 return new ASTExpressionNode(exp) { LineNumber = exp.LineNumber, LineCharacter = exp.LineCharacter };
             }
@@ -479,11 +479,11 @@
             }
         }
 
-        private ASTAbstractExpressionNode ParseExpression()
+        private ASTAbstractExpressionNode ParseExpression(bool isStatement = false)
         {
             if (Peek() is Identifier && Peek(1) is Symbol symbol && symbol.SymbolType == Symbol.SymbolTypes.EQUALS)
             {
-                return ParseAssignment();
+                return ParseAssignment(isStatement);
             }
             else
             {
@@ -491,12 +491,12 @@
             }
         }
 
-        private ASTAssignNode ParseAssignment()
+        private ASTAssignNode ParseAssignment(bool isStatement = false)
         {
             ExpectIdentifier(out string id, out int line, out int column);
             ExpectSymbol(Symbol.SymbolTypes.EQUALS);
             ASTAbstractExpressionNode expression = ParseExpression();
-            return new ASTAssignNode(id, expression) { LineNumber = line, LineCharacter = column };
+            return new ASTAssignNode(id, expression) { LineNumber = line, LineCharacter = column, IsStatement = isStatement };
         }
 
         private bool HasMoreTokens()
