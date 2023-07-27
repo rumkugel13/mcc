@@ -71,6 +71,8 @@ namespace mcc
                         Console.WriteLine($"Comparing Results ... Expected: {expected}, Got: {got} " + (expected == got ? "OK" : "Fail"));
                         Interpret(sourceFile, out int interpreted);
                         Console.WriteLine("Interpreted value = " + interpreted);
+                        BytecodeInterpret(sourceFile, out int bcInt);
+                        Console.WriteLine("Bytecode value = " + bcInt);
                         if (expected == got)
                             return true;
                     }
@@ -318,6 +320,53 @@ namespace mcc
             if (VerifyAndGenerateAST(filePath, out ASTProgramNode program))
             {
                 returnValue = Interpret(program);
+                return true;
+            }
+            return false;
+        }
+
+        public int BytecodeInterpret(ASTProgramNode program, bool debug = false)
+        {
+            IBackend backend;
+            backend = new BytecodeBackend();
+            AsmGenerator generator = new AsmGenerator(program, backend);
+            string assembly = generator.Generate();
+            if (debug)
+                Console.WriteLine(assembly);
+
+            string filePath = "../../../bcvm/bcvm.exe";
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine($"Fail: Couldn't find {filePath}.");
+                return -9999;
+            }
+            string command = $"-i \"" + assembly + "\"";
+            int exitCode = 0;
+            using (Process? process = Process.Start(filePath, command))
+            {
+                if (process.WaitForExit(Convert.ToInt32(TimeSpan.FromSeconds(1).TotalMilliseconds)))
+                {
+                    exitCode = process.ExitCode;
+                }
+                else
+                {
+                    exitCode = -9999;
+                    Console.WriteLine($"Fail: Process {filePath} failed to finish.");
+                    process.Kill();
+                    process.WaitForExit();
+                }
+            };
+
+            return exitCode;
+        }
+
+        public bool BytecodeInterpret(string filePath, out int returnValue)
+        {
+            returnValue = 0;
+
+            if (VerifyAndGenerateAST(filePath, out ASTProgramNode program))
+            {
+                returnValue = BytecodeInterpret(program);
                 return true;
             }
             return false;

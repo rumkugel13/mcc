@@ -70,6 +70,11 @@ namespace mcc
                             engine.Interpret(value, out int interpreted);
                             Console.WriteLine(interpreted);
                             break;
+                        case "-b":
+                        case "--bytecode":
+                            engine.BytecodeInterpret(value, out int bcValue);
+                            Console.WriteLine("Bytecode Interpreter returned " + bcValue);
+                            break;
                     }
 
                     break;

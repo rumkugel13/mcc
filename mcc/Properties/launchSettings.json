@@ -78,6 +78,11 @@
       "commandName": "Project",
       "commandLineArgs": "-t misc",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
+    "bytecode": {
+      "commandName": "Project",
+      "commandLineArgs": "-b stage_5\\valid\\assign_val.c",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     }
   }
 }
