@@ -36,3 +36,4 @@ Successfully passes all [test cases](https://github.com/nlsandler/write_a_c_comp
 - Windows 10 64-Bit (Visual Studio 2022, .Net 6.0, gcc installed via cygwin 3.3.5)
 - Debian 11 (Bullseye) via WSL (.Net 6.0, gcc 10.2.1)
 - Raspberry Pi OS 64 Bit (Debian 11 Bullseye) on Raspberry Pi 3B+ (.Net 6.0, gcc 10.2.1)
+- [Bytecode Backend](https://github.com/rumkugel13/bcvm)
