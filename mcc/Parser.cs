@@ -483,20 +483,24 @@
         {
             if (Peek() is Identifier && Peek(1) is Symbol symbol && symbol.SymbolType == Symbol.SymbolTypes.EQUALS)
             {
-                return ParseAssignment(isStatement);
+                var ass = ParseAssignment();
+                ass.IsStatement = isStatement;
+                return ass;
             }
             else
             {
-                return ParseConditionalExpression();
+                var exp = ParseConditionalExpression();
+                exp.IsStatement = isStatement;
+                return exp;
             }
         }
 
-        private ASTAssignNode ParseAssignment(bool isStatement = false)
+        private ASTAssignNode ParseAssignment()
         {
             ExpectIdentifier(out string id, out int line, out int column);
             ExpectSymbol(Symbol.SymbolTypes.EQUALS);
             ASTAbstractExpressionNode expression = ParseExpression();
-            return new ASTAssignNode(id, expression) { LineNumber = line, LineCharacter = column, IsStatement = isStatement };
+            return new ASTAssignNode(id, expression) { LineNumber = line, LineCharacter = column };
         }
 
         private bool HasMoreTokens()

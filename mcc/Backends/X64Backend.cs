@@ -259,6 +259,11 @@ namespace mcc.Backends
             pushCounter--;
         }
 
+        public void DropValue()
+        {
+
+        }
+
         public void CompareZero()
         {
             Instruction("cmpl $0, %eax");

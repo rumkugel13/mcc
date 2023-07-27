@@ -35,6 +35,7 @@
 
         void PushLeftOperand();
         void PopLeftOperand();
+        void DropValue();
 
         void CompareZero();
         void SetIfNotEqual();

@@ -222,6 +222,11 @@ namespace mcc.Backends
             Instruction("ldr w1, [sp], #16");     // pop 16 bytes
         }
 
+        public void DropValue()
+        {
+
+        }
+
         public void CompareZero()
         {
             Instruction("cmp w0, #0");

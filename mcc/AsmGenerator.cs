@@ -340,6 +340,8 @@ namespace mcc
         private void GenerateExpression(ASTExpressionNode exp)
         {
             Generate(exp.Expression);
+            if (exp.Expression.IsStatement)
+                backend.DropValue();
         }
 
         private void GenerateFunction(ASTFunctionNode function)
