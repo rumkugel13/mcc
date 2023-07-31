@@ -83,6 +83,11 @@
       "commandName": "Project",
       "commandLineArgs": "-b stage_5\\valid\\assign_val.c",
       "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
+    },
+    "optimize": {
+      "commandName": "Project",
+      "commandLineArgs": "-to stage_3\\valid\\precedence.c",
+      "workingDirectory": "C:\\Users\\Manuel\\OneDrive\\Development\\mcc\\mcc\\Test"
     }
   }
 }

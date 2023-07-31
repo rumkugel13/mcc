@@ -75,6 +75,9 @@ namespace mcc
                             engine.BytecodeInterpret(value, out int bcValue);
                             Console.WriteLine("Bytecode Interpreter returned " + bcValue);
                             break;
+                        case "-to":
+                            engine.TestOptimize(value);
+                            break;
                     }
 
                     break;

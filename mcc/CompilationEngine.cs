@@ -371,5 +371,44 @@ namespace mcc
             }
             return false;
         }
+
+        public void TestOptimize(string filePath)
+        {
+            string assemblyFile = filePath.Replace(".c", ".s");
+            string exePath = filePath.Replace(".c", this.FileExtension);
+
+            VerifyAndGenerateAST(filePath, out var program);
+
+            string normalAssembly = GenerateAssemblyFromASTNode(program);
+            PrintFromASTNode(program);
+            File.WriteAllText(assemblyFile, normalAssembly);
+            GccCompile(assemblyFile);
+            TryGetExitCode(exePath, out int expected);
+
+            Optimize(program);
+
+            string optimizedAssembly = GenerateAssemblyFromASTNode(program);
+            PrintFromASTNode(program);
+            File.WriteAllText(assemblyFile, optimizedAssembly);
+            GccCompile(assemblyFile);
+            TryGetExitCode(exePath, out int got);
+            Console.WriteLine($"Comparing Results ... Expected: {expected}, Got: {got} " + (expected == got ? "OK" : "Fail"));
+
+            if (File.Exists(assemblyFile))
+            {
+                File.Delete(assemblyFile);
+            }
+
+            if (File.Exists(exePath))
+            {
+                File.Delete(exePath);
+            }
+        }
+
+        public void Optimize(ASTProgramNode program)
+        {
+            Optimizer optimizer = new Optimizer(program);
+            optimizer.OptimizeAST(Optimizer.Optimizations.ConstantFolding);
+        }
     }
 }
