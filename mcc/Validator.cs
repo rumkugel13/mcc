@@ -26,7 +26,7 @@
             this.rootNode = rootNode;
         }
 
-        public void ValidateX86()
+        public void ValidateAST()
         {
             Validate(rootNode);
         }

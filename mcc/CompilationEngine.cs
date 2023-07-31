@@ -271,7 +271,7 @@ namespace mcc
         public void ValidateASTNode(ASTNode program)
         {
             Validator validator = new Validator(program);
-            validator.ValidateX86();
+            validator.ValidateAST();
         }
 
         public bool VerifyAndGenerateAST(string filePath, out ASTProgramNode program)
